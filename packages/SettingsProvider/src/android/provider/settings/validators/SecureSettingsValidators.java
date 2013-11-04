@@ -318,5 +318,6 @@ public class SecureSettingsValidators {
             return true;
         });
         VALIDATORS.put(Secure.ENABLE_LOCATION_PRIVACY_INDICATOR, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Secure.VOLUME_LINK_NOTIFICATION, BOOLEAN_VALIDATOR);
     }
 }
