@@ -117,5 +117,6 @@ public class SystemSettings {
         Settings.System.TORCH_LONG_PRESS_POWER_GESTURE,
         Settings.System.TORCH_LONG_PRESS_POWER_TIMEOUT,
         Settings.System.VOLUME_PANEL_ON_LEFT,
+        Settings.System.SCREENSHOT_SOUND
     };
 }

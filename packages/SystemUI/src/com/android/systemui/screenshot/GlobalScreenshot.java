@@ -51,6 +51,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.MediaActionSound;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -215,7 +217,7 @@ public class GlobalScreenshot implements ViewTreeObserver.OnComputeInternalInset
     private float mCornerSizeX;
     private float mDismissDeltaY;
 
-    private MediaActionSound mCameraSound;
+    private Ringtone mScreenshotSound;
 
     private int mNavMode;
     private int mLeftInset;
@@ -312,9 +314,9 @@ public class GlobalScreenshot implements ViewTreeObserver.OnComputeInternalInset
         mFastOutSlowIn =
                 AnimationUtils.loadInterpolator(mContext, android.R.interpolator.fast_out_slow_in);
 
-        // Setup the Camera shutter sound
-        mCameraSound = new MediaActionSound();
-        mCameraSound.load(MediaActionSound.SHUTTER_CLICK);
+        // Setup the Screenshot sound
+        mScreenshotSound = RingtoneManager.getRingtone(mContext,
+                    Uri.parse("file://" + "/product/media/audio/ui/camera_click.ogg"));
 
         // Store UI background executor
         mUiBgExecutor = uiBgExecutor;
@@ -665,7 +667,12 @@ public class GlobalScreenshot implements ViewTreeObserver.OnComputeInternalInset
     private void saveScreenshotAndToast(Consumer<Uri> finisher) {
         // Play the shutter sound to notify that we've taken a screenshot
         mScreenshotHandler.post(() -> {
-            mCameraSound.play(MediaActionSound.SHUTTER_CLICK);
+            boolean screenshotSoundEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
+                        Settings.System.SCREENSHOT_SOUND, 1, UserHandle.USER_CURRENT) == 1;
+            // Play the shutter sound to notify that we've taken a screenshot
+            if (screenshotSoundEnabled && mScreenshotSound != null) {
+                mScreenshotSound.play();
+            }
         });
 
         saveScreenshotInWorkerThread(finisher, new ActionsReadyListener() {
@@ -719,9 +726,12 @@ public class GlobalScreenshot implements ViewTreeObserver.OnComputeInternalInset
                         showUiOnActionsReady(imageData);
                     }
                 });
-
+                boolean screenshotSoundEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.SCREENSHOT_SOUND, 1, UserHandle.USER_CURRENT) == 1;
                 // Play the shutter sound to notify that we've taken a screenshot
-                mCameraSound.play(MediaActionSound.SHUTTER_CLICK);
+                if (screenshotSoundEnabled && mScreenshotSound != null) {
+                    mScreenshotSound.play();
+                }
 
                 mScreenshotPreview.setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 mScreenshotPreview.buildLayer();
