@@ -62,6 +62,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
@@ -260,18 +261,16 @@ public class ScreenshotController {
     private final WindowManager.LayoutParams mWindowLayoutParams;
     private final AccessibilityManager mAccessibilityManager;
     private final MediaActionSound mCameraSound;
+    private final AudioManager mAudioManager;
+    private final Vibrator mVibrator;
+    private final CameraManager mCameraManager;
+    private int mCamsInUse = 0;
     private final ScrollCaptureClient mScrollCaptureClient;
     private final PhoneWindow mWindow;
     private final DisplayManager mDisplayManager;
     private final ScrollCaptureController mScrollCaptureController;
     private final LongScreenshotData mLongScreenshotHolder;
     private final boolean mIsLowRamDevice;
-
-    private AudioManager mAudioManager;
-    private Vibrator mVibrator;
-
-    private CameraManager mCameraManager;
-    private int mCamsInUse = 0;
 
     private ScreenshotView mScreenshotView;
     private Bitmap mScreenBitmap;
@@ -1131,12 +1130,12 @@ public class ScreenshotController {
                 public void onFinish() {
                 }
             };
-        }
+         }
     }
 
-    private void playShutterSound() {
-        boolean playSound = readCameraSoundForced() && mCamsInUse > 0;
 
+    private void playShutterSound() {
+       boolean playSound = readCameraSoundForced() && mCamsInUse > 0;
         switch (mAudioManager.getRingerMode()) {
             case AudioManager.RINGER_MODE_SILENT:
                 // do nothing
@@ -1152,10 +1151,10 @@ public class ScreenshotController {
                 playSound = true;
                 break;
         }
-
         // We want to play the shutter sound when it's either forced or
         // when we use normal ringer mode
-        if (playSound) {
+        if (playSound && Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.SCREENSHOT_SHUTTER_SOUND, 1, UserHandle.USER_CURRENT) == 1) {
             mCameraSound.play(MediaActionSound.SHUTTER_CLICK);
         }
     }
