@@ -296,6 +296,6 @@ public class SystemSettingsValidators {
                         return true;
                     }
                 });
-
+        VALIDATORS.put(System.THREE_FINGER_GESTURE, BOOLEAN_VALIDATOR);
     }
 }
