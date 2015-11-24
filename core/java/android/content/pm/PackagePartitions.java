@@ -92,7 +92,7 @@ public class PackagePartitions {
      * this string is digested from the fingerprints of the build and all package partitions to
      * help detect the partition update.
      */
-    public static final String FINGERPRINT = getFingerprint();
+    public static final String FINGERPRINT = Build.DATE;
 
     /**
      * Returns a list in which the elements are products of the specified function applied to the
@@ -116,23 +116,6 @@ public class PackagePartitions {
         } catch (IOException e) {
             return path;
         }
-    }
-
-    /**
-     * Returns a fingerprint string for this build and all package partitions. The string is
-     * digested from the fingerprints of the build and all package partitions.
-     *
-     * @return A string to represent the fingerprint of this build and all package partitions.
-     */
-    @NonNull
-    private static String getFingerprint() {
-        final String[] digestProperties = new String[SYSTEM_PARTITIONS.size() + 1];
-        for (int i = 0; i < SYSTEM_PARTITIONS.size(); i++) {
-            final String partitionName = SYSTEM_PARTITIONS.get(i).getName();
-            digestProperties[i] = "ro." + partitionName + ".build.fingerprint";
-        }
-        digestProperties[SYSTEM_PARTITIONS.size()] = "ro.build.fingerprint"; // build fingerprint
-        return SystemProperties.digestOf(digestProperties);
     }
 
     /** Represents a partition that contains application packages. */
