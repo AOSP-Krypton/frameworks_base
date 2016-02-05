@@ -1470,6 +1470,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_CAMERA_GESTURE);
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, null, UserHandle.ALL);
     }
 
@@ -2536,31 +2537,52 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             if (DEBUG) Log.v(TAG, "onReceive: " + intent);
             String action = intent.getAction();
             String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
-            if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
-                KeyboardShortcuts.dismiss();
-                mRemoteInputManager.closeRemoteInputs();
-                if (mLockscreenUserManager.isCurrentProfile(getSendingUserId())) {
-                    int flags = CommandQueue.FLAG_EXCLUDE_NONE;
-                    if (reason != null) {
-                        if (reason.equals(SYSTEM_DIALOG_REASON_RECENT_APPS)) {
-                            flags |= CommandQueue.FLAG_EXCLUDE_RECENTS_PANEL;
+            switch (action) {
+                case Intent.ACTION_CLOSE_SYSTEM_DIALOGS: {
+                    KeyboardShortcuts.dismiss();
+                    mRemoteInputManager.closeRemoteInputs();
+                    if (mLockscreenUserManager.isCurrentProfile(getSendingUserId())) {
+                        int flags = CommandQueue.FLAG_EXCLUDE_NONE;
+                        if (reason != null) {
+                            if (reason.equals(SYSTEM_DIALOG_REASON_RECENT_APPS)) {
+                                flags |= CommandQueue.FLAG_EXCLUDE_RECENTS_PANEL;
+                            }
+                            // Do not collapse notifications when starting dreaming if the notifications
+                            // shade is used for the screen off animation. It might require expanded
+                            // state for the scrims to be visible
+                            if (reason.equals(SYSTEM_DIALOG_REASON_DREAM)
+                                    && mScreenOffAnimationController.shouldExpandNotifications()) {
+                                flags |= CommandQueue.FLAG_EXCLUDE_NOTIFICATION_PANEL;
+                            }
                         }
-                        // Do not collapse notifications when starting dreaming if the notifications
-                        // shade is used for the screen off animation. It might require expanded
-                        // state for the scrims to be visible
-                        if (reason.equals(SYSTEM_DIALOG_REASON_DREAM)
-                                && mScreenOffAnimationController.shouldExpandNotifications()) {
-                            flags |= CommandQueue.FLAG_EXCLUDE_NOTIFICATION_PANEL;
-                        }
+                        mShadeController.animateCollapseShade(flags);
                     }
-                    mShadeController.animateCollapseShade(flags);
+                    break;
                 }
-            } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                if (mNotificationShadeWindowController != null) {
-                    mNotificationShadeWindowController.setNotTouchable(false);
+                case Intent.ACTION_SCREEN_OFF: {
+                    if (mNotificationShadeWindowController != null) {
+                        mNotificationShadeWindowController.setNotTouchable(false);
+                    }
+                    finishBarAnimations();
+                    resetUserExpandedStates();
+                    break;
                 }
-                finishBarAnimations();
-                resetUserExpandedStates();
+                case Intent.ACTION_SCREEN_CAMERA_GESTURE: {
+                    boolean userSetupComplete = Settings.Secure.getInt(mContext.getContentResolver(),
+                        Settings.Secure.USER_SETUP_COMPLETE, 0) != 0;
+                    if (!userSetupComplete) {
+                        if (DEBUG) Log.d(TAG, String.format(
+                                "userSetupComplete = %s, ignoring camera launch gesture.",
+                                userSetupComplete));
+                        break;
+                    }
+
+                    // This gets executed before we will show Keyguard, so post it in order that the
+                    // state is correct.
+                    mMainExecutor.execute(() -> mCommandQueueCallbacks.onCameraLaunchGestureDetected(
+                            StatusBarManager.CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE));
+                    break;
+                }
             }
             Trace.endSection();
         }
