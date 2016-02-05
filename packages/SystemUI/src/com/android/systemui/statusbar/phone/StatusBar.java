@@ -1428,6 +1428,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(DevicePolicyManager.ACTION_SHOW_DEVICE_MONITORING_DIALOG);
+        filter.addAction(Intent.ACTION_SCREEN_CAMERA_GESTURE);
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, null, UserHandle.ALL);
     }
 
@@ -3063,37 +3064,48 @@ public class StatusBar extends SystemUI implements DemoMode,
         public void onReceive(Context context, Intent intent) {
             Trace.beginSection("StatusBar#onReceive");
             if (DEBUG) Log.v(TAG, "onReceive: " + intent);
-            String action = intent.getAction();
-            if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
-                KeyboardShortcuts.dismiss();
-                if (mRemoteInputManager.getController() != null) {
-                    mRemoteInputManager.getController().closeRemoteInputs();
-                }
-                if (mBubblesOptional.isPresent() && mBubblesOptional.get().isStackExpanded()) {
-                    mBubblesOptional.get().collapseStack();
-                }
-                if (mLockscreenUserManager.isCurrentProfile(getSendingUserId())) {
-                    int flags = CommandQueue.FLAG_EXCLUDE_NONE;
-                    String reason = intent.getStringExtra("reason");
-                    if (reason != null && reason.equals(SYSTEM_DIALOG_REASON_RECENT_APPS)) {
-                        flags |= CommandQueue.FLAG_EXCLUDE_RECENTS_PANEL;
+            final String action = intent.getAction();
+            if (action == null) {
+                return;
+            }
+            switch (action) {
+                case Intent.ACTION_CLOSE_SYSTEM_DIALOGS:
+                    KeyboardShortcuts.dismiss();
+                    if (mRemoteInputManager.getController() != null) {
+                        mRemoteInputManager.getController().closeRemoteInputs();
                     }
-                    mShadeController.animateCollapsePanels(flags);
-                }
-            }
-            else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                if (mNotificationShadeWindowController != null) {
-                    mNotificationShadeWindowController.setNotTouchable(false);
-                }
-                if (mBubblesOptional.isPresent() && mBubblesOptional.get().isStackExpanded()) {
-                    // Post to main thread handler, since updating the UI.
-                    mMainThreadHandler.post(() -> mBubblesOptional.get().collapseStack());
-                }
-                finishBarAnimations();
-                resetUserExpandedStates();
-            }
-            else if (DevicePolicyManager.ACTION_SHOW_DEVICE_MONITORING_DIALOG.equals(action)) {
-                mQSPanelController.showDeviceMonitoringDialog();
+                    if (mBubblesOptional.isPresent() && mBubblesOptional.get().isStackExpanded()) {
+                        mBubblesOptional.get().collapseStack();
+                    }
+                    if (mLockscreenUserManager.isCurrentProfile(getSendingUserId())) {
+                        int flags = CommandQueue.FLAG_EXCLUDE_NONE;
+                        String reason = intent.getStringExtra("reason");
+                        if (reason != null && reason.equals(SYSTEM_DIALOG_REASON_RECENT_APPS)) {
+                            flags |= CommandQueue.FLAG_EXCLUDE_RECENTS_PANEL;
+                        }
+                        mShadeController.animateCollapsePanels(flags);
+                    }
+                    break;
+                case Intent.ACTION_SCREEN_OFF:
+                    if (mNotificationShadeWindowController != null) {
+                        mNotificationShadeWindowController.setNotTouchable(false);
+                    }
+                    if (mBubblesOptional.isPresent() && mBubblesOptional.get().isStackExpanded()) {
+                        // Post to main thread handler, since updating the UI.
+                        mMainThreadHandler.post(() -> mBubblesOptional.get().collapseStack());
+                    }
+                    finishBarAnimations();
+                    resetUserExpandedStates();
+                    break;
+                case Intent.ACTION_SCREEN_CAMERA_GESTURE:
+                    if (!mUserSetup) {
+                        if (DEBUG) Log.d(TAG, "user setup not done, ignoring camera launch gesture");
+                        break;
+                    }
+                    onCameraLaunchGestureDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE);
+                    break;
+                case DevicePolicyManager.ACTION_SHOW_DEVICE_MONITORING_DIALOG:
+                    mQSPanelController.showDeviceMonitoringDialog();
             }
             Trace.endSection();
         }
@@ -4296,8 +4308,9 @@ public class StatusBar extends SystemUI implements DemoMode,
             mPowerManager.wakeUp(SystemClock.uptimeMillis(), PowerManager.WAKE_REASON_CAMERA_LAUNCH,
                     "com.android.systemui:CAMERA_GESTURE");
         }
-        vibrateForCameraGesture();
-
+        if (source != StatusBarManager.CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE) {
+            vibrateForCameraGesture();
+        }
         if (source == StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP) {
             Log.v(TAG, "Camera launch");
             mKeyguardUpdateMonitor.onCameraLaunched();
