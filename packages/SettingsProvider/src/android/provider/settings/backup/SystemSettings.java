@@ -88,5 +88,6 @@ public class SystemSettings {
         Settings.System.DOZE_ON_CHARGE,
         Settings.System.SCREEN_OFF_FOD,
         Settings.System.FULLSCREEN_GESTURES,
+        Settings.System.VOLUME_BUTTON_MUSIC_CONTROL,
     };
 }
