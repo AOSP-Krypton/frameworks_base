@@ -5822,6 +5822,13 @@ public final class Settings {
         public static final String GAMESPACE_HIDE_PRIVACY_INDICATORS = "gamespace_hide_privacy_indicators";
 
         /**
+         * Whether volume button music control is enabled.
+         * Default 0.
+         * @hide
+         */
+        public static final String VOLUME_BUTTON_MUSIC_CONTROL = "volume_button_music_control";
+
+        /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
          * it to PRIVATE_SETTINGS below. Also add a validator that can validate

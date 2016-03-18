@@ -109,6 +109,7 @@ public class SystemSettings {
         Settings.System.GAMESPACE_DYNAMIC_MODE,
         Settings.System.GAMESPACE_DISABLE_HEADSUP,
         Settings.System.GAMESPACE_DISABLE_FULLSCREEN_INTENT,
-        Settings.System.GAMESPACE_DISABLE_CALL_RINGING
+        Settings.System.GAMESPACE_DISABLE_CALL_RINGING,
+        Settings.System.VOLUME_BUTTON_MUSIC_CONTROL,
     };
 }
