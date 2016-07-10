@@ -52,4 +52,7 @@
     <java-symbol type="array" name="config_displayModeMappings" />
     <java-symbol type="bool" name="config_defaultAntiFlicker" />
 
+    <!-- Sysfs node that exposes fast charge status on supported devices -->
+    <java-symbol type="string" name="config_fastChargeSysfsNode" />
+
 </resources>

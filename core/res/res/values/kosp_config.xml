@@ -50,4 +50,7 @@
     <!-- Should we filter any display modes which are unmapped? -->
     <bool name="config_filterDisplayModes">false</bool>
 
+    <!-- Sysfs node that exposes fast charge status on supported devices -->
+    <string name="config_fastChargeSysfsNode" />
+
 </resources>
