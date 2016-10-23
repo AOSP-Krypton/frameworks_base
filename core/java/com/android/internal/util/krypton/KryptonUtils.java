@@ -17,7 +17,9 @@
 package com.android.internal.util.krypton;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -74,6 +76,22 @@ public class KryptonUtils {
                         InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
             }
         }, 20);
+    }
+
+    public static boolean isPackageInstalled(Context context, String pkg, boolean ignoreState) {
+        if (pkg != null) {
+            try {
+                PackageInfo pi = context.getPackageManager().getPackageInfo(pkg, 0);
+                return ignoreState || pi.applicationInfo.enabled;
+            } catch (NameNotFoundException e) {
+                // Do nothing
+            }
+        }
+        return false;
+    }
+
+    public static boolean isPackageInstalled(Context context, String pkg) {
+        return isPackageInstalled(context, pkg, true);
     }
 
     private static final class FireActions {
