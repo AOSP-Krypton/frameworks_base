@@ -26,4 +26,9 @@
 
     <!-- Offset for alertslider dialog from status bar -->
     <integer name="config_alertSliderOffset">0</integer>
+
+    <!-- StatusBar burn-in protection -->
+    <bool name="config_statusBarBurnInProtection">true</bool>
+    <integer name="config_shift_interval">60</integer>
+
 </resources>
