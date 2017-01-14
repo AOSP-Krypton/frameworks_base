@@ -14,14 +14,7 @@
      limitations under the License.
 -->
 <resources>
-    <!-- Color of the FOD view -->
-    <color name="config_fodColor">#00ff00</color>
-    <color name="config_fodColorBackground">#20000000</color>
-
-    <!-- Whether usage of the proximity sensor during doze is supported -->
-    <bool name="doze_proximity_sensor_supported">true</bool>
-
     <!-- StatusBar burn-in protection -->
-    <bool name="config_statusBarBurnInProtection">true</bool>
-    <integer name="config_shift_interval">60</integer>
+    <dimen name="horizontal_max_swift">3.0dp</dimen>
+    <dimen name="vertical_max_swift">1.0dp</dimen>
 </resources>
