@@ -5615,6 +5615,12 @@ public final class Settings {
         };
 
         /**
+         * Whether to display 4G icon instead LTE
+         * @hide
+         */
+        public static final String SHOW_FOURG_ICON = "show_fourg_icon";
+
+        /**
          * These are all public system settings
          *
          * @hide
