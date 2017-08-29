@@ -3901,11 +3901,13 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
 
         void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
+            final ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.GAMINGMODE_ACTIVE), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.GAMINGMODE_DISABLE_HEADSUP), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.DOUBLE_TAP_SLEEP_GESTURE), false, this);
         }
 
         @Override
@@ -3915,6 +3917,9 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         void update() {
             updateGamingMode();
+            if (mNotificationShadeWindowViewController != null) {
+                mNotificationShadeWindowViewController.updateSettings();
+            }
         }
 
         private void updateGamingMode() {
