@@ -20,6 +20,10 @@ package com.android.internal.util.kosp;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.RemoteException;
+import android.os.ServiceManager;
+
+import com.android.internal.statusbar.IStatusBarService;
 
 /**
  * Some custom utilities
@@ -40,5 +44,21 @@ public class KOSPUtils {
 
     public static boolean isPackageInstalled(Context context, String pkg) {
         return isPackageInstalled(context, pkg, true);
+    }
+
+    public static boolean deviceHasFlashlight(Context ctx) {
+        return ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+    }
+
+    public static void toggleCameraFlash() {
+        final IStatusBarService service = IStatusBarService.Stub.asInterface(
+                        ServiceManager.getService("statusbar"));
+        if (service != null) {
+            try {
+                service.toggleCameraFlash();
+            } catch (RemoteException e) {
+                // do nothing.
+            }
+        }
     }
 }
