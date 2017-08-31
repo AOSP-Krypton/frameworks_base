@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
 import com.android.systemui.statusbar.phone.dagger.StatusBarComponent;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
+import com.android.systemui.statusbar.policy.FlashlightController;
 import com.android.systemui.statusbar.policy.HeadsUpManager;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler;
@@ -102,6 +103,7 @@ public class StatusBarCommandQueueCallbacks implements CommandQueue.Callbacks {
     private final LightBarController mLightBarController;
     private final DisableFlagsLogger mDisableFlagsLogger;
     private final int mDisplayId;
+    private final FlashlightController mFlashlightController;
     private final boolean mVibrateOnOpening;
     private final VibrationEffect mCameraLaunchGestureVibrationEffect;
 
@@ -139,7 +141,8 @@ public class StatusBarCommandQueueCallbacks implements CommandQueue.Callbacks {
             Optional<Vibrator> vibratorOptional,
             LightBarController lightBarController,
             DisableFlagsLogger disableFlagsLogger,
-            @DisplayId int displayId) {
+            @DisplayId int displayId,
+            FlashlightController flashlightController) {
 
         mStatusBar = statusBar;
         mContext = context;
@@ -167,6 +170,7 @@ public class StatusBarCommandQueueCallbacks implements CommandQueue.Callbacks {
         mLightBarController = lightBarController;
         mDisableFlagsLogger = disableFlagsLogger;
         mDisplayId = displayId;
+        mFlashlightController = flashlightController;
 
         mVibrateOnOpening = resources.getBoolean(R.bool.config_vibrateOnIconAnimation);
         mCameraLaunchGestureVibrationEffect = getCameraGestureVibrationEffect(
@@ -595,6 +599,16 @@ public class StatusBarCommandQueueCallbacks implements CommandQueue.Callbacks {
     @Override
     public void toggleSplitScreen() {
         mStatusBar.toggleSplitScreenMode(-1 /* metricsDockAction */, -1 /* metricsUndockAction */);
+    }
+
+    @Override
+    public void toggleCameraFlash() {
+        if (StatusBar.DEBUG) {
+            Log.d(StatusBar.TAG, "Toggling camera flashlight");
+        }
+        if (mFlashlightController.isAvailable()) {
+            mFlashlightController.setFlashlight(!mFlashlightController.isEnabled());
+        }
     }
 
     private boolean isGoingToSleep() {
