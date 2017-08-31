@@ -147,6 +147,7 @@ public class CommandQueue extends IStatusBar.Stub implements CallbackController<
     private static final int MSG_EMERGENCY_ACTION_LAUNCH_GESTURE      = 58 << MSG_SHIFT;
     private static final int MSG_SET_NAVIGATION_BAR_LUMA_SAMPLING_ENABLED = 59 << MSG_SHIFT;
     private static final int MSG_SET_UDFPS_HBM_LISTENER = 60 << MSG_SHIFT;
+    private static final int MSG_TOGGLE_CAMERA_FLASH               = 61 << MSG_SHIFT;
 
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
@@ -158,10 +159,10 @@ public class CommandQueue extends IStatusBar.Stub implements CallbackController<
     private static final String SHOW_IME_SWITCHER_KEY = "showImeSwitcherKey";
 
     private final Object mLock = new Object();
-    private ArrayList<Callbacks> mCallbacks = new ArrayList<>();
-    private Handler mHandler = new H(Looper.getMainLooper());
+    private final ArrayList<Callbacks> mCallbacks = new ArrayList<>();
+    private final Handler mHandler = new H(Looper.getMainLooper());
     /** A map of display id - disable flag pair */
-    private SparseArray<Pair<Integer, Integer>> mDisplayDisabled = new SparseArray<>();
+    private final SparseArray<Pair<Integer, Integer>> mDisplayDisabled = new SparseArray<>();
     /**
      * The last ID of the display where IME window for which we received setImeWindowStatus
      * event.
@@ -400,6 +401,8 @@ public class CommandQueue extends IStatusBar.Stub implements CallbackController<
          * @see IStatusBar#setNavigationBarLumaSamplingEnabled(int, boolean)
          */
         default void setNavigationBarLumaSamplingEnabled(int displayId, boolean enable) {}
+
+        default void toggleCameraFlash() { }
     }
 
     public CommandQueue(Context context) {
@@ -1103,6 +1106,16 @@ public class CommandQueue extends IStatusBar.Stub implements CallbackController<
         GcUtils.runGcAndFinalizersSync();
     }
 
+    @Override
+    public void toggleCameraFlash() {
+        synchronized (mLock) {
+            if (mHandler.hasMessages(MSG_TOGGLE_CAMERA_FLASH)) {
+                mHandler.removeMessages(MSG_TOGGLE_CAMERA_FLASH);
+            }
+            mHandler.sendEmptyMessage(MSG_TOGGLE_CAMERA_FLASH);
+        }
+    }
+
     private final class H extends Handler {
         private H(Looper l) {
             super(l);
@@ -1474,6 +1487,9 @@ public class CommandQueue extends IStatusBar.Stub implements CallbackController<
                         mCallbacks.get(i).setNavigationBarLumaSamplingEnabled(msg.arg1,
                                 msg.arg2 != 0);
                     }
+                    break;
+                case MSG_TOGGLE_CAMERA_FLASH:
+                    mCallbacks.forEach(cb -> cb.toggleCameraFlash());
                     break;
             }
         }
