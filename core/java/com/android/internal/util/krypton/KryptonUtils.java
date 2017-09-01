@@ -19,8 +19,10 @@ package com.android.internal.util.krypton;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.SystemClock;
 
 import com.android.internal.statusbar.IStatusBarService;
 
@@ -58,6 +60,13 @@ public class KryptonUtils {
             } catch (RemoteException e) {
                 // do nothing.
             }
+        }
+    }
+
+    public static void switchScreenOff(Context ctx) {
+        PowerManager pm = ctx.getSystemService(PowerManager.class);
+        if (pm != null) {
+            pm.goToSleep(SystemClock.uptimeMillis());
         }
     }
 }
