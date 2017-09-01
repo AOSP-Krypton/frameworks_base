@@ -94,6 +94,7 @@ import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler;
 import com.android.systemui.statusbar.policy.BurnInProtectionController;
 import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.policy.UserSwitcherController;
+import com.android.systemui.util.settings.SystemSettings;
 import com.android.systemui.volume.VolumeComponent;
 import com.android.systemui.wmshell.BubblesManager;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -208,7 +209,8 @@ public class StatusBarGoogle extends StatusBar {
             UnlockedScreenOffAnimationController unlockedScreenOffAnimationController,
             Optional<StartingSurface> startingSurfaceOptional,
             FlashlightController flashlightController,
-            BurnInProtectionController burnInProtectionController) {
+            BurnInProtectionController burnInProtectionController,
+            SystemSettings systemSettings) {
         super(
             context,
             notificationsController,
@@ -300,7 +302,8 @@ public class StatusBarGoogle extends StatusBar {
             unlockedScreenOffAnimationController,
             startingSurfaceOptional,
             flashlightController,
-            burnInProtectionController);
+            burnInProtectionController,
+            systemSettings);
     }
 
     @Override
