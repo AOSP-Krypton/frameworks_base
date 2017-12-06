@@ -21,4 +21,7 @@
      <!-- Names of the key handler classes -->
      <string-array name="config_deviceKeyHandlerClasses" translatable="false" />
 
+     <!-- Vendor platform signatures -->
+     <string-array name="config_vendorPlatformSignatures" translatable="false" />
+
 </resources>
