@@ -1619,6 +1619,9 @@ class StorageManagerService extends IStorageManager.Stub
             if (vol.disk.isAdoptable()) {
                 vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE_FOR_WRITE;
             }
+            if (vol.disk.isSd()) {
+                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE_FOR_READ;
+            }
 
             vol.mountUserId = mCurrentUserId;
             mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();
