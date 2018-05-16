@@ -279,6 +279,9 @@
 
     <!-- DataSwitch tile -->
     <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
+
+    <!-- ReadingMode tile -->
+    <uses-permission android:name="lineageos.permission.HARDWARE_ABSTRACTION_ACCESS" />
     
     <protected-broadcast android:name="com.google.android.systemui.smartspace.ENABLE_UPDATE"/>
     <protected-broadcast android:name="com.google.android.systemui.smartspace.EXPIRE_EVENT"/>
