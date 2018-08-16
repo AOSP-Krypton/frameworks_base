@@ -5267,6 +5267,14 @@ public final class Settings {
          * the setting value. See an example above.
          */
 
+
+        /**
+         * Whether to show the battery info on the lockscreen while charging
+         * @hide
+         */
+        @SuppressLint("NoSettingsProvider")
+        public static final String LOCKSCREEN_BATTERY_INFO = "lockscreen_battery_info";
+
         /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
@@ -5402,6 +5410,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_BOTTOM);
             PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_MIDDLE);
             PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_TOP);
+            PRIVATE_SETTINGS.add(LOCKSCREEN_BATTERY_INFO);
         }
 
         /**
