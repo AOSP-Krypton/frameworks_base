@@ -93,6 +93,7 @@ public class SystemSettings {
         Settings.System.QS_SHOW_BRIGHTNESS_ABOVE_FOOTER,
         Settings.System.LOCKSCREEN_BATTERY_INFO,
         Settings.System.NETWORK_TRAFFIC_STATE,
+        Settings.System.NETWORK_TRAFFIC_TYPE,
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
     };
 }
