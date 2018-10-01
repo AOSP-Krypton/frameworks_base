@@ -3,6 +3,9 @@
     <string-array name="config_deviceKeyHandlerLibs" translatable="false"></string-array>
     <string-array name="config_deviceKeyHandlerClasses" translatable="false"></string-array>
 
-    <!-- Vendor platform signatures --> 
+    <!-- Vendor platform signatures -->
     <string-array name="config_vendorPlatformSignatures" translatable="false"></string-array>
+
+    <!-- Whether to cleanup fingerprints upon connection to the daemon and when user switches -->
+    <bool name="config_cleanupUnusedFingerprints">true</bool>
 </resources>
