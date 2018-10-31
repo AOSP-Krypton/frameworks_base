@@ -143,7 +143,7 @@ public class BluetoothTile extends SecureQSTile<BooleanState> {
 
         if (enabled) {
             if (connected) {
-                state.icon = ResourceIcon.get(R.drawable.qs_bluetooth_icon_on);
+                state.icon = ResourceIcon.get(R.drawable.ic_qs_bluetooth_connected);
                 if (!TextUtils.isEmpty(mController.getConnectedDeviceName())) {
                     state.label = mController.getConnectedDeviceName();
                 }
