@@ -56,4 +56,9 @@
     <string name="alert_slider_mode_vibrate" translatable="false">mode_vibrate</string>
     <string name="alert_slider_mode_silent" translatable="false">mode_silent</string>
     <string name="alert_slider_mode_dnd" translatable="false">mode_dnd</string>
+
+    <!-- [CHAR LIMIT=NONE] Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_accessFontManager">access font manager</string>
+    <!-- [CHAR LIMIT=NONE] Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_accessFontManager">Allows an application to access the font manager.</string>
 </resources>
