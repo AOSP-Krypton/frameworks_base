@@ -63,6 +63,8 @@ public interface VolumeDialogController {
 
     void getCaptionsComponentState(boolean fromTooltip);
 
+    boolean isVolumePanelOnLeft();
+
     @ProvidesInterface(version = StreamState.VERSION)
     public static final class StreamState {
         public static final int VERSION = 1;
@@ -195,5 +197,6 @@ public interface VolumeDialogController {
         void onShowSafetyWarning(int flags);
         void onAccessibilityModeChanged(Boolean showA11yStream);
         void onCaptionComponentStateChanged(Boolean isComponentEnabled, Boolean fromTooltip);
+        void onVolumePanelPositionChanged(boolean onLeft);
     }
 }

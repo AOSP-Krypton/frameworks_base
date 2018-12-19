@@ -5820,6 +5820,13 @@ public final class Settings {
          */
         @Readable
         public static final String GAMESPACE_HIDE_PRIVACY_INDICATORS = "gamespace_hide_privacy_indicators";
+        
+        /**
+         * Whether to show volume panel on the left side
+         * Defaults to com.android.systemui.R.bool.config_audioPanelOnLeftSide
+         * @hide
+         */
+        public static final String VOLUME_PANEL_ON_LEFT = "volume_panel_on_left";
 
         /**
          * Whether volume button music control is enabled.
