@@ -30,4 +30,7 @@
 
     <!-- Offset for alertslider dialog from status bar -->
     <integer name="config_alertSliderOffset">0</integer>
+
+    <!-- Allow devices override audio panel location to the left side -->
+    <bool name="config_audioPanelOnLeftSide">false</bool>
 </resources>
