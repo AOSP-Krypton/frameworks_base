@@ -166,6 +166,8 @@ public class VolumeDialogImpl implements VolumeDialog,
     private ViewStub mODICaptionsTooltipViewStub;
     private View mODICaptionsTooltipView = null;
 
+    private boolean mLeftVolumeRocker;
+
     public VolumeDialogImpl(Context context) {
         mContext =
                 new ContextThemeWrapper(context, R.style.qs_theme);
@@ -177,6 +179,7 @@ public class VolumeDialogImpl implements VolumeDialog,
         mShowActiveStreamOnly = showActiveStreamOnly();
         mHasSeenODICaptionsTooltip =
                 Prefs.getBoolean(context, Prefs.Key.HAS_SEEN_ODI_CAPTIONS_TOOLTIP, false);
+        mLeftVolumeRocker = mContext.getResources().getBoolean(R.bool.config_audioPanelOnLeftSide);
     }
 
     @Override
@@ -1482,8 +1485,7 @@ public class VolumeDialogImpl implements VolumeDialog,
     }
 
     private boolean isAudioPanelOnLeftSide() {
-	return mContext.getResources()
-                .getBoolean(R.bool.config_audioPanelOnLeftSide);
+        return mLeftVolumeRocker;
     }
 
     private static class VolumeRow {
