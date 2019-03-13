@@ -171,8 +171,10 @@ public class VolumeDialogImpl implements VolumeDialog,
     private boolean mShowA11yStream;
 
     private int mActiveStream;
+    private int mAllyStream;
     private int mPrevActiveStream;
     private boolean mAutomute = VolumePrefs.DEFAULT_ENABLE_AUTOMUTE;
+    private boolean mMusicHidden;
     private boolean mSilentMode = VolumePrefs.DEFAULT_ENABLE_SILENT_MODE;
     private State mState;
     private SafetyWarningDialog mSafetyWarning;
@@ -371,6 +373,9 @@ public class VolumeDialogImpl implements VolumeDialog,
         initRingerH();
         initSettingsH();
         initODICaptionsH();
+
+        mAllyStream = -1;
+        mMusicHidden = false;
     }
 
     private final OnComputeInternalInsetsListener mInsetsListener = internalInsetsInfo -> {
@@ -625,6 +630,10 @@ public class VolumeDialogImpl implements VolumeDialog,
                 Dependency.get(ActivityStarter.class).startActivity(intent,
                         true /* dismissShade */);
             });
+        }
+
+        if (mAllyStream == -1) {
+            mAllyStream = mActiveStream;
         }
 
         if (mExpandRowsView != null) {
@@ -968,6 +977,8 @@ public class VolumeDialogImpl implements VolumeDialog,
                             .getDimensionPixelSize(R.dimen.volume_dialog_panel_width);
                     updateExpandedRows(mExpanded);
                     mExpandRows.setExpanded(mExpanded);
+                    mAllyStream = -1;
+                    mMusicHidden = false;
                     tryToRemoveCaptionsTooltip();
                     mController.notifyVisible(false);
                 }, 50));
@@ -989,6 +1000,12 @@ public class VolumeDialogImpl implements VolumeDialog,
 
     private boolean shouldBeVisibleH(VolumeRow row, VolumeRow activeRow) {
         boolean isActive = row.stream == activeRow.stream;
+
+        if (row.stream == AudioSystem.STREAM_MUSIC &&
+                activeRow.stream != AudioSystem.STREAM_MUSIC && !mExpanded) {
+            mMusicHidden = true;
+            return false;
+        }
 
         if (isActive) {
             return true;
