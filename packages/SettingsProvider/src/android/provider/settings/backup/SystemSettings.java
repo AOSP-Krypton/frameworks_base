@@ -96,6 +96,7 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_TYPE,
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
         Settings.System.NETWORK_TRAFFIC_ARROW,
+        Settings.System.NETWORK_TRAFFIC_VIEW_LOCATION,
         Settings.System.SMART_SPACE,
     };
 }
