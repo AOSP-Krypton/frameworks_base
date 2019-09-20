@@ -3908,6 +3908,8 @@ public class StatusBar extends SystemUI implements DemoMode,
                     Settings.System.GAMINGMODE_DISABLE_HEADSUP), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.DOUBLE_TAP_SLEEP_GESTURE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.DOUBLE_TAP_SLEEP_LOCKSCREEN), false, this);
         }
 
         @Override
