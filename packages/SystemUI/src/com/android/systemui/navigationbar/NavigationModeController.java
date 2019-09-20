@@ -17,6 +17,8 @@
 package com.android.systemui.navigationbar;
 
 import static android.content.Intent.ACTION_OVERLAY_CHANGED;
+import static android.provider.Settings.Secure.GESTURE_NAVBAR_LENGTH_MODE;
+import static android.provider.Settings.Secure.NAVIGATION_BAR_INVERSE;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,7 +35,6 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.provider.Settings.Secure;
 import android.util.Log;
 
 import com.android.systemui.Dumpable;
@@ -65,6 +66,7 @@ public class NavigationModeController implements Dumpable {
     public interface ModeChangedListener {
         void onNavigationModeChanged(int mode);
         default void onNavigationHandleWidthModeChanged(int mode) {}
+        default void onNavBarLayoutInverseChanged(boolean inverse) {}
     }
 
     private final Context mContext;
@@ -103,6 +105,7 @@ public class NavigationModeController implements Dumpable {
     };
 
     private int mNavBarLengthMode = 0;
+    private boolean mShouldInvertNavBarLayout = false;
 
     @Inject
     public NavigationModeController(Context context,
@@ -137,27 +140,53 @@ public class NavigationModeController implements Dumpable {
             }
         });
 
-        mSecureSettings = secureSettings;
-        mSecureSettings.registerContentObserverForUser(
-            Settings.Secure.GESTURE_NAVBAR_LENGTH_MODE,
-            new ContentObserver(backgroundHandler) {
-                @Override
-                public void onChange(boolean selfChange, Uri uri) {
-                    final int mode = getLengthMode();
-                    mainHandler.post(() -> {
-                        mNavBarLengthMode = mode;
-                        mListeners.forEach(listener ->
-                            listener.onNavigationHandleWidthModeChanged(mode)
-                        );
-                    });
-                }
-            }, UserHandle.USER_ALL);
         backgroundHandler.post(() -> {
             final int mode = getLengthMode();
+            final boolean invert = shouldInvert();
             mainHandler.post(() -> {
                 mNavBarLengthMode = mode;
+                mShouldInvertNavBarLayout = invert;
+                mListeners.forEach(listener -> {
+                    listener.onNavigationHandleWidthModeChanged(mode);
+                    listener.onNavBarLayoutInverseChanged(invert);
+                });
             });
         });
+
+        final ContentObserver settingsObserver = new ContentObserver(backgroundHandler) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+                switch (uri.getLastPathSegment()) {
+                    case GESTURE_NAVBAR_LENGTH_MODE: {
+                        final int mode = getLengthMode();
+                        mainHandler.post(() -> {
+                            mNavBarLengthMode = mode;
+                            mListeners.forEach(listener ->
+                                listener.onNavigationHandleWidthModeChanged(mode));
+                        });
+                        break;
+                    }
+                    case NAVIGATION_BAR_INVERSE: {
+                        final boolean invert = shouldInvert();
+                        mainHandler.post(() -> {
+                            mShouldInvertNavBarLayout = invert;
+                            mListeners.forEach(listener ->
+                                listener.onNavBarLayoutInverseChanged(invert));
+                        });
+                        break;
+                    }
+                    default:
+                        return;
+                }
+            }
+        };
+
+        mSecureSettings = secureSettings;
+        mSecureSettings.registerContentObserverForUser(GESTURE_NAVBAR_LENGTH_MODE,
+            settingsObserver, UserHandle.USER_ALL);
+        mSecureSettings.registerContentObserverForUser(NAVIGATION_BAR_INVERSE,
+            settingsObserver, UserHandle.USER_ALL);
+
         updateCurrentInteractionMode(false /* notify */);
     }
 
@@ -165,7 +194,7 @@ public class NavigationModeController implements Dumpable {
         mCurrentUserContext = getCurrentUserContext();
         int mode = getCurrentInteractionMode(mCurrentUserContext);
         mUiBgExecutor.execute(() ->
-            mSecureSettings.putStringForUser(Secure.NAVIGATION_MODE,
+            mSecureSettings.putStringForUser(Settings.Secure.NAVIGATION_MODE,
                 String.valueOf(mode), UserHandle.USER_CURRENT));
         if (DEBUG) {
             Log.d(TAG, "updateCurrentInteractionMode: mode=" + mode);
@@ -228,8 +257,18 @@ public class NavigationModeController implements Dumpable {
             0, UserHandle.USER_CURRENT);
     }
 
+    private boolean shouldInvert() {
+        return mSecureSettings.getIntForUser(
+            Settings.Secure.NAVIGATION_BAR_INVERSE,
+            0, UserHandle.USER_CURRENT) == 1;
+    }
+
     public int getNavigationHandleWidthMode() {
         return mNavBarLengthMode;
+    }
+
+    public boolean shouldInvertNavBarLayout() {
+        return mShouldInvertNavBarLayout;
     }
 
     @Override
