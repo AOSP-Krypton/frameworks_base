@@ -110,5 +110,6 @@ public class SystemSettings {
         Settings.System.QS_FOOTER_TEXT_STRING,
         Settings.System.ENABLE_UDFPS_START_HAPTIC_FEEDBACK,
         Settings.System.AUTO_BRIGHTNESS_ONE_SHOT,
+        Settings.System.NAVIGATION_BAR_INVERSE,
     };
 }
