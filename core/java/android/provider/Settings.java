@@ -5032,6 +5032,12 @@ public final class Settings {
         public static final String NOTIFICATION_PULSE_DURATION = "ambient_notification_light_duration";
 
         /**
+         * Whether to inverse keys in navigation bar
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_INVERSE = "navigation_bar_inverse";
+
+        /**
          * Whether to show media album art on keyguard
          * @hide
          */

@@ -106,6 +106,7 @@ public class SystemSettings {
         Settings.System.NOTIFICATION_PULSE_REPEATS,
         Settings.System.AOD_NOTIFICATION_PULSE_TIMEOUT,
         Settings.System.NOTIFICATION_PULSE_DURATION,
+        Settings.System.NAVIGATION_BAR_INVERSE,
         Settings.System.KEYGAURD_MEDIA_ART,
         Settings.System.STATUS_BAR_BATTERY_STYLE,
         Settings.System.SHOW_BATTERY_PERCENT_INSIDE,
