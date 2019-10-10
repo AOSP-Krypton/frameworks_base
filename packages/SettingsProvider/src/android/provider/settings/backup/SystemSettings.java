@@ -95,5 +95,13 @@ public class SystemSettings {
         Settings.System.VOLUME_BUTTON_MUSIC_CONTROL,
         Settings.System.STATUS_BAR_BATTERY_STYLE,
         Settings.System.SHOW_BATTERY_PERCENT_INSIDE,
+        Settings.System.NOTIFICATION_PULSE,
+        Settings.System.AOD_NOTIFICATION_PULSE,
+        Settings.System.AOD_NOTIFICATION_PULSE_CLEAR,
+        Settings.System.NOTIFICATION_PULSE_COLOR_MODE,
+        Settings.System.NOTIFICATION_PULSE_COLOR,
+        Settings.System.NOTIFICATION_PULSE_REPEATS,
+        Settings.System.AOD_NOTIFICATION_PULSE_TIMEOUT,
+        Settings.System.NOTIFICATION_PULSE_DURATION,
     };
 }

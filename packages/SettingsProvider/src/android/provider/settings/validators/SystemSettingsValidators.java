@@ -16,6 +16,7 @@
 
 package android.provider.settings.validators;
 
+import static android.provider.settings.validators.SettingsValidators.ANY_INTEGER_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.ANY_STRING_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.BOOLEAN_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.COMPONENT_NAME_VALIDATOR;
@@ -264,5 +265,12 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.VOLUME_BUTTON_MUSIC_CONTROL, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.STATUS_BAR_BATTERY_STYLE, new InclusiveIntegerRangeValidator(0, 2));
         VALIDATORS.put(System.SHOW_BATTERY_PERCENT_INSIDE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.NOTIFICATION_PULSE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.AOD_NOTIFICATION_PULSE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.NOTIFICATION_PULSE_COLOR_MODE, new InclusiveIntegerRangeValidator(0, 3));
+        VALIDATORS.put(System.NOTIFICATION_PULSE_COLOR, ANY_INTEGER_VALIDATOR);
+        VALIDATORS.put(System.NOTIFICATION_PULSE_REPEATS, ANY_INTEGER_VALIDATOR);
+        VALIDATORS.put(System.AOD_NOTIFICATION_PULSE_TIMEOUT, ANY_INTEGER_VALIDATOR);
+        VALIDATORS.put(System.NOTIFICATION_PULSE_DURATION, ANY_INTEGER_VALIDATOR);
     }
 }

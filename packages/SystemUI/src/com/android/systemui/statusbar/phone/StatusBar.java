@@ -1449,6 +1449,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(DevicePolicyManager.ACTION_SHOW_DEVICE_MONITORING_DIALOG);
         filter.addAction(Intent.ACTION_SCREEN_CAMERA_GESTURE);
+        filter.addAction(NotificationPanelViewController.CANCEL_NOTIFICATION_PULSE_ACTION);
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, null, UserHandle.ALL);
     }
 
@@ -3126,6 +3127,10 @@ public class StatusBar extends SystemUI implements DemoMode,
                     break;
                 case DevicePolicyManager.ACTION_SHOW_DEVICE_MONITORING_DIALOG:
                     mQSPanelController.showDeviceMonitoringDialog();
+                    break;
+                case NotificationPanelViewController.CANCEL_NOTIFICATION_PULSE_ACTION:
+                    mNotificationPanelViewController.stopNotificationPulse();
+                    break;
             }
             Trace.endSection();
         }

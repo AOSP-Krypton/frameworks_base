@@ -182,7 +182,7 @@ public class AmbientDisplayConfiguration {
      */
     @TestApi
     public boolean alwaysOnEnabled(int user) {
-        return alwaysOnEnabledSetting(user) || alwaysOnChargingEnabled(user);
+        return alwaysOnEnabledSetting(user) || alwaysOnChargingEnabled(user) || alwaysOnAmbientLightEnabled(user);
     }
 
     public boolean alwaysOnEnabledSetting(int user) {
@@ -192,7 +192,7 @@ public class AmbientDisplayConfiguration {
         return alwaysOnEnabled && alwaysOnAvailable() && !accessibilityInversionEnabled(user);
     }
 
-    private boolean alwaysOnChargingEnabled(int user) {
+    public boolean alwaysOnChargingEnabled(int user) {
         final boolean dozeOnChargeEnabled = Settings.System.getIntForUser(
                 mContext.getContentResolver(), Settings.System.DOZE_ON_CHARGE, 0, user) == 1;
         if (dozeOnChargeEnabled) {
@@ -200,6 +200,19 @@ public class AmbientDisplayConfiguration {
             if (intent != null) {
                 return intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
             }
+        }
+        return false;
+    }
+
+    public boolean alwaysOnAmbientLightEnabled(int user) {
+        final boolean ambientLightsEnabled = Settings.System.getIntForUser(
+                mContext.getContentResolver(),
+                Settings.System.AOD_NOTIFICATION_PULSE, 0, user) == 1;
+        if (ambientLightsEnabled) {
+            final boolean ambientLightsActivated = Settings.System.getIntForUser(
+                mContext.getContentResolver(),
+                Settings.System.AOD_NOTIFICATION_PULSE_ACTIVATED, 0, user) == 1;
+            return ambientLightsActivated && !accessibilityInversionEnabled(user) && alwaysOnAvailable();
         }
         return false;
     }
