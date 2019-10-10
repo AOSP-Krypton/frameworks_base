@@ -98,5 +98,8 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_ARROW,
         Settings.System.NETWORK_TRAFFIC_VIEW_LOCATION,
         Settings.System.SMART_SPACE,
+        Settings.System.PULSE_AMBIENT_LIGHT,
+        Settings.System.AMBIENT_NOTIFICATION_LIGHT_ENABLED,
+        Settings.System.AMBIENT_NOTIFICATION_LIGHT,
     };
 }
