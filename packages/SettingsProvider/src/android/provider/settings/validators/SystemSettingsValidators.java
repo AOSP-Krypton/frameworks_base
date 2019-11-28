@@ -296,5 +296,6 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.EDGE_LIGHT_COLOR_MODE, new InclusiveIntegerRangeValidator(0, 3));
         VALIDATORS.put(System.EDGE_LIGHT_CUSTOM_COLOR, NON_EMPTY_HEX_COLOR_VALIDATOR);
         VALIDATORS.put(System.QS_FOOTER_TEXT_SHOW, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.QS_FOOTER_TEXT_STRING, ANY_STRING_VALIDATOR);
     }
 }
