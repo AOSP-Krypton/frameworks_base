@@ -115,5 +115,6 @@ public class SystemSettings {
         Settings.System.EDGE_LIGHT_CUSTOM_COLOR,
         Settings.System.QS_SHOW_BATTERY_ESTIMATE,
         Settings.System.QS_FOOTER_TEXT_SHOW,
+        Settings.System.QS_FOOTER_TEXT_STRING,
     };
 }
