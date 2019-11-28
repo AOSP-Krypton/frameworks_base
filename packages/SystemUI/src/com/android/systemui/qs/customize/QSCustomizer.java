@@ -112,13 +112,8 @@ public class QSCustomizer extends LinearLayout implements OnMenuItemClickListene
             }
         });
         mToolbar.setOnMenuItemClickListener(this);
-        MenuInflater menuInflater = new MenuInflater(mContext);
-        menuInflater.inflate(R.menu.qs_customize_menu, mToolbar.getMenu());
-        boolean showQSFooter = Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.QS_FOOTER_TEXT_SHOW, 0,
-                UserHandle.USER_CURRENT) == 1;
-        MenuItem qsFooterText = mToolbar.getMenu().findItem(R.id.footer_text);
-        qsFooterText.setChecked(showQSFooter);
+        mToolbar.getMenu().add(Menu.NONE, MENU_RESET, 0,
+                mContext.getString(com.android.internal.R.string.reset));
 
         mToolbar.setTitle(R.string.qs_edit);
         mRecyclerView = findViewById(android.R.id.list);
@@ -275,11 +270,6 @@ public class QSCustomizer extends LinearLayout implements OnMenuItemClickListene
                 mUiEventLogger.log(QSEditEvent.QS_EDIT_RESET);
                 reset();
                 break;
-            case R.id.footer_text:
-                item.setChecked(!item.isChecked());
-                Settings.System.putIntForUser(mContext.getContentResolver(),
-                       Settings.System.QS_FOOTER_TEXT_SHOW, item.isChecked() ? 1 : 0,
-                       UserHandle.USER_CURRENT);
         }
         return false;
     }

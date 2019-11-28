@@ -17,6 +17,7 @@
 package android.provider.settings.validators;
 
 import static android.provider.settings.validators.SettingsValidators.ANY_INTEGER_VALIDATOR;
+import static android.provider.settings.validators.SettingsValidators.ANY_STRING_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.BOOLEAN_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.COMPONENT_NAME_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.DATE_FORMAT_VALIDATOR;
@@ -217,6 +218,7 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.QS_BRIGHTNESS_POSITION_BOTTOM, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.QS_SHOW_BRIGHTNESS_ABOVE_FOOTER, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.QS_FOOTER_TEXT_SHOW, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.QS_FOOTER_TEXT_STRING, ANY_STRING_VALIDATOR);
         VALIDATORS.put(System.LOCKSCREEN_BATTERY_INFO, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.NETWORK_TRAFFIC_STATE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.NETWORK_TRAFFIC_TYPE, new InclusiveIntegerRangeValidator(0, 4));

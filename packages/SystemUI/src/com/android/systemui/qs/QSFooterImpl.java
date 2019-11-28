@@ -164,17 +164,16 @@ public class QSFooterImpl extends FrameLayout implements QSFooter,
 
     private void setBuildText() {
         if (mBuildText == null) return;
-        boolean isShow = Settings.System.getIntForUser(mContext.getContentResolver(),
+        mShouldShowBuildText = Settings.System.getIntForUser(mContext.getContentResolver(),
                         Settings.System.QS_FOOTER_TEXT_SHOW, 0,
                         UserHandle.USER_CURRENT) == 1;
-        if (isShow) {
-            mBuildText.setText("KOSP");
-            mBuildText.setSelected(true);
-            mShouldShowBuildText = true;
-        } else {
-            mShouldShowBuildText = false;
-            mBuildText.setSelected(false);
+        String text = Settings.System.getStringForUser(mContext.getContentResolver(),
+                        Settings.System.QS_FOOTER_TEXT_STRING,
+                        UserHandle.USER_CURRENT);
+        if (mShouldShowBuildText) {
+            mBuildText.setText(text == null || text.isEmpty() ? "KOSP" : text);
         }
+        mBuildText.setSelected(mShouldShowBuildText);
     }
 
     private void updateAnimator(int width) {
@@ -256,6 +255,9 @@ public class QSFooterImpl extends FrameLayout implements QSFooter,
         super.onAttachedToWindow();
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.QS_FOOTER_TEXT_SHOW), false,
+                mSettingsObserver, UserHandle.USER_ALL);
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.QS_FOOTER_TEXT_STRING), false,
                 mSettingsObserver, UserHandle.USER_ALL);
     }
 
