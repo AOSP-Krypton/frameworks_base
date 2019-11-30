@@ -93,5 +93,6 @@ public class SystemSettings {
         Settings.System.QS_BRIGHTNESS_POSITION_BOTTOM,
         Settings.System.QS_SHOW_AUTO_BRIGHTNESS_BUTTON,
         Settings.System.VOLUME_BUTTON_MUSIC_CONTROL,
+        Settings.System.STATUS_BAR_BATTERY_STYLE,
     };
 }
