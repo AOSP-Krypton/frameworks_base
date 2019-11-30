@@ -102,5 +102,6 @@ public class SystemSettings {
         Settings.System.QS_FOOTER_TEXT_STRING,
         Settings.System.INCALL_FEEDBACK_VIBRATE,
         Settings.System.QS_SHOW_BATTERY_ESTIMATE,
+        Settings.System.STATUS_BAR_BATTERY_STYLE,
     };
 }
