@@ -231,5 +231,6 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.AOD_NOTIFICATION_PULSE_TIMEOUT, ANY_INTEGER_VALIDATOR);
         VALIDATORS.put(System.NOTIFICATION_PULSE_DURATION, ANY_INTEGER_VALIDATOR);
         VALIDATORS.put(System.KEYGAURD_MEDIA_ART, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.STATUS_BAR_BATTERY_STYLE, new InclusiveIntegerRangeValidator(0, 2));
     }
 }
