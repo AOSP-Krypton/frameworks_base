@@ -14,4 +14,7 @@
 
     <!-- FOD icon dimming -->
     <java-symbol type="bool" name="config_targetUsesInKernelDimming" />
+
+    <!-- OnePlus proprietary vibrator -->
+    <java-symbol type="bool" name="config_hasOnePlusHapticMotor" />
 </resources>

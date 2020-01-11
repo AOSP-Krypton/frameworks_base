@@ -14,4 +14,7 @@
 
     <!-- FOD icon dim-->
     <bool name="config_targetUsesInKernelDimming">false</bool>
+
+    <!-- OnePlus proprietary vibrator -->
+    <bool name="config_hasOnePlusHapticMotor">false</bool>
 </resources>
