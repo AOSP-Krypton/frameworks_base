@@ -90,5 +90,6 @@ public class SystemSettings {
         Settings.System.LOCKSCREEN_BATTERY_INFO,
         Settings.System.SCREENSHOT_SHUTTER_SOUND,
         Settings.System.FULLSCREEN_GESTURES,
+        Settings.System.RINGTONE_VIBRATION_PATTERN,
     };
 }
