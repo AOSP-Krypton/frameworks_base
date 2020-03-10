@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.biometrics.BiometricAuthenticator;
 import android.os.IBinder;
+import android.os.SystemProperties;
 import android.util.Slog;
 
 import com.android.server.biometrics.BiometricsProto;
@@ -37,6 +38,7 @@ public abstract class InternalEnumerateClient<T> extends HalClientMonitor<T>
         implements EnumerateConsumer {
 
     private static final String TAG = "Biometrics/InternalEnumerateClient";
+    private static final boolean NO_CLEANUP = SystemProperties.getBoolean("fingerprint.nocleanup", false);
 
     private BiometricUtils mUtils;
     // List of templates that are known to the Framework. Remove from this list when enumerate
@@ -117,9 +119,10 @@ public abstract class InternalEnumerateClient<T> extends HalClientMonitor<T>
             BiometricAuthenticator.Identifier identifier = mEnrolledList.get(i);
             Slog.e(TAG, "doTemplateCleanup(): Removing dangling template from framework: "
                     + identifier.getBiometricId() + " " + identifier.getName());
-            mUtils.removeBiometricForUser(getContext(),
-                    getTargetUserId(), identifier.getBiometricId());
-
+            if (!NO_CLEANUP) {
+                mUtils.removeBiometricForUser(getContext(),
+                        getTargetUserId(), identifier.getBiometricId());
+            }
             getLogger().logUnknownEnrollmentInFramework();
         }
         mEnrolledList.clear();
