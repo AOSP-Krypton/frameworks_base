@@ -102,4 +102,9 @@
     <string name="screenrecord_lowquality_label">Lower quality for smaller file size</string>
     <string name="screenrecord_longer_timeout_switch_label">Bigger file size limit\nLimit recording size to 15GiB</string>
 
+    <!-- FPS Info tile -->
+    <string name="quick_settings_fpsinfo_label">FPS Info</string>
+    <string name="accessibility_quick_settings_fpsinfo_off">FPS Info off</string>
+    <string name="accessibility_quick_settings_fpsinfo_on">FPS Info on</string>
+
 </resources>
