@@ -384,6 +384,7 @@ public class FODCircleView extends ImageView implements TunerService.Tunable {
 
         setImageDrawable(null);
         updateIconDim();
+        updatePosition();
         invalidate();
     }
 
@@ -466,7 +467,7 @@ public class FODCircleView extends ImageView implements TunerService.Tunable {
         mPressedParams.x = mParams.x = x;
         mPressedParams.y = mParams.y = y;
 
-        if (mIsDreaming) {
+        if (mIsDreaming && !mIsCircleShowing) {
             mParams.y += mDreamingOffsetY;
         }
 
