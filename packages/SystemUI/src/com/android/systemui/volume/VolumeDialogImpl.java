@@ -34,7 +34,10 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.android.settingslib.media.MediaOutputSliceConstants.ACTION_MEDIA_OUTPUT;
 import static com.android.systemui.volume.Events.DISMISS_REASON_SETTINGS_CLICKED;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Dialog;
@@ -261,6 +264,8 @@ public class VolumeDialogImpl implements VolumeDialog,
 
         mDialogView = mDialog.findViewById(R.id.volume_dialog);
         mDialogView.setAlpha(0);
+        mDialogView.setLayoutDirection(isAudioPanelOnLeftSide() ?
+                View.LAYOUT_DIRECTION_LTR : View.LAYOUT_DIRECTION_RTL);
 
         mDialogView.setOnHoverListener((v, event) -> {
             int action = event.getActionMasked();
@@ -562,6 +567,47 @@ public class VolumeDialogImpl implements VolumeDialog,
                 == BluetoothProfile.STATE_CONNECTED;
     }
 
+    private void updateExpandedRows(boolean expand) {
+        Util.setVisOrGone(findRow(AudioManager.STREAM_RING).view, expand);
+        Util.setVisOrGone(findRow(STREAM_ALARM).view, expand);
+    }
+
+    private void animateExpandedRowsChange(boolean expand) {
+        final int startWidth = mDialogRowsView.getLayoutParams().width;
+        final int targetWidth;
+
+        if (expand) {
+            updateExpandedRows(expand);
+            mDialogRowsView.measure(WRAP_CONTENT, WRAP_CONTENT);
+            targetWidth = mDialogRowsView.getMeasuredWidth();
+        } else {
+            targetWidth = mContext.getResources().getDimensionPixelSize(
+                    R.dimen.volume_dialog_panel_width);
+        }
+
+        ValueAnimator animator = ValueAnimator.ofInt(startWidth, targetWidth);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                mDialogRowsView.getLayoutParams().width =
+                        (Integer) valueAnimator.getAnimatedValue();
+                mDialogRowsView.requestLayout();
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (!expand) {
+                    updateExpandedRows(expand);
+                }
+            }
+        });
+        animator.setInterpolator(expand ? new SystemUIInterpolators.LogDecelerateInterpolator()
+                : new SystemUIInterpolators.LogAccelerateInterpolator());
+        animator.setDuration(UPDATE_ANIMATION_DURATION);
+        animator.start();
+    }
+
     public void initSettingsH() {
         if (mMediaOutputView != null) {
             mMediaOutputView.setVisibility(
@@ -590,10 +636,8 @@ public class VolumeDialogImpl implements VolumeDialog,
         if (mExpandRows != null) {
             mExpandRows.setOnClickListener(v -> {
                 rescheduleTimeoutH();
-                Util.setVisOrGone(findRow(AudioManager.STREAM_RING).view, !mExpanded);
-                Util.setVisOrGone(findRow(STREAM_ALARM).view, !mExpanded);
+                animateExpandedRowsChange(!mExpanded);
 
-                if (mExpanded) mController.setActiveStream(AudioManager.STREAM_MUSIC);
                 mExpandRows.setExpanded(!mExpanded);
                 mExpanded = !mExpanded;
             });
@@ -920,6 +964,9 @@ public class VolumeDialogImpl implements VolumeDialog,
                         mWindowManager.removeViewImmediate(mDialog);
                     }
                     mExpanded = false;
+                    mDialogRowsView.getLayoutParams().width = mContext.getResources()
+                            .getDimensionPixelSize(R.dimen.volume_dialog_panel_width);
+                    updateExpandedRows(mExpanded);
                     mExpandRows.setExpanded(mExpanded);
                     tryToRemoveCaptionsTooltip();
                     mController.notifyVisible(false);
