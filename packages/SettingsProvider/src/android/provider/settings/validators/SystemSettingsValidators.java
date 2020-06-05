@@ -261,6 +261,26 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS, new InclusiveFloatRangeValidator(1f, 25f));
         VALIDATORS.put(System.ARTWORK_MEDIA_BACKGROUND_ALPHA, new InclusiveIntegerRangeValidator(0, 255));
-        VALIDATORS.put(System.RINGTONE_VIBRATION_PATTERN, new InclusiveIntegerRangeValidator(0, 4));
+        VALIDATORS.put(System.RINGTONE_VIBRATION_PATTERN, new InclusiveIntegerRangeValidator(0, 5));
+        VALIDATORS.put(System.CUSTOM_RINGTONE_VIBRATION_PATTERN,
+                new Validator() {
+                    @Override
+                    public boolean validate(String value) {
+                        final String[] args = value.split(",", 0);
+                        if (args.length != 3) return false;
+                        try {
+                            for (String str : args) {
+                                final int amp = Integer.parseInt(str);
+                                if (amp < 0 || amp > 1000) {
+                                    return false;
+                                }
+                            }
+                        } catch (NumberFormatException e) {
+                            return false;
+                        }
+                        return true;
+                    }
+                });
+
     }
 }
