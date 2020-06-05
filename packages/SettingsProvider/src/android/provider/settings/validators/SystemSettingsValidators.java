@@ -257,6 +257,19 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(System.SCREENSHOT_SHUTTER_SOUND, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.FULLSCREEN_GESTURES, BOOLEAN_VALIDATOR);
-        VALIDATORS.put(System.RINGTONE_VIBRATION_PATTERN, new InclusiveIntegerRangeValidator(0, 4));
+        VALIDATORS.put(System.RINGTONE_VIBRATION_PATTERN, new InclusiveIntegerRangeValidator(0, 5));
+        VALIDATORS.put(System.CUSTOM_RINGTONE_VIBRATION_PATTERN,
+                 new ListValidator(",") {
+
+                    @Override
+                    protected boolean isEntryValid(String entry) {
+                        return entry != null;
+                    }
+
+                    @Override
+                    protected boolean isItemValid(String item) {
+                        return new InclusiveIntegerRangeValidator(0, 1000).validate(item);
+                    }
+                });
     }
 }
