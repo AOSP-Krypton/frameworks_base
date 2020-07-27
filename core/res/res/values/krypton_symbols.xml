@@ -79,4 +79,7 @@
     <java-symbol type="string" name="uploading_log_title" />
     <java-symbol type="string" name="url_copy_success" />
     <java-symbol type="string" name="url_copy_failed" />
+
+    <!-- Cycle through ringer modes -->
+    <java-symbol type="string" name="volume_dialog_ringer_guidance_normal" />
 </resources>
