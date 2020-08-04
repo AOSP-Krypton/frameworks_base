@@ -49,4 +49,7 @@
     <!-- Padding added to keyguard status area when Type clock is in use -->
     <dimen name="keyguard_status_area_typeclock_padding">32dp</dimen>
 
+    <!-- Ambient music padding above FOD-->
+    <dimen name="keyguard_security_fod_view_margin">140dp</dimen>
+
 </resources>
