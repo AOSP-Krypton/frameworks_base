@@ -278,7 +278,7 @@ public class FODCircleView extends ImageView implements TunerService.Tunable {
         if (!mIsCircleShowing && mTargetUsesInKernelDimming) {
             setColorFilter(Color.argb(getDimAlpha(), 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
         } else {
-            setColorFilter(Color.argb(0, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+            mHandler.post(() -> setColorFilter(Color.argb(0, 0, 0, 0), PorterDuff.Mode.SRC_ATOP));
         }
     }
 
