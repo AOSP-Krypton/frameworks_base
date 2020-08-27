@@ -99,14 +99,18 @@
                     android:layout_marginLeft="8dp"
                     android:contentDescription="@string/accessibility_volume_settings"
                     android:background="@drawable/ripple_drawable_20dp"
-                    android:tint="?android:attr/textColorSecondary"
+                    android:tint="@color/accent_tint_color_selector"
                     android:soundEffectsEnabled="false" />
             </FrameLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider"/>
             <FrameLayout
                 android:id="@+id/expandable_indicator_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/rounded_bg_bottom_background">
+                android:orientation="horizontal">
                 <com.android.systemui.statusbar.phone.ExpandableIndicator
                     android:id="@+id/expandable_indicator"
                     android:layout_width="@dimen/volume_dialog_tap_target_size"
@@ -115,7 +119,7 @@
                     android:layout_marginLeft="8dp"
                     android:contentDescription="@string/accessibility_volume_expand"
                     android:background="@drawable/ripple_drawable_20dp"
-                    android:tint="?android:attr/textColorSecondary"
+                    android:tint="@color/accent_tint_color_selector"
                     android:soundEffectsEnabled="false"
                     android:padding="14dp" />
             </FrameLayout>
