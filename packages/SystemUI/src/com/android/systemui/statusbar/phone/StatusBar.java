@@ -723,6 +723,7 @@ public class StatusBar extends SystemUI implements DemoMode,
             PluginManager pluginManager,
             Optional<Divider> dividerOptional,
             LightsOutNotifController lightsOutNotifController,
+            FlashlightController flashlightController,
             StatusBarNotificationActivityStarter.Builder
                     statusBarNotificationActivityStarterBuilder,
             ShadeController shadeController,
@@ -784,6 +785,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         mDeviceProvisionedController = deviceProvisionedController;
         mNavigationBarController = navigationBarController;
         mAssistManagerLazy = assistManagerLazy;
+        mFlashlightController = flashlightController;
         mConfigurationController = configurationController;
         mNotificationShadeWindowController = notificationShadeWindowController;
         mLockscreenLockIconController = lockscreenLockIconController;
@@ -1276,7 +1278,6 @@ public class StatusBar extends SystemUI implements DemoMode,
         // Private API call to make the shadows look better for Recents
         ThreadedRenderer.overrideProperty("ambientRatio", String.valueOf(1.5f));
 
-        mFlashlightController = Dependency.get(FlashlightController.class);
     }
 
     @NonNull
