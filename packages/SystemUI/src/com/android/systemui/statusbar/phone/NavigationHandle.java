@@ -23,6 +23,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -34,7 +35,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class NavigationHandle extends View implements ButtonInterface {
-
+    private final Context mContext;
     private final Paint mPaint = new Paint();
     private @ColorInt final int mLightColor;
     private @ColorInt final int mDarkColor;
@@ -67,6 +68,7 @@ public class NavigationHandle extends View implements ButtonInterface {
 
     public NavigationHandle(Context context, AttributeSet attr) {
         super(context, attr);
+        mContext = context;
         final Resources res = context.getResources();
         mRadius = res.getDimensionPixelSize(R.dimen.navigation_handle_radius);
         mBottom = res.getDimensionPixelSize(R.dimen.navigation_handle_bottom);
@@ -93,13 +95,29 @@ public class NavigationHandle extends View implements ButtonInterface {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         // Draw that bar
-        int navHeight = getHeight();
         int height = mRadius * 2;
-        int width = getWidth();
-        int y = (navHeight - mBottom - height + mBurnInYOffset);
-        canvas.drawRoundRect(0, y, width, y + height, mRadius, mRadius, mPaint);
+        int defWidth = getWidth();
+        int lengthType = Settings.System.getInt(mContext.getContentResolver(),
+            Settings.System.GESTURE_NAVBAR_LENGTH, 0);
+        int newWidth = defWidth;
+        final Resources res = mContext.getResources();
+        switch (lengthType) {
+            case 0:
+                newWidth = res.getDimensionPixelSize(
+                    R.dimen.navigation_home_handle_width);
+                break;
+            case 1:
+                newWidth = res.getDimensionPixelSize(
+                    R.dimen.navigation_home_handle_width_medium);
+                break;
+            case 2:
+                newWidth = res.getDimensionPixelSize(
+                    R.dimen.navigation_home_handle_width_long);
+        }
+        int y = (getHeight() - mBottom - height + mBurnInYOffset);
+        canvas.drawRoundRect((defWidth - newWidth) / 2, y,
+            (defWidth + newWidth) / 2, y + height, mRadius, mRadius, mPaint);
     }
 
     @Override

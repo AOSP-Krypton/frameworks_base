@@ -165,6 +165,7 @@ public class NavigationBarInflaterView extends FrameLayout
 
     @Override
     protected void onDetachedFromWindow() {
+        mCustomSettingsObserver.stop();
         Dependency.get(NavigationModeController.class).removeListener(this);
         super.onDetachedFromWindow();
     }
@@ -511,21 +512,22 @@ public class NavigationBarInflaterView extends FrameLayout
     }
 
     private class CustomSettingsObserver extends ContentObserver {
-        ContentResolver resolver;
-
         CustomSettingsObserver() {
             super(new Handler(Looper.getMainLooper()));
-            resolver = mContext.getContentResolver();
         }
 
         void observe() {
+            final ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVIGATION_BAR_INVERSE),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.GESTURE_NAVBAR_LENGTH),
                     false, this, UserHandle.USER_ALL);
         }
 
         void stop() {
-            resolver.unregisterContentObserver(this);
+            mContext.getContentResolver().unregisterContentObserver(this);
         }
 
         @Override
@@ -533,6 +535,10 @@ public class NavigationBarInflaterView extends FrameLayout
             if (uri.equals(Settings.System.getUriFor(
                     Settings.System.NAVIGATION_BAR_INVERSE))) {
                 updateLayoutInversion();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.GESTURE_NAVBAR_LENGTH))) {
+                clearViews();
+                inflateLayout(getDefaultLayout());
             }
         }
     }
