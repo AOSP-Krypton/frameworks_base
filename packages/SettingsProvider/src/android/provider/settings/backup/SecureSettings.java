@@ -193,5 +193,6 @@ public class SecureSettings {
         Settings.Secure.LOCKSCREEN_SHOW_WALLET,
         Settings.Secure.ENABLE_LOCATION_PRIVACY_INDICATOR,
         Settings.Secure.VOLUME_LINK_NOTIFICATION,
+        Settings.Secure.GESTURE_NAVBAR_LENGTH_MODE,
     };
 }
