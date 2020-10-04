@@ -24,4 +24,8 @@
     <item name="network_traffic_rate_text_default_scale_factor" format="float" type="dimen">1.5</item>
     <item name="network_traffic_line_spacing_multiplier" format="float" type="dimen">0.8</item>
 
+    <!-- Additional gesture navbar lengths -->
+    <dimen name="navigation_home_handle_width_small">72dp</dimen>
+    <dimen name="navigation_home_handle_width_long">144dp</dimen>
+
 </resources>
