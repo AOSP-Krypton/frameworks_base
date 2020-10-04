@@ -319,5 +319,6 @@ public class SecureSettingsValidators {
         });
         VALIDATORS.put(Secure.ENABLE_LOCATION_PRIVACY_INDICATOR, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.VOLUME_LINK_NOTIFICATION, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Secure.GESTURE_NAVBAR_LENGTH_MODE, new InclusiveIntegerRangeValidator(0, 2));
     }
 }
