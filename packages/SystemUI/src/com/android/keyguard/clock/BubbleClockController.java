@@ -85,7 +85,7 @@ public class BubbleClockController implements ClockPlugin {
 
     private void createViews() {
         mView = (ClockLayout) mLayoutInflater.inflate(R.layout.bubble_clock, null);
-        mAnalogClock = (ImageClock) mView.findViewById(R.id.analog_clock);
+        mAnalogClock = (ImageClock) mView.findViewById(R.id.bubble_clock);
     }
 
     @Override
