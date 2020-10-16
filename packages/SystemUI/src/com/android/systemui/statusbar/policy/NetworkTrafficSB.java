@@ -259,9 +259,6 @@ public class NetworkTrafficSB extends TextView implements StatusIconDisplayable 
                     this, UserHandle.USER_ALL);
         }
 
-        /*
-         *  @hide
-         */
         @Override
         public void onChange(boolean selfChange) {
             setMode();
@@ -350,9 +347,6 @@ public class NetworkTrafficSB extends TextView implements StatusIconDisplayable 
 
     private void updateSettings() {
         final ContentResolver resolver = getContext().getContentResolver();
-        mTrafficInHeaderView = Settings.System.getIntForUser(resolver,
-                Settings.System.NETWORK_TRAFFIC_VIEW_LOCATION, 0,
-                UserHandle.USER_CURRENT) == 1;
         updateVisibility();
         updateTextSize();
         if (mIsEnabled) {
@@ -377,7 +371,7 @@ public class NetworkTrafficSB extends TextView implements StatusIconDisplayable 
                 Settings.System.NETWORK_TRAFFIC_TYPE, 0,
                 UserHandle.USER_CURRENT);
         mAutoHideThreshold = Settings.System.getIntForUser(resolver,
-                Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD, 0,
+                Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD, 1,
                 UserHandle.USER_CURRENT);
         mShowArrow = Settings.System.getIntForUser(resolver,
                 Settings.System.NETWORK_TRAFFIC_ARROW, 1,
@@ -442,17 +436,15 @@ public class NetworkTrafficSB extends TextView implements StatusIconDisplayable 
     }
 
     private void updateTextSize() {
-        int txtSize;
-
-        mNetTrafSize = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.NETWORK_TRAFFIC_FONT_SIZE, 21);
-
-        if (mTrafficType == BOTH) {
-            txtSize = getResources().getDimensionPixelSize(R.dimen.net_traffic_multi_text_size);
+        int size;
+        if (mTrafficType != BOTH) {
+            size = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.NETWORK_TRAFFIC_FONT_SIZE, 21,
+                    UserHandle.USER_CURRENT);
         } else {
-            txtSize = mNetTrafSize;
+            size = getResources().getDimensionPixelSize(R.dimen.net_traffic_multi_text_size);
         }
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, (float)txtSize);
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, (float)size);
     }
 
     public void onDensityOrFontScaleChanged() {
