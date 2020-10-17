@@ -26,6 +26,6 @@
     <java-symbol type="integer" name="config_maxVisibleNotificationIcons" />
     <java-symbol type="integer" name="config_maxVisibleNotificationIconsWhenDark" />
 
-    <!-- Ambiant Pulse Light -->
-    <java-symbol type="integer" name="config_AmbiantPulseLightColor" />
+    <!-- Ambient notification light color -->
+    <java-symbol type="integer" name="config_ambientNotificationDefaultColor" />
 </resources>
