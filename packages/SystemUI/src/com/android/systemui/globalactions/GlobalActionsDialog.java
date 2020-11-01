@@ -726,7 +726,6 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
             tempActions.remove(restartBootloaderAction);
             tempActions.remove(restartRecoveryAction);
             tempActions.remove(restartSystemUiAction);
-            mPowerItems.add(shutdownAction); // will be removed later if needed
             mPowerItems.add(restartAction);
             mPowerItems.add(restartBootloaderAction);
             mPowerItems.add(restartRecoveryAction);
@@ -740,9 +739,8 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
                 /*tempActions.size gets in count already PowerOptionsAction if added*/
                 && tempActions.size() > getMaxShownPowerItems()) {
             tempActions.remove(shutdownAction);
-            mPowerItems.add(shutdownAction);
-        } else {
-            mPowerItems.remove(shutdownAction);
+            mPowerItems.add(0, shutdownAction);
+
         }
         for (Action action : tempActions) {
             addActionItem(action);
