@@ -217,7 +217,7 @@ public class KeyguardSliceProvider extends SliceProvider implements
         return slice;
     }
 
-    protected boolean needsMediaLocked() {
+    public boolean needsMediaLocked() {
         boolean keepWhenAwake = mKeyguardBypassController != null
                 && mKeyguardBypassController.getBypassEnabled() && mDozeParameters.getAlwaysOn();
         String currentClock = Settings.Secure.getString(
