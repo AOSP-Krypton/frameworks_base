@@ -25,7 +25,4 @@
     <!-- Max visible notification icons -->
     <java-symbol type="integer" name="config_maxVisibleNotificationIcons" />
     <java-symbol type="integer" name="config_maxVisibleNotificationIconsWhenDark" />
-
-    <!-- Ambient notification light color -->
-    <java-symbol type="integer" name="config_ambientNotificationDefaultColor" />
 </resources>
