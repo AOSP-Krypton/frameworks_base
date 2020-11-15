@@ -5533,6 +5533,24 @@ public final class Settings {
         public static final String THREE_FINGER_GESTURE = "three_finger_gesture";
 
         /**
+         * Whether to show media album art on keyguard
+         * @hide
+         */
+        public static final String KEYGUARD_MEDIA_ART = "keyguard_media_art";
+
+        /**
+         * Whether to enable blur for media album art on keyguard
+         * @hide
+         */
+        public static final String KEYGUARD_MEDIA_ART_ENABLE_BLUR = "KEYGUARD_MEDIA_ART_enable_blur";
+
+        /**
+         * Adjust blur radius for media album art on keyguard
+         * @hide
+         */
+        public static final String KEYGUARD_MEDIA_ART_BLUR_RADIUS = "KEYGUARD_MEDIA_ART_blur_radius";
+
+        /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
          * it to PRIVATE_SETTINGS below. Also add a validator that can validate

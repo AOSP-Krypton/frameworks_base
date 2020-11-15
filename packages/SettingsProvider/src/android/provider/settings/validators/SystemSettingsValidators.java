@@ -297,5 +297,8 @@ public class SystemSettingsValidators {
                     }
                 });
         VALIDATORS.put(System.THREE_FINGER_GESTURE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.KEYGUARD_MEDIA_ART, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.KEYGUARD_MEDIA_ART_ENABLE_BLUR, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.KEYGUARD_MEDIA_ART_BLUR_RADIUS, new InclusiveFloatRangeValidator(1f, 25f));
     }
 }
