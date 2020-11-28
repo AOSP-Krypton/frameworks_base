@@ -5752,7 +5752,9 @@ public final class Settings {
 
         /**
          * Style of battery to show.
-         *
+         * 0 = protrait (default)
+         * 1 = circle
+         * 2 = text
          * @hide
          */
         public static final String STATUS_BAR_BATTERY_STYLE = "status_bar_battery_style";
