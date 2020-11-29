@@ -108,5 +108,6 @@ public class SystemSettings {
         Settings.System.NOTIFICATION_PULSE_DURATION,
         Settings.System.KEYGAURD_MEDIA_ART,
         Settings.System.STATUS_BAR_BATTERY_STYLE,
+        Settings.System.SHOW_BATTERY_PERCENT_INSIDE,
     };
 }
