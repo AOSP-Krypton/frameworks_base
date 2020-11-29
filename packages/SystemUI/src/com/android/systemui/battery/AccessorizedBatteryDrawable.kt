@@ -88,6 +88,12 @@ class AccessorizedBatteryDrawable(
 
     var displayShield: Boolean = false
 
+    var showPercent: Boolean
+        get() = mainBatteryDrawable.showPercent
+        set(value) {
+            mainBatteryDrawable.showPercent = value
+        }
+
     private fun updateSizes() {
         val b = bounds
         if (b.isEmpty) {
