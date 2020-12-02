@@ -104,7 +104,7 @@ import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreen;
 import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreenCallback;
 
 public class FODCircleView extends ImageView {
-    private static final int FADE_ANIM_DURATION = 250;
+    private static final int FADE_ANIM_DURATION = 125;
     private final int mPositionX;
     private final int mPositionY;
     private final int mSize;
