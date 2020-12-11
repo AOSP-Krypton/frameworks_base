@@ -90,8 +90,8 @@ public class SamsungBoldClockController implements ClockPlugin {
                 .inflate(R.layout.digital_clock_custom, null);
         mClock = mView.findViewById(R.id.clock);
         mClock.setLineSpacing(0, 0.8f);
-        mClock.setFormat12Hour(Html.fromHtml("<strong>hh</strong><br>mm"));
-        mClock.setFormat24Hour(Html.fromHtml("<strong>kk</strong><br>mm"));
+        mClock.setFormat12Hour(Html.fromHtml("<strong>hh</strong><br>mm", Html.FROM_HTML_MODE_LEGACY));
+        mClock.setFormat24Hour(Html.fromHtml("<strong>kk</strong><br>mm", Html.FROM_HTML_MODE_LEGACY));
     }
 
     @Override
@@ -121,8 +121,8 @@ public class SamsungBoldClockController implements ClockPlugin {
         View previewView = mLayoutInflater.inflate(R.layout.default_clock_preview, null);
         TextClock previewTime = previewView.findViewById(R.id.time);
         previewTime.setLineSpacing(0, 0.8f);
-        previewTime.setFormat12Hour(Html.fromHtml("<strong>hh</strong><br>mm"));
-        previewTime.setFormat24Hour(Html.fromHtml("<strong>kk</strong><br>mm"));
+        previewTime.setFormat12Hour(Html.fromHtml("<strong>hh</strong><br>mm", Html.FROM_HTML_MODE_LEGACY));
+        previewTime.setFormat24Hour(Html.fromHtml("<strong>kk</strong><br>mm", Html.FROM_HTML_MODE_LEGACY));
         TextClock previewDate = previewView.findViewById(R.id.date);
 
         // Initialize state of plugin before generating preview.

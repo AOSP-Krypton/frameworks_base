@@ -20,10 +20,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Paint.Style;
 import android.view.LayoutInflater;
 import android.view.View;
-
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.systemui.R;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
@@ -59,7 +57,6 @@ public class TypeClockController implements ClockPlugin {
     /**
      * Custom clock shown on AOD screen and behind stack scroller on lock.
      */
-    private View mView;
     private TypographicClock mTypeClock;
     private TypographicClock mBigClockView;
 
@@ -83,7 +80,6 @@ public class TypeClockController implements ClockPlugin {
     }
 
     private void createViews() {
-        mView = mLayoutInflater.inflate(R.layout.type_aod_clock, null);
 
         mBigClockView  = (TypographicClock) mLayoutInflater.inflate(R.layout.typographic_clock, null);
         mTypeClock = mBigClockView.findViewById(R.id.type_clock);
@@ -91,7 +87,6 @@ public class TypeClockController implements ClockPlugin {
 
     @Override
     public void onDestroyView() {
-        mView = null;
         mBigClockView = null;
         mTypeClock = null;
         mDarkController = null;

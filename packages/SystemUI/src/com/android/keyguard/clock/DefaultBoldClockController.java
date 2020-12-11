@@ -89,8 +89,8 @@ public class DefaultBoldClockController implements ClockPlugin {
         mView = (ClockLayout) mLayoutInflater
                 .inflate(R.layout.digital_clock_custom, null);
         mClock = mView.findViewById(R.id.clock);
-        mClock.setFormat12Hour(Html.fromHtml("<strong>h</strong>:mm"));
-        mClock.setFormat24Hour(Html.fromHtml("<strong>kk</strong>:mm"));
+        mClock.setFormat12Hour(Html.fromHtml("<strong>h</strong>:mm", Html.FROM_HTML_MODE_LEGACY));
+        mClock.setFormat24Hour(Html.fromHtml("<strong>kk</strong>:mm", Html.FROM_HTML_MODE_LEGACY));
     }
 
     @Override
@@ -119,8 +119,8 @@ public class DefaultBoldClockController implements ClockPlugin {
 
         View previewView = mLayoutInflater.inflate(R.layout.default_clock_preview, null);
         TextClock previewTime = previewView.findViewById(R.id.time);
-        previewTime.setFormat12Hour(Html.fromHtml("<strong>h</strong>:mm"));
-        previewTime.setFormat24Hour(Html.fromHtml("<strong>kk</strong>:mm"));
+        previewTime.setFormat12Hour(Html.fromHtml("<strong>h</strong>:mm", Html.FROM_HTML_MODE_LEGACY));
+        previewTime.setFormat24Hour(Html.fromHtml("<strong>kk</strong>:mm", Html.FROM_HTML_MODE_LEGACY));
         TextClock previewDate = previewView.findViewById(R.id.date);
 
         // Initialize state of plugin before generating preview.
