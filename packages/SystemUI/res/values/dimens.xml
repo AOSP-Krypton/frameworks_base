@@ -1184,7 +1184,7 @@
     <!-- Side padding between background of Ongoing App Ops chip and content -->
     <dimen name="ongoing_appops_chip_side_padding">8dp</dimen>
     <!-- Margin between icons of Ongoing App Ops chip when QQS-->
-    <dimen name="ongoing_appops_chip_icon_margin_collapsed">4dp</dimen>
+    <dimen name="ongoing_appops_chip_icon_margin_collapsed">2dp</dimen>
     <!-- Margin between icons of Ongoing App Ops chip when QS-->
     <dimen name="ongoing_appops_chip_icon_margin_expanded">4dp</dimen>
     <!-- Icon size of Ongoing App Ops chip -->
