@@ -33,8 +33,8 @@ import com.android.systemui.R;
 public class FODAnimation extends ImageView {
 
     private Context mContext;
-    private Resources mResources;
-    private int mAnimationPositionY;
+    private int mAnimationOffset;
+    private int mAnimationSize;
     private LayoutInflater mInflater;
     private WindowManager mWindowManager;
     private boolean mShowing = false;
@@ -47,13 +47,16 @@ public class FODAnimation extends ImageView {
         super(context);
 
         mContext = context;
-        mResources = mContext.getResources();
+        Resources res = mContext.getResources();
+        mAnimationSize = res.getDimensionPixelSize(R.dimen.fod_animation_size);
         mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mWindowManager = mContext.getSystemService(WindowManager.class);
 
+        mAnimationOffset = res.getDimensionPixelSize(R.dimen.fod_animation_offset);
+
         mAnimParams = new LayoutParams();
-        mAnimParams.height = mResources.getDimensionPixelSize(R.dimen.fod_animation_size);
-        mAnimParams.width = mResources.getDimensionPixelSize(R.dimen.fod_animation_size);
+        mAnimParams.height = mAnimationSize;
+        mAnimParams.width = mAnimationSize;
         mAnimParams.format = PixelFormat.TRANSLUCENT;
         mAnimParams.type = LayoutParams.TYPE_VOLUME_OVERLAY; // it must be behind FOD icon
         mAnimParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE
@@ -61,7 +64,7 @@ public class FODAnimation extends ImageView {
         mAnimParams.gravity = Gravity.TOP | Gravity.CENTER;
         mAnimParams.y = getAnimParamsY(mPositionY);
 
-        mFODAnims = mResources.obtainTypedArray(R.array.config_fodAnims);
+        mFODAnims = res.obtainTypedArray(R.array.config_fodAnims);
 
         setScaleType(ScaleType.CENTER_INSIDE);
     }
@@ -71,7 +74,7 @@ public class FODAnimation extends ImageView {
     }
 
     private int getAnimParamsY(int position) {
-        return (int) Math.round(position - (mResources.getDimensionPixelSize(R.dimen.fod_animation_size) / 2));
+        return (int) Math.round(position - (mAnimationSize / 2) + mAnimationOffset);
     }
 
     public void setAnimationKeyguard(boolean state) {
@@ -88,7 +91,10 @@ public class FODAnimation extends ImageView {
     public void showFODanimation() {
         if (mAnimParams != null && !mShowing && mIsKeyguard) {
             mShowing = true;
-            mWindowManager.addView(this, mAnimParams);
+            if (this.getWindowToken() == null){
+                mWindowManager.addView(this, mAnimParams);
+                mWindowManager.updateViewLayout(this, mAnimParams);
+            }
             recognizingAnim.start();
         }
     }
