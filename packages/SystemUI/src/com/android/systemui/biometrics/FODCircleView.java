@@ -70,13 +70,15 @@ public class FODCircleView extends ImageView {
     private static final String SCREEN_BRIGHTNESS = Settings.System.SCREEN_BRIGHTNESS;
     private static final String AOD = Settings.Secure.DOZE_ALWAYS_ON;
     private static final String FOD_ICON = Settings.System.FOD_ICON;
+    private static final String FOD_RECOGNIZING_ANIM = Settings.System.FOD_RECOGNIZING_ANIMATION;
+    private static final String FOD_ANIM = Settings.System.FOD_ANIM;
     private static final String CUSTOM_MODE = Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE;
     private static final String CUSTOM_BRIGHTNESS = Settings.Secure.DOZE_SCREEN_BRIGHTNESS;
 
-    private static final Uri SCREEN_BRIGHTNESS_URI =
-        Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS);
-    private static final Uri FOD_ICON_URI =
-        Settings.System.getUriFor(Settings.System.FOD_ICON);
+    private static final Uri SCREEN_BRIGHTNESS_URI = Settings.System.getUriFor(SCREEN_BRIGHTNESS);
+    private static final Uri FOD_ICON_URI = Settings.System.getUriFor(FOD_ICON);
+    private static final Uri FOD_RECOGNIZING_ANIM_URI = Settings.System.getUriFor(FOD_RECOGNIZING_ANIM);
+    private static final Uri FOD_ANIM_URI = Settings.System.getUriFor(FOD_ANIM);
 
     private static final int[][] BRIGHTNESS_ALPHA_ARRAY = {
         new int[]{0, 255},
@@ -184,7 +186,7 @@ public class FODCircleView extends ImageView {
             } else {
                 mHandler.post(() -> hide());
             }
-            if (mFODAnimation != null) {
+            if (mIsRecognizingAnimEnabled) {
                 mFODAnimation.setAnimationKeyguard(mIsBouncer);
             }
         }
@@ -194,7 +196,7 @@ public class FODCircleView extends ImageView {
             if (!showing && !mIsDreaming) {
                 mHandler.post(() -> hide());
             }
-            if (mFODAnimation != null) {
+            if (mIsRecognizingAnimEnabled) {
                 mFODAnimation.setAnimationKeyguard(showing);
             }
         }
@@ -222,12 +224,14 @@ public class FODCircleView extends ImageView {
         }
 
         void observe() {
-            mResolver.registerContentObserver(Settings.System.getUriFor(SCREEN_BRIGHTNESS),
-                false, this, UserHandle.USER_ALL);
-            mResolver.registerContentObserver(Settings.System.getUriFor(FOD_ICON),
-                false, this, UserHandle.USER_ALL);
+            mResolver.registerContentObserver(SCREEN_BRIGHTNESS_URI, false, this, UserHandle.USER_ALL);
+            mResolver.registerContentObserver(FOD_ICON_URI, false, this, UserHandle.USER_ALL);
+            mResolver.registerContentObserver(FOD_RECOGNIZING_ANIM_URI, false, this, UserHandle.USER_ALL);
+            mResolver.registerContentObserver(FOD_ANIM_URI, false, this, UserHandle.USER_ALL);
             updateIconDim(false);
             updateFodIcon();
+            updateFodAnimRecognizing();
+            updateFodAnim();
         }
 
         @Override
@@ -236,11 +240,11 @@ public class FODCircleView extends ImageView {
                 updateIconDim(false);
             } else if (uri.equals(FOD_ICON_URI)) {
                 updateFodIcon();
+            } else if (uri.equals(FOD_RECOGNIZING_ANIM_URI)) {
+                updateFodAnimRecognizing();
+            } else if (uri.equals(FOD_ANIM_URI)) {
+                updateFodAnim();
             }
-        }
-
-        private void updateFodIcon() {
-            mFodIconIndex = Settings.System.getInt(mResolver, Settings.System.FOD_ICON, 0);
         }
     }
 
@@ -389,6 +393,21 @@ public class FODCircleView extends ImageView {
         }
     }
 
+    private void updateFodIcon() {
+        mFodIconIndex = Settings.System.getInt(mResolver, FOD_ICON, 0);
+    }
+
+    private void updateFodAnimRecognizing() {
+        mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver, FOD_RECOGNIZING_ANIM, 0) == 1;
+    }
+
+    private void updateFodAnim() {
+        if (mIsRecognizingAnimEnabled) {
+            int index = Settings.System.getInt(mResolver, FOD_ANIM, 0);
+            mFODAnimation.setFODAnim(index);
+        }
+    }
+
     private int getCurrentBrightness() {
         boolean customMode = Settings.Secure.getInt(mResolver, CUSTOM_MODE, -1) == 1;
         if (customMode && mIsDreaming) {
@@ -421,13 +440,17 @@ public class FODCircleView extends ImageView {
             return true;
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
             hideCircle();
-            mFODAnimation.hideFODanimation();
+            if (mIsRecognizingAnimEnabled) {
+                mFODAnimation.hideFODanimation();
+            }
             return true;
         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
             return true;
         }
 
-        mFODAnimation.hideFODanimation();
+        if (mIsRecognizingAnimEnabled) {
+            mFODAnimation.hideFODanimation();
+        }
         return false;
     }
 
@@ -588,7 +611,9 @@ public class FODCircleView extends ImageView {
 
         if (mIsDreaming && !mIsCircleShowing) {
             mParams.y += mDreamingOffsetY;
-            mFODAnimation.updateParams(mParams.y);
+            if (mIsRecognizingAnimEnabled) {
+                mFODAnimation.updateParams(mParams.y);
+            }
         }
 
         mWindowManager.updateViewLayout(this, mParams);

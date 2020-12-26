@@ -18,6 +18,7 @@ package com.android.systemui.biometrics;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.PixelFormat;
 import android.view.Gravity;
@@ -26,6 +27,8 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+
+import com.android.systemui.R;
 
 public class FODAnimation extends ImageView {
 
@@ -38,6 +41,7 @@ public class FODAnimation extends ImageView {
     private boolean mIsKeyguard;
     private AnimationDrawable recognizingAnim;
     private LayoutParams mAnimParams;
+    private TypedArray mFODAnims;
 
     public FODAnimation(Context context, int mPositionX, int mPositionY) {
         super(context);
@@ -55,24 +59,30 @@ public class FODAnimation extends ImageView {
         mAnimParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE
                 | LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_LAYOUT_NO_LIMITS;
         mAnimParams.gravity = Gravity.TOP | Gravity.CENTER;
-        mAnimParams.y = getAnimParamsY();
+        mAnimParams.y = getAnimParamsY(mPositionY);
+
+        mFODAnims = mResources.obtainTypedArray(R.array.config_fodAnims);
 
         setScaleType(ScaleType.CENTER_INSIDE);
-        setBackgroundResource(R.drawable.fod_pulse_recognizing_white_anim);
-        recognizingAnim = (AnimationDrawable) getBackground();
-
     }
 
     public void updateParams(int mDreamingOffsetY) {
-        mAnimParams.y = getAnimParamsY();
+        mAnimParams.y = getAnimParamsY(mDreamingOffsetY);
     }
 
-    private int getAnimParamsY() {
-        return (int) Math.round(mDreamingOffsetY - (mResources.getDimensionPixelSize(R.dimen.fod_animation_size) / 2));
+    private int getAnimParamsY(int position) {
+        return (int) Math.round(position - (mResources.getDimensionPixelSize(R.dimen.fod_animation_size) / 2));
     }
 
     public void setAnimationKeyguard(boolean state) {
         mIsKeyguard = state;
+    }
+
+    public void setFODAnim(int index) {
+        if (mFODAnims != null) {
+            setBackgroundResource(mFODAnims.getResourceId(index, 0));
+            recognizingAnim = (AnimationDrawable) getBackground();
+        }
     }
 
     public void showFODanimation() {

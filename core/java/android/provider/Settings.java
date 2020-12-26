@@ -4840,6 +4840,12 @@ public final class Settings {
         public static final String FOD_RECOGNIZING_ANIMATION = "fod_recognizing_animation";
 
         /**
+        * FOD recognizing animation picker
+        * @hide
+        */
+        public static final String FOD_ANIM = "fod_anim";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage

@@ -49,6 +49,25 @@
         <item>@drawable/fod_icon_gxzw</item>
     </array>
 
+    <!-- FOD animations list -->
+    <array name="config_fodAnims">
+        <item>@drawable/fod_miui_normal_recognizing_anim</item>
+        <item>@drawable/fod_miui_aod_recognizing_anim</item>
+        <item>@drawable/fod_miui_light_recognizing_anim</item>
+        <item>@drawable/fod_miui_pop_recognizing_anim</item>
+        <item>@drawable/fod_miui_pulse_recognizing_anim</item>
+        <item>@drawable/fod_miui_pulse_recognizing_white_anim</item>
+        <item>@drawable/fod_miui_rhythm_recognizing_anim</item>
+        <item>@drawable/fod_op_cosmos_recognizing_anim</item>
+        <item>@drawable/fod_op_mclaren_recognizing_anim</item>
+        <item>@drawable/fod_op_stripe_recognizing_anim</item>
+        <item>@drawable/fod_op_wave_recognizing_anim</item>
+        <item>@drawable/fod_pureview_dna_recognizing_anim</item>
+        <item>@drawable/fod_pureview_future_recognizing_anim</item>
+        <item>@drawable/fod_pureview_halo_ring_recognizing_anim</item>
+        <item>@drawable/fod_pureview_molecular_recognizing_anim</item>
+    </array>
+
     <!-- Whether usage of the proximity sensor during doze is supported -->
     <bool name="doze_proximity_sensor_supported">true</bool>
 
