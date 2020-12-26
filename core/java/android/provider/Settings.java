@@ -4834,6 +4834,12 @@ public final class Settings {
         public static final String DEVICE_MAX_SCREEN_REFRESH_RATE = "device_max_screen_refresh_rate";
 
         /**
+         * FOD recognizing animation
+         * @hide
+         */
+        public static final String FOD_RECOGNIZING_ANIMATION = "fod_recognizing_animation";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage

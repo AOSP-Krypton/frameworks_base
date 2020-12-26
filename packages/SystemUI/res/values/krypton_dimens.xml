@@ -28,4 +28,7 @@
     <dimen name="alertslider_text_margintop">10dp</dimen>
     <dimen name="alertslider_text_fontsize">14dp</dimen>
 
+    <!-- Recognizing fingerprint animation -->
+    <dimen name="fod_animation_size">280dp</dimen>
+
 </resources>
