@@ -21,9 +21,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -66,8 +68,15 @@ public class FODCircleView extends ImageView {
     private static final int FADE_ANIM_DURATION = 250;
     private static final String SCREEN_BRIGHTNESS = Settings.System.SCREEN_BRIGHTNESS;
     private static final String AOD = Settings.Secure.DOZE_ALWAYS_ON;
+    private static final String FOD_ICON = Settings.System.FOD_ICON;
     private static final String CUSTOM_MODE = Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE;
     private static final String CUSTOM_BRIGHTNESS = Settings.Secure.DOZE_SCREEN_BRIGHTNESS;
+
+    private static final Uri SCREEN_BRIGHTNESS_URI =
+        Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS);
+    private static final Uri FOD_ICON_URI =
+        Settings.System.getUriFor(Settings.System.FOD_ICON);
+
     private static final int[][] BRIGHTNESS_ALPHA_ARRAY = {
         new int[]{0, 255},
         new int[]{1, 224},
@@ -103,11 +112,12 @@ public class FODCircleView extends ImageView {
 
     private IFingerprintInscreen mFingerprintInscreenDaemon;
     private Context mContext;
+    private ContentResolver mResolver;
 
     private int mDreamingOffsetY;
 
-    private int mColor;
-    private int mColorBackground;
+    private int mFodIconIndex = 0;
+    private TypedArray mFodIcons;
 
     private boolean mIsBouncer;
     private boolean mIsDreaming;
@@ -188,34 +198,46 @@ public class FODCircleView extends ImageView {
 
         @Override
         public void onStartedGoingToSleep() {
-            boolean notAlwaysOn = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+            boolean notAlwaysOn = Settings.Secure.getIntForUser(mResolver,
                     AOD, 0, UserHandle.USER_CURRENT) != 1;
-            if (notAlwaysOn) mHandler.post(() -> hide());
+            if (notAlwaysOn) mHandler.postDelayed(() -> hide(), 25);
         }
     };
 
-    private class BrightnessObserver extends ContentObserver {
-        BrightnessObserver(Handler handler) {
+    private class CustomSettingsObserver extends ContentObserver {
+        CustomSettingsObserver(Handler handler) {
             super(handler);
         }
 
         void observe() {
-            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(SCREEN_BRIGHTNESS),
+            mResolver.registerContentObserver(Settings.System.getUriFor(SCREEN_BRIGHTNESS),
+                false, this, UserHandle.USER_ALL);
+            mResolver.registerContentObserver(Settings.System.getUriFor(FOD_ICON),
                 false, this, UserHandle.USER_ALL);
             updateIconDim(false);
+            updateFodIcon();
         }
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            updateIconDim(false);
+            if (uri.equals(SCREEN_BRIGHTNESS_URI)) {
+                updateIconDim(false);
+            } else if (uri.equals(FOD_ICON_URI)) {
+                updateFodIcon();
+            }
+        }
+
+        private void updateFodIcon() {
+            mFodIconIndex = Settings.System.getInt(mResolver, Settings.System.FOD_ICON, 0);
         }
     }
 
     public FODCircleView(Context context) {
         super(context);
         mContext = context;
+        mResolver = mContext.getContentResolver();
 
-        setScaleType(ScaleType.CENTER);
+        setScaleType(ScaleType.CENTER_CROP);
 
         IFingerprintInscreen daemon = getFingerprintInScreenDaemon();
         if (daemon == null) {
@@ -233,12 +255,12 @@ public class FODCircleView extends ImageView {
 
         Resources res = context.getResources();
 
-        mColor = res.getColor(R.color.config_fodColor);
-        mPaintFingerprint.setColor(mColor);
+        mFodIcons = res.obtainTypedArray(R.array.config_fodIcons);
+
+        mPaintFingerprint.setColor(res.getColor(R.color.config_fodColor));
         mPaintFingerprint.setAntiAlias(true);
 
-        mColorBackground = res.getColor(R.color.config_fodColorBackground);
-        mPaintFingerprintBackground.setColor(mColorBackground);
+        mPaintFingerprintBackground.setColor(res.getColor(R.color.config_fodColorBackground));
         mPaintFingerprintBackground.setAntiAlias(true);
 
         mTargetUsesInKernelDimming = res.getBoolean(com.android.internal.R.bool.config_targetUsesInKernelDimming);
@@ -251,7 +273,7 @@ public class FODCircleView extends ImageView {
 
         mHandler = new Handler(Looper.getMainLooper());
 
-        new BrightnessObserver(mHandler).observe();
+        new CustomSettingsObserver(mHandler).observe();
 
         mParams.height = mSize;
         mParams.width = mSize;
@@ -354,14 +376,11 @@ public class FODCircleView extends ImageView {
     }
 
     private int getCurrentBrightness() {
-        boolean customMode = Settings.Secure.getInt(mContext.getContentResolver(),
-                CUSTOM_MODE, -1) == 1;
+        boolean customMode = Settings.Secure.getInt(mResolver, CUSTOM_MODE, -1) == 1;
         if (customMode && mIsDreaming) {
-            return Settings.Secure.getInt(mContext.getContentResolver(),
-                CUSTOM_BRIGHTNESS, 1);
+            return Settings.Secure.getInt(mResolver, CUSTOM_BRIGHTNESS, 1);
         }
-        return Settings.System.getInt(mContext.getContentResolver(),
-            SCREEN_BRIGHTNESS, 100);
+        return Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS, 100);
     }
 
     @Override
@@ -470,7 +489,7 @@ public class FODCircleView extends ImageView {
     public void hideCircle() {
         mIsCircleShowing = false;
 
-        setImageResource(R.drawable.fod_icon_default);
+        setImageDrawable(mFodIcons.getDrawable(mFodIconIndex));
         invalidate();
 
         ThreadUtils.postOnBackgroundThread(() -> {
