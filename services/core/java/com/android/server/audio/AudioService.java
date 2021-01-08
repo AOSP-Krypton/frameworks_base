@@ -22,10 +22,10 @@ import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
 import static android.media.AudioManager.STREAM_SYSTEM;
 import static android.os.Process.FIRST_APPLICATION_UID;
-import static android.provider.Settings.Secure.VOLUME_HUSH_CYCLE;
-import static android.provider.Settings.Secure.VOLUME_HUSH_MUTE;
-import static android.provider.Settings.Secure.VOLUME_HUSH_OFF;
-import static android.provider.Settings.Secure.VOLUME_HUSH_VIBRATE;
+import static android.provider.Settings.Secure.KOSP_VOLUME_HUSH_NORMAL;
+import static android.provider.Settings.Secure.KOSP_VOLUME_HUSH_MUTE;
+import static android.provider.Settings.Secure.KOSP_VOLUME_HUSH_OFF;
+import static android.provider.Settings.Secure.KOSP_VOLUME_HUSH_VIBRATE;
 
 import static com.android.server.audio.AudioEventLogger.Event.ALOGE;
 import static com.android.server.audio.AudioEventLogger.Event.ALOGI;
@@ -152,6 +152,7 @@ import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
@@ -393,7 +394,7 @@ public class AudioService extends IAudioService.Stub
      *  mStreamVolumeAlias contains STREAM_VOLUME_ALIAS_VOICE aliases for a voice capable device
      *  (phone), STREAM_VOLUME_ALIAS_TELEVISION for a television or set-top box and
      *  STREAM_VOLUME_ALIAS_DEFAULT for other devices (e.g. tablets).*/
-    private final int[] STREAM_VOLUME_ALIAS_VOICE = new int[] {
+    private static final int[] STREAM_VOLUME_ALIAS_VOICE = new int[] {
         AudioSystem.STREAM_VOICE_CALL,      // STREAM_VOICE_CALL
         AudioSystem.STREAM_RING,            // STREAM_SYSTEM
         AudioSystem.STREAM_RING,            // STREAM_RING
@@ -407,7 +408,7 @@ public class AudioService extends IAudioService.Stub
         AudioSystem.STREAM_MUSIC,           // STREAM_ACCESSIBILITY
         AudioSystem.STREAM_MUSIC            // STREAM_ASSISTANT
     };
-    private final int[] STREAM_VOLUME_ALIAS_TELEVISION = new int[] {
+    private static final int[] STREAM_VOLUME_ALIAS_TELEVISION = new int[] {
         AudioSystem.STREAM_MUSIC,       // STREAM_VOICE_CALL
         AudioSystem.STREAM_MUSIC,       // STREAM_SYSTEM
         AudioSystem.STREAM_MUSIC,       // STREAM_RING
@@ -427,7 +428,7 @@ public class AudioService extends IAudioService.Stub
      * So, do not alias any stream on one another when using volume groups.
      * TODO(b/181140246): volume group definition hosting alias definition.
      */
-    private final int[] STREAM_VOLUME_ALIAS_NONE = new int[] {
+    private static final int[] STREAM_VOLUME_ALIAS_NONE = new int[] {
         AudioSystem.STREAM_VOICE_CALL,      // STREAM_VOICE_CALL
         AudioSystem.STREAM_SYSTEM,          // STREAM_SYSTEM
         AudioSystem.STREAM_RING,            // STREAM_RING
@@ -441,7 +442,7 @@ public class AudioService extends IAudioService.Stub
         AudioSystem.STREAM_ACCESSIBILITY,   // STREAM_ACCESSIBILITY
         AudioSystem.STREAM_ASSISTANT        // STREAM_ASSISTANT
     };
-    private final int[] STREAM_VOLUME_ALIAS_DEFAULT = new int[] {
+    private static final int[] STREAM_VOLUME_ALIAS_DEFAULT = new int[] {
         AudioSystem.STREAM_VOICE_CALL,      // STREAM_VOICE_CALL
         AudioSystem.STREAM_RING,            // STREAM_SYSTEM
         AudioSystem.STREAM_RING,            // STREAM_RING
@@ -476,6 +477,15 @@ public class AudioService extends IAudioService.Stub
         AppOpsManager.OP_AUDIO_ACCESSIBILITY_VOLUME,    // STREAM_ACCESSIBILITY
         AppOpsManager.OP_AUDIO_MEDIA_VOLUME             // STREAM_ASSISTANT
     };
+
+    // Cycle through enabled modes
+    // Order: normal -> vibrate -> silent
+    private static final SparseArray<String> sModeArray = new SparseArray<>(3);
+    static {
+        sModeArray.put(AudioManager.RINGER_MODE_NORMAL, KOSP_VOLUME_HUSH_NORMAL);
+        sModeArray.put(AudioManager.RINGER_MODE_VIBRATE, KOSP_VOLUME_HUSH_VIBRATE);
+        sModeArray.put(AudioManager.RINGER_MODE_SILENT, KOSP_VOLUME_HUSH_MUTE);
+    }
 
     private final boolean mUseFixedVolume;
     private final boolean mUseVolumeGroupAliases;
@@ -892,7 +902,7 @@ public class AudioService extends IAudioService.Stub
                 .supportsSensorToggle(SensorPrivacyManager.Sensors.MICROPHONE);
 
         mUseVolumeGroupAliases = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_handleVolumeAliasesUsingVolumeGroups);
+                R.bool.config_handleVolumeAliasesUsingVolumeGroups);
 
         // Initialize volume
         // Priority 1 - Android Property
@@ -988,7 +998,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         mVoiceCapable = context.getResources().getBoolean(
-                com.android.internal.R.bool.config_voice_capable);
+                R.bool.config_voice_capable);
         createAudioSystemThread();
 
         AudioSystem.setErrorCallback(mAudioSystemCallback);
@@ -1012,14 +1022,14 @@ public class AudioService extends IAudioService.Stub
         // The default safe volume index read here will be replaced by the actual value when
         // the mcc is read by onConfigureSafeVolume()
         mSafeMediaVolumeIndex = mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_safe_media_volume_index) * 10;
+                R.integer.config_safe_media_volume_index) * 10;
 
         // read this in before readPersistedSettings() because updateStreamVolumeAlias needs it
         mLinkNotificationWithVolume = Settings.Secure.getInt(mContext.getContentResolver(),
                 Settings.Secure.VOLUME_LINK_NOTIFICATION, 1) == 1;
 
         mUseFixedVolume = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_useFixedVolume);
+                R.bool.config_useFixedVolume);
 
         mDeviceBroker = new AudioDeviceBroker(mContext, this);
 
@@ -1082,13 +1092,13 @@ public class AudioService extends IAudioService.Stub
 
         final float[] preScale = new float[3];
         preScale[0] = mContext.getResources().getFraction(
-                com.android.internal.R.fraction.config_prescaleAbsoluteVolume_index1,
+                R.fraction.config_prescaleAbsoluteVolume_index1,
                 1, 1);
         preScale[1] = mContext.getResources().getFraction(
-                com.android.internal.R.fraction.config_prescaleAbsoluteVolume_index2,
+                R.fraction.config_prescaleAbsoluteVolume_index2,
                 1, 1);
         preScale[2] = mContext.getResources().getFraction(
-                com.android.internal.R.fraction.config_prescaleAbsoluteVolume_index3,
+                R.fraction.config_prescaleAbsoluteVolume_index3,
                 1, 1);
         for (int i = 0; i < preScale.length; i++) {
             if (0.0f <= preScale[i] && preScale[i] <= 1.0f) {
@@ -1846,7 +1856,7 @@ public class AudioService extends IAudioService.Stub
         final int a11yStreamAlias = sIndependentA11yVolume ?
                 AudioSystem.STREAM_ACCESSIBILITY : AudioSystem.STREAM_MUSIC;
         final int assistantStreamAlias = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_useAssistantVolume) ?
+                R.bool.config_useAssistantVolume) ?
                 AudioSystem.STREAM_ASSISTANT : AudioSystem.STREAM_MUSIC;
 
         if (mIsSingleVolume) {
@@ -4321,48 +4331,57 @@ public class AudioService extends IAudioService.Stub
     }
 
     public void silenceRingerModeInternal(String reason) {
-        VibrationEffect effect = null;
-        int ringerMode = AudioManager.RINGER_MODE_SILENT;
-        int toastText = 0;
+        if (!mContext.getResources().getBoolean(R.bool.config_volumeHushGestureEnabled))
+            return; // disabled by overlay
+        final String settingsValue = Settings.Secure.getStringForUser(mContentResolver,
+                Settings.Secure.VOLUME_HUSH_GESTURE, UserHandle.USER_CURRENT);
+        if (settingsValue == null || settingsValue.isEmpty() || settingsValue == KOSP_VOLUME_HUSH_OFF); // disabled by user
+        final List<String> silenceRingerSetting = Arrays.asList(settingsValue.split(",", 0));
 
-        int silenceRingerSetting = Settings.Secure.VOLUME_HUSH_OFF;
-        if (mContext.getResources()
-                .getBoolean(com.android.internal.R.bool.config_volumeHushGestureEnabled)) {
-            silenceRingerSetting = Settings.Secure.getIntForUser(mContentResolver,
-                    Settings.Secure.VOLUME_HUSH_GESTURE, VOLUME_HUSH_OFF,
-                    UserHandle.USER_CURRENT);
-        }
-
-        switch(silenceRingerSetting) {
-            case VOLUME_HUSH_MUTE:
-                effect = VibrationEffect.get(VibrationEffect.EFFECT_DOUBLE_CLICK);
-                ringerMode = AudioManager.RINGER_MODE_SILENT;
-                toastText = com.android.internal.R.string.volume_dialog_ringer_guidance_silent;
-                break;
-            case VOLUME_HUSH_VIBRATE:
-                effect = VibrationEffect.get(VibrationEffect.EFFECT_HEAVY_CLICK);
-                ringerMode = AudioManager.RINGER_MODE_VIBRATE;
-                toastText = com.android.internal.R.string.volume_dialog_ringer_guidance_vibrate;
-                break;
-            case VOLUME_HUSH_CYCLE:
-                switch (mRingerMode) {
-                    case AudioManager.RINGER_MODE_NORMAL:
-                        effect = VibrationEffect.get(VibrationEffect.EFFECT_HEAVY_CLICK);
-                        ringerMode = AudioManager.RINGER_MODE_VIBRATE;
-                        toastText = com.android.internal.R.string.volume_dialog_ringer_guidance_vibrate;
-                        break;
-                    case AudioManager.RINGER_MODE_VIBRATE:
-                        effect = VibrationEffect.get(VibrationEffect.EFFECT_DOUBLE_CLICK);
-                        ringerMode = AudioManager.RINGER_MODE_SILENT;
-                        toastText = com.android.internal.R.string.volume_dialog_ringer_guidance_silent;
-                        break;
-                    case AudioManager.RINGER_MODE_SILENT:
-                        ringerMode = AudioManager.RINGER_MODE_NORMAL;
-                        toastText = com.android.internal.R.string.volume_dialog_ringer_guidance_normal;
-                        break;
+        int ringerMode = -1;
+        if (silenceRingerSetting.size() == 1) {
+            // apply the only enabled mode
+            for (int i = 0; i < sModeArray.size(); i++) {
+                if (sModeArray.valueAt(i).equals(settingsValue)) {
+                    ringerMode = sModeArray.keyAt(i);
+                    break;
                 }
+            }
+        } else {
+            int index = -1;
+            final int upperLimit = sModeArray.size() - 1;
+            // apply the next enabled mode
+            boolean found = false;
+            while (true) {
+                index = index < upperLimit ? index + 1 : 0;
+                if (!found) {
+                    if (mRingerMode == sModeArray.keyAt(index))
+                        found = true;
+                    continue;
+                }
+                if (silenceRingerSetting.contains(sModeArray.valueAt(index)))
+                    break;
+            }
+            ringerMode = sModeArray.keyAt(index);
+        }
+
+        int toastText = 0;
+        VibrationEffect effect = null;
+
+        switch(ringerMode) {
+            case AudioManager.RINGER_MODE_SILENT:
+                effect = VibrationEffect.get(VibrationEffect.EFFECT_DOUBLE_CLICK);
+                toastText = R.string.volume_dialog_ringer_guidance_silent;
+                break;
+            case AudioManager.RINGER_MODE_VIBRATE:
+                effect = VibrationEffect.get(VibrationEffect.EFFECT_HEAVY_CLICK);
+                toastText = R.string.volume_dialog_ringer_guidance_vibrate;
+                break;
+            case AudioManager.RINGER_MODE_NORMAL:
+                toastText = R.string.volume_dialog_ringer_guidance_normal;
                 break;
         }
+
         maybeVibrate(effect, reason);
         setRingerModeInternal(ringerMode, reason);
         if (ringerMode == AudioManager.RINGER_MODE_NORMAL)
@@ -5537,7 +5556,7 @@ public class AudioService extends IAudioService.Stub
         int max = MAX_STREAM_VOLUME[AudioSystem.STREAM_MUSIC];
 
         mSafeUsbMediaVolumeDbfs = mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_safe_media_volume_usb_mB) / 100.0f;
+                R.integer.config_safe_media_volume_usb_mB) / 100.0f;
 
         while (Math.abs(max - min) > 1) {
             int index = (max + min) / 2;
@@ -5563,14 +5582,14 @@ public class AudioService extends IAudioService.Stub
             int mcc = mContext.getResources().getConfiguration().mcc;
             if ((mMcc != mcc) || ((mMcc == 0) && force)) {
                 mSafeMediaVolumeIndex = mContext.getResources().getInteger(
-                        com.android.internal.R.integer.config_safe_media_volume_index) * 10;
+                        R.integer.config_safe_media_volume_index) * 10;
 
                 mSafeUsbMediaVolumeIndex = getSafeUsbMediaVolumeIndex();
 
                 boolean safeMediaVolumeEnabled =
                         SystemProperties.getBoolean("audio.safemedia.force", false)
                         || mContext.getResources().getBoolean(
-                                com.android.internal.R.bool.config_safe_media_volume_enabled);
+                                R.bool.config_safe_media_volume_enabled);
 
                 boolean safeMediaVolumeBypass =
                         SystemProperties.getBoolean("audio.safemedia.bypass", false);
@@ -8589,7 +8608,7 @@ public class AudioService extends IAudioService.Stub
     private boolean readCameraSoundForced() {
         return SystemProperties.getBoolean("audio.camerasound.force", false) ||
                 mContext.getResources().getBoolean(
-                        com.android.internal.R.bool.config_camera_sound_forced);
+                        R.bool.config_camera_sound_forced);
     }
 
     //==========================================================================================
@@ -8990,7 +9009,7 @@ public class AudioService extends IAudioService.Stub
     // default and can be overridden by country specific overlay in values-mccXXX/config.xml.
     //==========================================================================================
 
-    // cached value of com.android.internal.R.bool.config_camera_sound_forced
+    // cached value of R.bool.config_camera_sound_forced
     @GuardedBy("mSettingsLock")
     private boolean mCameraSoundForced;
 
@@ -9936,7 +9955,7 @@ public class AudioService extends IAudioService.Stub
     private IAudioPolicyCallback mExtVolumeController;
     private void setExtVolumeController(IAudioPolicyCallback apc) {
         if (!mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_handleVolumeKeysInWindowManager)) {
+                R.bool.config_handleVolumeKeysInWindowManager)) {
             Log.e(TAG, "Cannot set external volume controller: device not set for volume keys" +
                     " handled in PhoneWindowManager");
             return;
