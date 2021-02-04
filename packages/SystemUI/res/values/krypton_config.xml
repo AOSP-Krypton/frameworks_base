@@ -75,6 +75,10 @@
         <item>@drawable/fod_rog_fusion_recognizing_anim</item>
         <item>@drawable/fod_rog_pulsar_recognizing_anim</item>
         <item>@drawable/fod_rog_supernova_recognizing_anim</item>
+        <item>@drawable/fod_recog_animation_shine"</item>
+        <item>@drawable/fod_recog_animation_smoke"</item>
+        <item>@drawable/fod_recog_animation_strings"</item>
+        <item>@drawable/fod_recog_animation_quantum"</item>
     </array>
 
     <!-- Whether usage of the proximity sensor during doze is supported -->
