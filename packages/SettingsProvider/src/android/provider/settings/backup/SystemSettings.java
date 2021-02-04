@@ -89,5 +89,9 @@ public class SystemSettings {
         Settings.System.SCREEN_OFF_FOD,
         Settings.System.FULLSCREEN_GESTURES,
         Settings.System.VOLUME_BUTTON_MUSIC_CONTROL,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND_ALPHA,
     };
 }
