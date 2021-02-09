@@ -378,6 +378,8 @@ import com.android.server.wm.WindowManagerInternal;
 import com.android.server.wm.WindowManagerService;
 import com.android.server.wm.WindowProcessController;
 
+import com.krypton.settings.controller.GamingModeController;
+
 import dalvik.system.VMRuntime;
 
 import libcore.util.EmptyArray;
@@ -1672,6 +1674,9 @@ public class ActivityManagerService extends IActivityManager.Stub
     private ParcelFileDescriptor[] mLifeMonitorFds;
 
     static final HostingRecord sNullHostingRecord = new HostingRecord(null);
+
+    private GamingModeController mGamingModeController;
+
     /**
      * Used to notify activity lifecycle events.
      */
@@ -7917,6 +7922,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         RescueParty.onSettingsProviderPublished(mContext);
 
         //mUsageStatsService.monitorPackages();
+
+        // GamingMode controller
+        mGamingModeController = new GamingModeController(mContext);
     }
 
     void startPersistentApps(int matchFlags) {
@@ -17928,6 +17936,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 Binder.restoreCallingIdentity(identity);
             }
 
+            if (mCurResumedPackage != null && mGamingModeController.isEnabled()) {
+                mGamingModeController.notifyAppOpened(mCurResumedPackage);
+            }
         }
         return r;
     }

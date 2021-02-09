@@ -4762,6 +4762,36 @@ public final class Settings {
         public static final String EGG_MODE = "egg_mode";
 
         /**
+         * Gaming mode enabled state
+         * @hide
+         */
+        public static final String GAMINGMODE_ENABLED = "gamingmode_enabled";
+
+        /**
+         * Gaming mode active state
+         * @hide
+         */
+        public static final String GAMINGMODE_ACTIVE = "gamingmode_active";
+
+        /**
+         * Gaming mode enabled apps
+         * @hide
+         */
+        public static final String GAMINGMODE_APPS = "gamingmode_apps";
+
+        /**
+         * Gaming mode key to disable heads-up notifications
+         * @hide
+         */
+        public static final String GAMINGMODE_DISABLE_HEADSUP = "gamingmode_disable_headsup";
+
+        /**
+         * Gaming mode key to store ringer mode value when gaming
+         * @hide
+         */
+        public static final String GAMINGMODE_RINGERMODE = "gamingmode_ringermode";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage

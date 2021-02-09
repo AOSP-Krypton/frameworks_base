@@ -71,6 +71,8 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
     @VisibleForTesting
     protected boolean mUseHeadsUp = false;
 
+    private boolean mDisableHeadsUp = false;
+
     @Inject
     public NotificationInterruptStateProviderImpl(
             ContentResolver contentResolver,
@@ -180,8 +182,17 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
                 || mStatusBarStateController.getState() == StatusBarState.KEYGUARD);
     }
 
+    @Override
+    public void disableHeadsUpIfGaming(boolean disableHeadsUp) {
+        mDisableHeadsUp = disableHeadsUp;
+    }
+
     private boolean shouldHeadsUpWhenAwake(NotificationEntry entry) {
         StatusBarNotification sbn = entry.getSbn();
+
+        if (mDisableHeadsUp) {
+            return false;
+        }
 
         if (!mUseHeadsUp) {
             if (DEBUG_HEADS_UP) {

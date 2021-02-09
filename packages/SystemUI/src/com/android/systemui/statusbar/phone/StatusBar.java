@@ -66,6 +66,7 @@ import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -73,6 +74,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.media.AudioAttributes;
@@ -649,6 +651,8 @@ public class StatusBar extends SystemUI implements DemoMode,
 
     private ActivityIntentHelper mActivityIntentHelper;
 
+    private boolean mDisableHeadsUp, mGamingModeActivated;
+
     /**
      * Public constructor for StatusBar.
      *
@@ -873,6 +877,9 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
 
         createAndAddWindows(result);
+
+        mSettingsObserver.observe();
+        mSettingsObserver.update();
 
         if (mWallpaperSupported) {
             // Make sure we always have the most current wallpaper info.
@@ -3873,6 +3880,40 @@ public class StatusBar extends SystemUI implements DemoMode,
             updateIsKeyguard();
         }
     };
+
+    private KryptonSettingsObserver mSettingsObserver = new KryptonSettingsObserver(mHandler);
+    private class KryptonSettingsObserver extends ContentObserver {
+        KryptonSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.GAMINGMODE_ACTIVE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.GAMINGMODE_DISABLE_HEADSUP), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            update();
+        }
+
+        void update() {
+            updateGamingMode();
+        }
+
+        private void updateGamingMode() {
+            mGamingModeActivated = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.GAMINGMODE_ACTIVE, -1,
+                UserHandle.USER_CURRENT) == 1;
+            mDisableHeadsUp = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.GAMINGMODE_DISABLE_HEADSUP, -1,
+                UserHandle.USER_CURRENT) == 1;
+            mNotificationInterruptStateProvider.disableHeadsUpIfGaming(mGamingModeActivated && mDisableHeadsUp);
+        }
+    }
 
     public int getWakefulnessState() {
         return mWakefulnessLifecycle.getWakefulness();
