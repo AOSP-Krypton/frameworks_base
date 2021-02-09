@@ -4792,6 +4792,12 @@ public final class Settings {
         public static final String GAMINGMODE_RINGERMODE = "gamingmode_ringermode";
 
         /**
+         * Gaming mode key to lock screen brightness
+         * @hide
+         */
+        public static final String GAMINGMODE_BRIGHTNESS = "gamingmode_brightness";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage
