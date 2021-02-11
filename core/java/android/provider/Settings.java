@@ -5240,6 +5240,27 @@ public final class Settings {
         public static final String TOUCHSCREEN_GESTURE_HAPTIC_FEEDBACK = "touchscreen_gesture_haptic_feedback";
 
         /**
+         * AlertSlider mode when alertslider is at the bottom.
+         * @hide
+         */
+        @SuppressLint("NoSettingsProvider")
+        public static final String ALERTSLIDER_MODE_POSITION_BOTTOM = "alertslider_mode_position_bottom";
+
+        /**
+         * AlertSlider mode when alertslider is at the middle.
+         * @hide
+         */
+        @SuppressLint("NoSettingsProvider")
+        public static final String ALERTSLIDER_MODE_POSITION_MIDDLE = "alertslider_mode_position_middle";
+
+        /**
+         * AlertSlider mode when alertslider is at the top.
+         * @hide
+         */
+        @SuppressLint("NoSettingsProvider")
+        public static final String ALERTSLIDER_MODE_POSITION_TOP = "alertslider_mode_position_top";
+
+        /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
          * it to PRIVATE_SETTINGS below. Also add a validator that can validate
@@ -5378,6 +5399,9 @@ public final class Settings {
             PRIVATE_SETTINGS.add(DISPLAY_PICTURE_ADJUSTMENT);
             PRIVATE_SETTINGS.add(LIVE_DISPLAY_HINTED);
             PRIVATE_SETTINGS.add(DISPLAY_ANTI_FLICKER);
+            PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_BOTTOM);
+            PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_MIDDLE);
+            PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_TOP);
         }
 
         /**

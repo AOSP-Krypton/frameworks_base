@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-     Copyright (C) 2021 AOSP-Krypton Project
+<!-- Copyright (C) 2021 AOSP-Krypton Project
+
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
-          http://www.apache.org/licenses/LICENSE-2.0
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
      Unless required by applicable law or agreed to in writing, software
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,18 +14,9 @@
      limitations under the License.
 -->
 <resources>
-    <!-- Color of the UDFPS pressed view -->
-    <color name="config_udfpsColor">#ffffffff</color>
 
-    <!-- HBM type of UDFPS overlay.
-            0 - GLOBAL HBM
-            1 - LOCAL HBM
-    -->
-    <integer name="config_udfps_hbm_type">1</integer>
+    <!-- AlertSlider -->
+    <string name="alert_slider_mode_priority_text">Priority</string>
+    <string name="alert_slider_mode_dnd_text">DND</string>
 
-    <!-- Whether device has hardware alertslider -->
-    <bool name="config_hasAlertSlider">false</bool>
-
-    <!-- Offset for alertslider dialog from status bar -->
-    <integer name="config_alertSliderOffset">0</integer>
 </resources>
