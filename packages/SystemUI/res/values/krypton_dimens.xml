@@ -14,19 +14,17 @@
      limitations under the License.
 -->
 <resources>
-    <!-- Color of the UDFPS pressed view -->
-    <color name="config_udfpsColor">#ffffffff</color>
 
-    <!-- HBM type of UDFPS overlay.
-            0 - GLOBAL HBM
-            1 - LOCAL HBM
-    -->
-    <integer name="config_udfps_hbm_type">1</integer>
+    <!-- AlertSlider -->
+    <!-- Absolute distance of the top position of alert slider from the top of the display -->
+    <integer name="alert_slider_top_y">0</integer>
 
-    <!-- Udfps vendor code -->
-    <integer name="config_udfps_vendor_code">22</integer>
+    <!-- Absolute width of the alert slider -->
+    <integer name="alertslider_width">0</integer>
 
-    <!-- Whether alertslider is on the left edge of the device -->
-    <bool name="config_alertSliderOnLeft">false</bool>
+    <dimen name="alertslider_dialog_minradius">24dp</dimen>
+    <dimen name="alertslider_dialog_minheight">48dp</dimen>
+    <dimen name="alertslider_dialog_minwidth">108dp</dimen>
+    <dimen name="alertslider_padding">15dp</dimen>
 
 </resources>

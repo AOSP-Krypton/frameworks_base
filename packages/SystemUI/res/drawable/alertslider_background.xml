@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2021-2022 AOSP-Krypton Project
+<!-- Copyright (C) 2021 AOSP-Krypton Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -13,20 +13,10 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources>
-    <!-- Color of the UDFPS pressed view -->
-    <color name="config_udfpsColor">#ffffffff</color>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+     android:shape="rectangle">
 
-    <!-- HBM type of UDFPS overlay.
-            0 - GLOBAL HBM
-            1 - LOCAL HBM
-    -->
-    <integer name="config_udfps_hbm_type">1</integer>
+     <solid android:color="?androidprv:attr/colorSurface" />
 
-    <!-- Udfps vendor code -->
-    <integer name="config_udfps_vendor_code">22</integer>
-
-    <!-- Whether alertslider is on the left edge of the device -->
-    <bool name="config_alertSliderOnLeft">false</bool>
-
-</resources>
+</shape>
