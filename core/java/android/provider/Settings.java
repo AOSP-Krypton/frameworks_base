@@ -4798,6 +4798,12 @@ public final class Settings {
         public static final String GAMINGMODE_BRIGHTNESS = "gamingmode_brightness";
 
         /**
+         * Gaming mode key to store preference to enable toast
+         * @hide
+         */
+        public static final String GAMINGMODE_TOAST = "gamingmode_toast";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage
