@@ -338,6 +338,7 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.util.function.HeptFunction;
 import com.android.internal.util.function.QuadFunction;
 import com.android.internal.util.function.TriFunction;
+import com.android.internal.util.krypton.KryptonUtils;
 import com.android.server.AlarmManagerInternal;
 import com.android.server.AttributeCache;
 import com.android.server.DeviceIdleInternal;
@@ -17937,8 +17938,11 @@ public class ActivityManagerService extends IActivityManager.Stub
                 Binder.restoreCallingIdentity(identity);
             }
 
-            if (mCurResumedPackage != null && mGamingModeController.isEnabled()) {
-                mGamingModeController.notifyAppOpened(mCurResumedPackage);
+            if (mCurResumedPackage != null) {
+                if (mGamingModeController.isEnabled()) {
+                    mGamingModeController.notifyAppOpened(mCurResumedPackage);
+                }
+                KryptonUtils.changeRefreshRateIfNeeded(mContext.getContentResolver(), mCurResumedPackage);
             }
         }
         return r;

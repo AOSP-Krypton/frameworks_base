@@ -4804,6 +4804,24 @@ public final class Settings {
         public static final String GAMINGMODE_TOAST = "gamingmode_toast";
 
         /**
+         * Static key to store whether custom refresh rate mode is enabled;
+         * @hide
+         */
+        public static final String CUSTOM_REFRESH_RATE_MODE = "custom_refresh_rate_mode";
+
+        /**
+         * Static key for storing list of apps with custom refresh rate mode;
+         * @hide
+         */
+        public static final String CUSTOM_REFRESH_RATE_MODE_APPS = "custom_refresh_rate_mode_apps";
+
+        /**
+         * Static key for storing maximum screen refresh rate supported by the device;
+         * @hide
+         */
+        public static final String DEVICE_MAX_SCREEN_REFRESH_RATE = "device_max_screen_refresh_rate";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage

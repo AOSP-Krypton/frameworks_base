@@ -16,6 +16,13 @@
 
 package com.android.internal.util.krypton;
 
+import static android.provider.Settings.System.CUSTOM_REFRESH_RATE_MODE_APPS;
+import static android.provider.Settings.System.CUSTOM_REFRESH_RATE_MODE;
+import static android.provider.Settings.System.DEVICE_MAX_SCREEN_REFRESH_RATE;
+import static android.provider.Settings.System.PEAK_REFRESH_RATE;
+import static android.provider.Settings.System.MIN_REFRESH_RATE;
+
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.input.InputManager;
@@ -25,6 +32,7 @@ import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -96,6 +104,19 @@ public class KryptonUtils {
                 } catch (RemoteException e) {
                     // do nothing.
                 }
+            }
+        }
+    }
+
+    public static void changeRefreshRateIfNeeded(ContentResolver resolver, String packageName) {
+        boolean enabled = Settings.System.getInt(resolver, CUSTOM_REFRESH_RATE_MODE, -1) == 1 ? true : false;
+        if (enabled) {
+            int maxRate = Settings.System.getInt(resolver, DEVICE_MAX_SCREEN_REFRESH_RATE, 0);
+            String mList = Settings.System.getString(resolver, CUSTOM_REFRESH_RATE_MODE_APPS);
+            if (mList != null) {
+                int rate = mList.contains(packageName) == true ? 60 : maxRate;
+                Settings.System.putInt(resolver, PEAK_REFRESH_RATE, rate);
+                Settings.System.putInt(resolver, MIN_REFRESH_RATE, rate);
             }
         }
     }
