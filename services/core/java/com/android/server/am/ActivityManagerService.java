@@ -16203,6 +16203,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                                         mServices.forceStopPackageLocked(ssp, userId);
                                         mAtmInternal.onPackageUninstalled(ssp);
                                         mBatteryStatsService.notePackageUninstalled(ssp);
+                                        if (mGamingModeController != null) {
+                                            mGamingModeController.notifyPackageRemoved(ssp);
+                                        }
+                                        KryptonUtils.removePackageIfInList(mContext.getContentResolver(), ssp);
                                     }
                                 } else {
                                     if (killProcess) {

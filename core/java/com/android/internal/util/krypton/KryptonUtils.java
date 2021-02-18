@@ -120,4 +120,10 @@ public class KryptonUtils {
             }
         }
     }
+
+    public static void removePackageIfInList(ContentResolver resolver, String packageName) {
+        String list = Settings.System.getString(resolver, CUSTOM_REFRESH_RATE_MODE_APPS);
+        if (list.contains(packageName)) list.replace(packageName + " ", "");
+        Settings.System.putString(resolver, CUSTOM_REFRESH_RATE_MODE_APPS, list);
+    }
 }
