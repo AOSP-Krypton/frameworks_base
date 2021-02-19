@@ -26,8 +26,17 @@
         android:layout_height="48dp"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
+        android:paddingEnd="0dp"
         android:contentDescription="@string/accessibility_brightness"
         android:importantForAccessibility="no"
         systemui:text="@string/status_bar_settings_auto_brightness_label" />
+
+    <ImageView
+        android:id="@+id/auto_brightness_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/ic_auto_brightness" />
 
 </LinearLayout>
