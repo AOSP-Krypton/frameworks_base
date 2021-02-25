@@ -404,7 +404,7 @@ public class BrightnessController implements ToggleSlider.Listener {
     }
 
     public void checkRestrictionAndSetEnabled() {
-        mBackgroundHandler.post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 ((ToggleSliderView)mControl).setEnforcedAdmin(
