@@ -114,7 +114,7 @@ public class KryptonUtils {
             int maxRate = Settings.System.getInt(resolver, DEVICE_MAX_SCREEN_REFRESH_RATE, 0);
             String mList = Settings.System.getString(resolver, CUSTOM_REFRESH_RATE_MODE_APPS);
             if (mList != null) {
-                int rate = mList.contains(packageName) == true ? 60 : maxRate;
+                int rate = mList.contains(packageName) ? 60 : maxRate;
                 Settings.System.putInt(resolver, PEAK_REFRESH_RATE, rate);
                 Settings.System.putInt(resolver, MIN_REFRESH_RATE, rate);
             }
