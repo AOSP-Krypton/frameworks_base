@@ -2774,6 +2774,7 @@
          "silent" = silent mode
          "users" = list of users
          "restart" = restart device
+         "recovery" = restart device to recovery
          "emergency" = Launch emergency dialer
          "lockdown" = Lock down device until the user authenticates
          "logout" =  Logout the current user
@@ -2783,6 +2784,7 @@
         <item>lockdown</item>
         <item>power</item>
         <item>restart</item>
+        <item>recovery</item>
         <item>logout</item>
         <item>screenshot</item>
         <item>bugreport</item>

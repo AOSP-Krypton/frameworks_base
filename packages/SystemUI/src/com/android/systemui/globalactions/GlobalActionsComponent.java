@@ -121,4 +121,12 @@ public class GlobalActionsComponent extends SystemUI implements Callbacks, Globa
         } catch (RemoteException e) {
         }
     }
+
+    @Override
+    public void rebootToRecovery() {
+        try {
+            mBarService.rebootToRecovery();
+        } catch (RemoteException e) {
+        }
+    }
 }
