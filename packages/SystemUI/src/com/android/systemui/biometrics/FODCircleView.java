@@ -19,6 +19,7 @@ package com.android.systemui.biometrics;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -110,6 +111,7 @@ public class FODCircleView extends ImageView {
 
     private boolean mIsBouncer;
     private boolean mIsDreaming;
+    private boolean mIsShowing = false;
     private boolean mIsCircleShowing;
     private boolean mIsAnimating = false;
 
@@ -310,7 +312,12 @@ public class FODCircleView extends ImageView {
         mHandler.post(() -> hide());
 
         mLockPatternUtils = new LockPatternUtils(mContext);
-
+        mLockPatternUtils.registerStrongAuthTracker(new LockPatternUtils.StrongAuthTracker(mContext) {
+            @Override
+            public void onStrongAuthRequiredChanged(int userId) {
+                if (mIsShowing && isStrongAuthRequired(userId)) hide();
+            }
+        });
         mUpdateMonitor = Dependency.get(KeyguardUpdateMonitor.class);
         mUpdateMonitor.registerCallback(mMonitorCallback);
 
@@ -479,11 +486,22 @@ public class FODCircleView extends ImageView {
         setKeepScreenOn(false);
     }
 
+    private boolean isStrongAuthRequired(int userId) {
+        return mLockPatternUtils.getStrongAuthForUser(userId)
+                != LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED;
+    }
+
     public void show() {
+        if (isStrongAuthRequired(ActivityManager.getCurrentUser())) {
+            // do not show if device is locked down for whatever reason
+            return;
+        }
+
         if (mIsBouncer && !isPinOrPattern(mUpdateMonitor.getCurrentUser())) {
             // Ignore show calls when Keyguard password screen is being shown
             return;
         }
+        mIsShowing = true;
 
         updatePosition();
         mBrightnessObserver.update();
@@ -495,6 +513,7 @@ public class FODCircleView extends ImageView {
     }
 
     public void hide() {
+        mIsShowing = false;
         setVisibility(View.GONE);
         hideCircle();
         mBrightnessObserver.unobserve();
