@@ -53,17 +53,20 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Region;
 import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.media.AudioSystem;
+import android.net.Uri;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.provider.Settings;
 import android.provider.Settings.Global;
@@ -201,7 +204,7 @@ public class VolumeDialogImpl implements VolumeDialog,
         mShowActiveStreamOnly = showActiveStreamOnly();
         mHasSeenODICaptionsTooltip =
                 Prefs.getBoolean(context, Prefs.Key.HAS_SEEN_ODI_CAPTIONS_TOOLTIP, false);
-        mLeftVolumeRocker = mContext.getResources().getBoolean(R.bool.config_audioPanelOnLeftSide);
+        update();
     }
 
     @Override
@@ -217,6 +220,10 @@ public class VolumeDialogImpl implements VolumeDialog,
         mController.addCallback(mControllerCallbackH, mHandler);
         mController.getState();
 
+        mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                Settings.System.VOLUME_PANEL_ON_LEFT),
+                false, mContentObserver, UserHandle.USER_ALL);
+
         Dependency.get(ConfigurationController.class).addCallback(this);
     }
 
@@ -224,6 +231,7 @@ public class VolumeDialogImpl implements VolumeDialog,
     public void destroy() {
         mController.removeCallback(mControllerCallbackH);
         mHandler.removeCallbacksAndMessages(null);
+        mContext.getContentResolver().unregisterContentObserver(mContentObserver);
         Dependency.get(ConfigurationController.class).removeCallback(this);
     }
 
@@ -263,7 +271,7 @@ public class VolumeDialogImpl implements VolumeDialog,
 
         mDialogView = mDialog.findViewById(R.id.volume_dialog);
         mDialogView.setAlpha(0);
-        mDialogView.setLayoutDirection(isAudioPanelOnLeftSide() ?
+        mDialogView.setLayoutDirection(mLeftVolumeRocker ?
                 View.LAYOUT_DIRECTION_LTR : View.LAYOUT_DIRECTION_RTL);
 
         mDialogView.setOnHoverListener((v, event) -> {
@@ -289,11 +297,7 @@ public class VolumeDialogImpl implements VolumeDialog,
         if (mRinger != null) {
             mRingerIcon = mRinger.findViewById(R.id.ringer_icon);
             mZenIcon = mRinger.findViewById(R.id.dnd_icon);
-            if(!isAudioPanelOnLeftSide()) {
-                mRinger.setForegroundGravity(Gravity.RIGHT);
-            } else {
-                mRinger.setForegroundGravity(Gravity.LEFT);
-            }
+            mRinger.setForegroundGravity(panelGravity);
         }
 
         mODICaptionsView = mDialog.findViewById(R.id.odi_captions);
@@ -304,13 +308,8 @@ public class VolumeDialogImpl implements VolumeDialog,
         if (mHasSeenODICaptionsTooltip && mODICaptionsTooltipViewStub != null) {
             mDialogView.removeView(mODICaptionsTooltipViewStub);
             mODICaptionsTooltipViewStub = null;
-        }else if (mODICaptionsTooltipViewStub != null){
-            if(!isAudioPanelOnLeftSide()) {
-                mRinger.setForegroundGravity(Gravity.BOTTOM | Gravity.RIGHT);
-            } else {
-                mRinger.setForegroundGravity(Gravity.BOTTOM | Gravity.LEFT);
-            }
-
+        } else if (mODICaptionsTooltipViewStub != null){
+            mRinger.setForegroundGravity(Gravity.BOTTOM | panelGravity);
         }
 
         mMediaOutputView = mDialog.findViewById(R.id.media_output_container);
@@ -323,7 +322,7 @@ public class VolumeDialogImpl implements VolumeDialog,
         mExpandRows = mDialog.findViewById(R.id.expandable_indicator);
         if (mExpandRows != null) {
             setLayoutGravity(mExpandRows.getLayoutParams(), panelGravity);
-            mExpandRows.setRotation(isAudioPanelOnLeftSide() ? -90 : 90);
+            mExpandRows.setRotation(mLeftVolumeRocker ? -90 : 90);
         }
 
         if (mRows.isEmpty()) {
@@ -381,6 +380,25 @@ public class VolumeDialogImpl implements VolumeDialog,
                 dialogLocation[1] + mDialogView.getHeight()
         ));
     };
+
+    private final ContentObserver mContentObserver = new ContentObserver(mHandler) {
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (update()) {
+                mConfigChanged = true;
+            }
+        }
+    };
+
+    private boolean update() {
+        boolean value = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.VOLUME_PANEL_ON_LEFT,
+                mContext.getResources().getBoolean(R.bool.config_audioPanelOnLeftSide)
+                ? 1 : 0, UserHandle.USER_CURRENT) == 1;
+        boolean changed = value != mLeftVolumeRocker;
+        mLeftVolumeRocker = value;
+        return changed;
+    }
 
     // Helper to set layout gravity.
     // Particular useful when the ViewGroup in question
@@ -976,7 +994,10 @@ public class VolumeDialogImpl implements VolumeDialog,
                     tryToRemoveCaptionsTooltip();
                     mController.notifyVisible(false);
                 }, 50));
-        if (!isLandscape()) animator.translationX((mDialogView.getWidth() / 2.0f)*(!isAudioPanelOnLeftSide() ? 1 : -1));
+        if (!isLandscape()) {
+            animator.translationX((mDialogView.getWidth() / 2.0f)*(
+                mLeftVolumeRocker ? -1 : 1));
+        }
         animator.start();
         checkODICaptionsTooltip(true);
         synchronized (mSafetyWarningLock) {
@@ -1666,10 +1687,6 @@ public class VolumeDialogImpl implements VolumeDialog,
             rescheduleTimeoutH();
             return super.onRequestSendAccessibilityEvent(host, child, event);
         }
-    }
-
-    private boolean isAudioPanelOnLeftSide() {
-        return mLeftVolumeRocker;
     }
 
     private static class VolumeRow {

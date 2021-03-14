@@ -116,5 +116,6 @@ public class SystemSettings {
         Settings.System.VOLUME_BUTTON_MUSIC_CONTROL,
         Settings.System.TORCH_LONG_PRESS_POWER_GESTURE,
         Settings.System.TORCH_LONG_PRESS_POWER_TIMEOUT,
+        Settings.System.VOLUME_PANEL_ON_LEFT,
     };
 }
