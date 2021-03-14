@@ -516,7 +516,6 @@ public class FODCircleView extends ImageView {
         mIsShowing = false;
         setVisibility(View.GONE);
         hideCircle();
-        mBrightnessObserver.unobserve();
         ThreadUtils.postOnBackgroundThread(() -> {
             dispatchHide();
         });
