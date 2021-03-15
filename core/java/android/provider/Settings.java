@@ -4792,10 +4792,22 @@ public final class Settings {
         public static final String GAMINGMODE_RINGERMODE = "gamingmode_ringermode";
 
         /**
-         * Gaming mode key to lock screen brightness
+         * Gaming mode key to store current screen brightness when gaming for restoring later
          * @hide
          */
         public static final String GAMINGMODE_BRIGHTNESS = "gamingmode_brightness";
+
+        /**
+         * Gaming mode key to lock screen brightness
+         * @hide
+         */
+        public static final String GAMINGMODE_LOCK_BRIGHTNESS = "gamingmode_lock_brightness";
+
+        /**
+         * Gaming mode key to restore screen brightness
+         * @hide
+         */
+        public static final String GAMINGMODE_RESTORE_BRIGHTNESS = "gamingmode_restore_brightness";
 
         /**
          * Gaming mode key to store preference to enable toast
