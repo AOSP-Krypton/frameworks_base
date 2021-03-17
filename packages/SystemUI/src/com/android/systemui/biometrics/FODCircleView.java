@@ -66,6 +66,8 @@ public class FODCircleView extends ImageView {
     private static final int FADE_ANIM_DURATION = 250;
     private static final String SCREEN_BRIGHTNESS = Settings.System.SCREEN_BRIGHTNESS;
     private static final String AOD = Settings.Secure.DOZE_ALWAYS_ON;
+    private static final String CUSTOM_MODE = Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE;
+    private static final String CUSTOM_BRIGHTNESS = Settings.Secure.DOZE_SCREEN_BRIGHTNESS;
     private static final int[][] BRIGHTNESS_ALPHA_ARRAY = {
         new int[]{0, 255},
         new int[]{1, 224},
@@ -101,9 +103,7 @@ public class FODCircleView extends ImageView {
 
     private IFingerprintInscreen mFingerprintInscreenDaemon;
     private Context mContext;
-    private BrightnessObserver mBrightnessObserver;
 
-    private int mCurrentBrightness;
     private int mDreamingOffsetY;
 
     private int mColor;
@@ -202,24 +202,12 @@ public class FODCircleView extends ImageView {
         void observe() {
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(SCREEN_BRIGHTNESS),
                 false, this, UserHandle.USER_ALL);
-            update();
-        }
-
-        void unobserve() {
-            mContext.getContentResolver().unregisterContentObserver(this);
+            updateIconDim(false);
         }
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            update();
-        }
-
-        void update() {
-            int brightness = getCurrentBrightness();
-            if (mCurrentBrightness != brightness) {
-                mCurrentBrightness = brightness;
-                updateIconDim(false);
-            }
+            updateIconDim(false);
         }
     }
 
@@ -263,8 +251,7 @@ public class FODCircleView extends ImageView {
 
         mHandler = new Handler(Looper.getMainLooper());
 
-        mBrightnessObserver = new BrightnessObserver(mHandler);
-        mBrightnessObserver.observe();
+        new BrightnessObserver(mHandler).observe();
 
         mParams.height = mSize;
         mParams.width = mSize;
@@ -335,9 +322,10 @@ public class FODCircleView extends ImageView {
     }
 
     private int getDimAlpha() {
+        int currentBrightness = getCurrentBrightness();
         int length = BRIGHTNESS_ALPHA_ARRAY.length;
         int i = 0;
-        while (i < length && BRIGHTNESS_ALPHA_ARRAY[i][0] < mCurrentBrightness) {
+        while (i < length && BRIGHTNESS_ALPHA_ARRAY[i][0] < currentBrightness) {
             i++;
         }
         if (i == 0) {
@@ -348,7 +336,7 @@ public class FODCircleView extends ImageView {
         }
         int[][] iArr = BRIGHTNESS_ALPHA_ARRAY;
         int i2 = i - 1;
-        return interpolate(mCurrentBrightness, iArr[i2][0], iArr[i][0], iArr[i2][1], iArr[i][1]);
+        return interpolate(currentBrightness, iArr[i2][0], iArr[i][0], iArr[i2][1], iArr[i][1]);
     }
 
     public void updateIconDim(boolean animate) {
@@ -366,7 +354,14 @@ public class FODCircleView extends ImageView {
     }
 
     private int getCurrentBrightness() {
-        return Settings.System.getInt(mContext.getContentResolver(), SCREEN_BRIGHTNESS, 100);
+        boolean customMode = Settings.Secure.getInt(mContext.getContentResolver(),
+                CUSTOM_MODE, -1) == 1;
+        if (customMode && mIsDreaming) {
+            return Settings.Secure.getInt(mContext.getContentResolver(),
+                CUSTOM_BRIGHTNESS, 1);
+        }
+        return Settings.System.getInt(mContext.getContentResolver(),
+            SCREEN_BRIGHTNESS, 100);
     }
 
     @Override
@@ -504,7 +499,7 @@ public class FODCircleView extends ImageView {
         mIsShowing = true;
 
         updatePosition();
-        mBrightnessObserver.update();
+        updateIconDim(false);
 
         ThreadUtils.postOnBackgroundThread(() -> {
             dispatchShow();

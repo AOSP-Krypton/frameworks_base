@@ -7854,6 +7854,20 @@ public final class Settings {
         public static final String DOZE_PULSE_ON_LONG_PRESS = "doze_pulse_on_long_press";
 
         /**
+         * Whether user will choose a custom value for ambient display brightness.
+         * @hide
+         */
+        @SystemApi
+        public static final String DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE = "doze_custom_screen_brightness_mode";
+
+        /**
+         * Stores the brightness value in the range of 1 to 255 to be set for ambient display.
+         * @hide
+         */
+        @SystemApi
+        public static final String DOZE_SCREEN_BRIGHTNESS = "doze_screen_brightness";
+
+        /**
          * Whether the device should pulse on double tap gesture.
          * @hide
          */

@@ -200,10 +200,17 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
     }
     //TODO: brightnessfloat change usages to float.
     private int clampToUserSetting(int brightness) {
-        int userSetting = Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS, Integer.MAX_VALUE,
-                UserHandle.USER_CURRENT);
-        return Math.min(brightness, userSetting);
+        boolean customMode = Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, -1) == 1 ? true : false;
+        if (customMode) {
+            return Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.DOZE_SCREEN_BRIGHTNESS, 1);
+        } else {
+            int userSetting = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS, Integer.MAX_VALUE,
+                    UserHandle.USER_CURRENT);
+            return Math.min(brightness, userSetting);
+        }
     }
 
     private void setLightSensorEnabled(boolean enabled) {
