@@ -43,3 +43,4 @@
 
 # Custom rules
 -keep class com.google.android.systemui.** { *; }
+-keep class org.protonaosp.systemui.CustomSystemUIFactory
