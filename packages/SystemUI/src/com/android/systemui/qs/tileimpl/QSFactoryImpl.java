@@ -55,6 +55,7 @@ import com.android.systemui.qs.tiles.WifiTile;
 import com.android.systemui.qs.tiles.WorkModeTile;
 import com.android.systemui.util.leak.GarbageMonitor;
 import com.android.systemui.qs.tiles.CaffeineTile;
+import com.android.systemui.qs.tiles.AmbientDisplayTile;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -96,6 +97,7 @@ public class QSFactoryImpl implements QSFactory {
     private final Provider<ReadingModeTile> mReadingModeTileProvider;
     private final Provider<RefreshRateTile> mRefreshRateTileProvider;
     private final Provider<CaffeineTile> mCaffeineTileProvider;
+    private final Provider<AmbientDisplayTile> mAmbientDisplayTileProvider;
 
     private final Lazy<QSHost> mQsHostLazy;
     private final Provider<CustomTile.Builder> mCustomTileBuilderProvider;
@@ -133,7 +135,8 @@ public class QSFactoryImpl implements QSFactory {
             Provider<QuickAccessWalletTile> quickAccessWalletTileProvider,
             Provider<ReadingModeTile> readingModeTileProvider,
             Provider<RefreshRateTile> refreshRateTileProvider,
-            Provider<CaffeineTile> caffeineTileProvider) {
+            Provider<CaffeineTile> caffeineTileProvider,
+            Provider<AmbientDisplayTile> ambientDisplayTileProvider) {
         mQsHostLazy = qsHostLazy;
         mCustomTileBuilderProvider = customTileBuilderProvider;
 
@@ -167,6 +170,7 @@ public class QSFactoryImpl implements QSFactory {
         mReadingModeTileProvider = readingModeTileProvider;
         mRefreshRateTileProvider = refreshRateTileProvider;
         mCaffeineTileProvider = caffeineTileProvider;
+        mAmbientDisplayTileProvider = ambientDisplayTileProvider;
     }
 
     public QSTile createTile(String tileSpec) {
@@ -239,6 +243,8 @@ public class QSFactoryImpl implements QSFactory {
                 return mRefreshRateTileProvider.get();
             case "caffeine":
                 return mCaffeineTileProvider.get();
+            case "ambient_display":
+                return mAmbientDisplayTileProvider.get();
         }
 
         // Custom tiles
