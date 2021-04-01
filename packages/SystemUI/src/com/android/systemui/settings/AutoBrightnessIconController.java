@@ -40,7 +40,7 @@ public class AutoBrightnessIconController {
     private boolean mRegistered = false;
     private ContentResolver mResolver;
     private Context mContext;
-    private Handler mBgHandler;
+    private Handler mHandler;
     private ImageView mAutoBrightnessIcon;
 
     private final Runnable mRegisterRunnable = new Runnable() {
@@ -48,14 +48,10 @@ public class AutoBrightnessIconController {
         public void run() {
             if (mRegistered || mAutoBrightnessIcon == null) return;
             mRegistered = true;
-            mAutoBrightnessIcon.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mUpdateModeRunnable.run();
-                    mUpdateIconRunnable.run();
-                }
+            mAutoBrightnessIcon.setOnClickListener((View view) -> {
+                mUpdateModeRunnable.run();
+                mUpdateIconRunnable.run();
             });
-
             mUpdateIconRunnable.run();
         }
     };
@@ -78,21 +74,23 @@ public class AutoBrightnessIconController {
     public AutoBrightnessIconController(Context context, ImageView view) {
         mContext = context;
         mResolver = mContext.getContentResolver();
-        mBgHandler = new Handler((Looper) Dependency.get(Dependency.BG_LOOPER));
+        mHandler = new Handler(Looper.getMainLooper());
         mAutoBrightnessIcon = view;
+        updateStatus();
     }
 
     public void registerCallbacks() {
-        mBgHandler.post(mRegisterRunnable);
+        mHandler.post(mRegisterRunnable);
     }
 
     public void unregisterCallbacks() {
-        if (!mRegistered) return;
+        if (!mRegistered || mAutoBrightnessIcon == null) return;
         mRegistered = false;
+        mAutoBrightnessIcon.setOnClickListener(null);
     }
 
     public void updateStatus() {
-        mBgHandler.post(mUpdateIconRunnable);
+        mHandler.post(mUpdateIconRunnable);
     }
 
     private void setBrightnessMode(int mode) {
