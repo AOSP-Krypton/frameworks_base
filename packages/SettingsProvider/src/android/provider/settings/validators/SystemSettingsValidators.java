@@ -19,6 +19,7 @@ package android.provider.settings.validators;
 import static android.provider.settings.validators.SettingsValidators.ANY_STRING_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.BOOLEAN_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.COMPONENT_NAME_VALIDATOR;
+import static android.provider.settings.validators.SettingsValidators.GAMING_MODE_PACKAGE_LIST_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.LENIENT_IP_ADDRESS_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.NON_NEGATIVE_INTEGER_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.URI_VALIDATOR;
@@ -281,6 +282,11 @@ public class SystemSettingsValidators {
                         return true;
                     }
                 });
-
+        VALIDATORS.put(System.GAMING_MODE_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_ACTIVE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DYNAMIC_ADD, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_APP_LIST, GAMING_MODE_PACKAGE_LIST_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DISABLE_NOTIFICATION_ALERT, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DISABLE_ADB, BOOLEAN_VALIDATOR);
     }
 }

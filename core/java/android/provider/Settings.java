@@ -5438,6 +5438,51 @@ public final class Settings {
         public static final String CUSTOM_RINGTONE_VIBRATION_PATTERN = "custom_ringtone_vibration_pattern";
 
         /**
+         * Setting to enable/disable gaming mode
+         * @hide
+         */
+        @Readable
+        public static final String GAMING_MODE_ENABLED = "gaming_mode_enabled";
+
+        /**
+         * 0 - user is not in gaming mode
+         * 1 - user is in gaming mode
+         * @hide
+         */
+        @Readable
+        public static final String GAMING_MODE_ACTIVE = "gaming_mode_active";
+
+        /**
+         * Dynamically identify the top application and add it to the list
+         * @hide
+         */
+        @Readable
+        public static final String GAMING_MODE_DYNAMIC_ADD = "gaming_mode_dynamic_add";
+
+        /**
+         * @hide
+         */
+        @Readable
+        public static final String GAMING_MODE_APP_LIST = "gaming_mode_app_list";
+
+        /**
+         * Whether to disable notification heads-up or bubble in gaming mode.
+         * Default 1
+         *
+         * @hide
+         */
+        @Readable
+        public static final String GAMING_MODE_DISABLE_NOTIFICATION_ALERT = "gaming_mode_disable_notification_alert";
+
+        /**
+         * Whether to disable adb while in gaming mode.
+         * Default 0
+         *
+         * @hide
+         */
+        public static final String GAMING_MODE_DISABLE_ADB = "gaming_mode_disable_adb";
+
+        /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
          * it to PRIVATE_SETTINGS below. Also add a validator that can validate

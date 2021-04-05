@@ -95,5 +95,10 @@ public class SystemSettings {
         Settings.System.ARTWORK_MEDIA_BACKGROUND_ALPHA,
         Settings.System.RINGTONE_VIBRATION_PATTERN,
         Settings.System.CUSTOM_RINGTONE_VIBRATION_PATTERN,
+        Settings.System.GAMING_MODE_ENABLED,
+        Settings.System.GAMING_MODE_DYNAMIC_ADD,
+        Settings.System.GAMING_MODE_APP_LIST,
+        Settings.System.GAMING_MODE_DISABLE_NOTIFICATION_ALERT,
+        Settings.System.GAMING_MODE_DISABLE_ADB,
     };
 }
