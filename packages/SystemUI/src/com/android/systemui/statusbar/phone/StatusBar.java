@@ -1483,7 +1483,8 @@ public class StatusBar extends SystemUI implements DemoMode,
                 mKeyguardIndicationController,
                 this /* statusBar */, mShadeController,
                 mLockscreenShadeTransitionController, mCommandQueue, mInitController,
-                mNotificationInterruptStateProvider);
+                mNotificationInterruptStateProvider,
+                mSystemSettings);
 
         mNotificationShelfController.setOnActivatedListener(mPresenter);
         mRemoteInputManager.getController().addCallback(mNotificationShadeWindowController);
