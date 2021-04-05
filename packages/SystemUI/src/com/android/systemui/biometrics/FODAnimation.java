@@ -43,14 +43,14 @@ public class FODAnimation extends ImageView {
     private LayoutParams mAnimParams;
     private TypedArray mFODAnims;
 
-    public FODAnimation(Context context, int mPositionX, int mPositionY) {
+    public FODAnimation(Context context, WindowManager windowManager, int mPositionX, int mPositionY) {
         super(context);
 
         mContext = context;
         Resources res = mContext.getResources();
         mAnimationSize = res.getDimensionPixelSize(R.dimen.fod_animation_size);
         mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mWindowManager = mContext.getSystemService(WindowManager.class);
+        mWindowManager = windowManager;
 
         mAnimationOffset = res.getDimensionPixelSize(R.dimen.fod_animation_offset);
 
@@ -91,11 +91,13 @@ public class FODAnimation extends ImageView {
     public void showFODanimation() {
         if (mAnimParams != null && !mShowing && mIsKeyguard) {
             mShowing = true;
-            if (this.getWindowToken() == null){
+            if (getWindowToken() == null){
                 mWindowManager.addView(this, mAnimParams);
                 mWindowManager.updateViewLayout(this, mAnimParams);
             }
-            recognizingAnim.start();
+            if (recognizingAnim != null) {
+                recognizingAnim.start();
+            }
         }
     }
 
@@ -103,11 +105,11 @@ public class FODAnimation extends ImageView {
         if (mShowing) {
             mShowing = false;
             if (recognizingAnim != null) {
-                this.clearAnimation();
+                clearAnimation();
                 recognizingAnim.stop();
                 recognizingAnim.selectDrawable(0);
             }
-            if (this.getWindowToken() != null) {
+            if (getWindowToken() != null) {
                 mWindowManager.removeView(this);
             }
         }

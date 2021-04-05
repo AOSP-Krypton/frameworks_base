@@ -46,6 +46,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.widget.ImageView;
 
 import com.android.internal.widget.LockPatternUtils;
@@ -109,8 +110,8 @@ public class FODCircleView extends ImageView {
     private final boolean mTargetUsesInKernelDimming;
     private final Paint mPaintFingerprintBackground = new Paint();
     private final Paint mPaintFingerprint = new Paint();
-    private final WindowManager.LayoutParams mParams = new WindowManager.LayoutParams();
-    private final WindowManager.LayoutParams mPressedParams = new WindowManager.LayoutParams();
+    private final LayoutParams mParams = new LayoutParams();
+    private final LayoutParams mPressedParams = new LayoutParams();
     private final WindowManager mWindowManager;
 
     private IFingerprintInscreen mFingerprintInscreenDaemon;
@@ -242,6 +243,7 @@ public class FODCircleView extends ImageView {
                 updateFodIcon();
             } else if (uri.equals(FOD_RECOGNIZING_ANIM_URI)) {
                 updateFodAnimRecognizing();
+                updateFodAnim();
             } else if (uri.equals(FOD_ANIM_URI)) {
                 updateFodAnim();
             }
@@ -269,7 +271,7 @@ public class FODCircleView extends ImageView {
             throw new RuntimeException("Failed to retrieve FOD circle position or size");
         }
 
-        Resources res = context.getResources();
+        Resources res = mContext.getResources();
 
         mFodIcons = res.obtainTypedArray(com.krypton.settings.R.array.config_fodIcons);
 
@@ -281,7 +283,8 @@ public class FODCircleView extends ImageView {
 
         mTargetUsesInKernelDimming = res.getBoolean(com.android.internal.R.bool.config_targetUsesInKernelDimming);
 
-        mWindowManager = context.getSystemService(WindowManager.class);
+        mWindowManager = mContext.getSystemService(WindowManager.class);
+        mFODAnimation = new FODAnimation(mContext, mWindowManager, mPositionX, mPositionY);
 
         mNavigationBarSize = res.getDimensionPixelSize(R.dimen.navigation_bar_size);
 
@@ -296,19 +299,18 @@ public class FODCircleView extends ImageView {
         mParams.format = PixelFormat.TRANSLUCENT;
 
         mParams.packageName = "android";
-        mParams.type = WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY;
-        mParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+        mParams.type = LayoutParams.TYPE_DISPLAY_OVERLAY;
+        mParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                LayoutParams.FLAG_HARDWARE_ACCELERATED;
         mParams.gravity = Gravity.TOP | Gravity.LEFT;
 
         mPressedParams.copyFrom(mParams);
-        mPressedParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        mPressedParams.flags |= LayoutParams.FLAG_DIM_BEHIND;
 
         mParams.setTitle("Fingerprint on display");
         mPressedParams.setTitle("Fingerprint on display.touched");
 
-        mPressedView = new ImageView(context)  {
+        mPressedView = new ImageView(mContext)  {
             @Override
             protected void onDraw(Canvas canvas) {
                 if (mIsCircleShowing) {
@@ -348,8 +350,6 @@ public class FODCircleView extends ImageView {
 
         mWakefulnessLifecycle = Dependency.get(WakefulnessLifecycle.class);
         mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
-
-        mFODAnimation = new FODAnimation(context, mPositionX, mPositionY);
     }
 
     private int interpolate(int i, int i2, int i3, int i4, int i5) {
