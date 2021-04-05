@@ -64,7 +64,7 @@ public class FODAnimation extends ImageView {
         mAnimParams.gravity = Gravity.TOP | Gravity.CENTER;
         mAnimParams.y = getAnimParamsY(mPositionY);
 
-        mFODAnims = res.obtainTypedArray(R.array.config_fodAnims);
+        mFODAnims = res.obtainTypedArray(com.krypton.settings.R.array.config_fodAnims);
 
         setScaleType(ScaleType.CENTER_INSIDE);
     }

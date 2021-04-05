@@ -271,7 +271,7 @@ public class FODCircleView extends ImageView {
 
         Resources res = context.getResources();
 
-        mFodIcons = res.obtainTypedArray(R.array.config_fodIcons);
+        mFodIcons = res.obtainTypedArray(com.krypton.settings.R.array.config_fodIcons);
 
         mPaintFingerprint.setColor(res.getColor(R.color.config_fodColor));
         mPaintFingerprint.setAntiAlias(true);

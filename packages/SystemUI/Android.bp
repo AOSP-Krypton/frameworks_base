@@ -71,7 +71,7 @@ android_library {
         "dagger2-2.19",
         "jsr330",
         "vendor.krypton.biometrics.fingerprint.inscreen-V1.0-java",
-        "FODAnimations",
+        "FODResources",
     ],
     manifest: "AndroidManifest.xml",
 
