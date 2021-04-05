@@ -45,7 +45,6 @@
         <item>@drawable/fod_icon_scratch_pink_blue</item>
         <item>@drawable/fod_icon_scratch_red_blue</item>
         <item>@drawable/fod_icon_fire_ice_ouroboros</item>
-        <item>@drawable/fod_icon_transparent</item>
     </array>
 
     <!-- Whether usage of the proximity sensor during doze is supported -->
