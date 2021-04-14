@@ -4822,10 +4822,10 @@ public final class Settings {
         public static final String CUSTOM_REFRESH_RATE_MODE = "custom_refresh_rate_mode";
 
         /**
-         * Static key for storing list of apps with custom refresh rate mode;
+         * ArraySet for storing list of apps with custom refresh rate mode;
          * @hide
          */
-        public static final String CUSTOM_REFRESH_RATE_MODE_APPS = "custom_refresh_rate_mode_apps";
+        public static final Set<String> CUSTOM_REFRESH_RATE_MODE_APPS = new ArraySet<>();
 
         /**
          * Static key for storing maximum screen refresh rate supported by the device;

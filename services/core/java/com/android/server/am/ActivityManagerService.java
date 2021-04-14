@@ -17946,7 +17946,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 if (mGamingModeController.isEnabled()) {
                     mGamingModeController.notifyAppOpened(mCurResumedPackage);
                 }
-                KryptonUtils.changeRefreshRateIfNeeded(mContext.getContentResolver(), mCurResumedPackage);
             }
         }
         return r;
