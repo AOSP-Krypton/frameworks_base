@@ -115,9 +115,11 @@ public class RecordingController
                                            @Nullable Runnable onStartRecordingClicked) {
         return flags.isEnabled(Flags.WM_ENABLE_PARTIAL_SCREEN_SHARING)
                 ? new ScreenRecordPermissionDialog(context, this, activityStarter,
-                        dialogLaunchAnimator, mUserContextProvider, onStartRecordingClicked)
+                        dialogLaunchAnimator, mUserContextProvider, onStartRecordingClicked,
+                        new State(mUserContextProvider))
                 : new ScreenRecordDialog(context, this, activityStarter,
-                mUserContextProvider, flags, dialogLaunchAnimator, onStartRecordingClicked);
+                mUserContextProvider, flags, dialogLaunchAnimator, onStartRecordingClicked,
+                new State(mUserContextProvider));
     }
 
     /**

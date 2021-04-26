@@ -29,6 +29,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -44,6 +45,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import com.android.systemui.Prefs;
 import com.android.systemui.R;
 import com.android.systemui.animation.ActivityLaunchAnimator;
 import com.android.systemui.animation.DialogLaunchAnimator;
@@ -80,10 +82,12 @@ public class ScreenRecordDialog extends SystemUIDialog {
     private Switch mAudioSwitch;
     private Spinner mOptions;
 
+    private final State mState;
+
     public ScreenRecordDialog(Context context, RecordingController controller,
             ActivityStarter activityStarter, UserContextProvider userContextProvider,
             FeatureFlags flags, DialogLaunchAnimator dialogLaunchAnimator,
-            @Nullable Runnable onStartRecordingClicked) {
+            @Nullable Runnable onStartRecordingClicked, State state) {
         super(context);
         mController = controller;
         mUserContextProvider = userContextProvider;
@@ -91,6 +95,7 @@ public class ScreenRecordDialog extends SystemUIDialog {
         mDialogLaunchAnimator = dialogLaunchAnimator;
         mFlags = flags;
         mOnStartRecordingClicked = onStartRecordingClicked;
+        mState = state;
     }
 
     @Override
@@ -148,17 +153,31 @@ public class ScreenRecordDialog extends SystemUIDialog {
         }
 
         mAudioSwitch = findViewById(R.id.screenrecord_audio_switch);
+        mAudioSwitch.setChecked(mState.getUseAudio());
+        mAudioSwitch.setOnCheckedChangeListener((v, isChecked) -> mState.setUseAudio(isChecked));
+
         mTapsSwitch = findViewById(R.id.screenrecord_taps_switch);
+        mTapsSwitch.setChecked(mState.getShowTaps());
+        mTapsSwitch.setOnCheckedChangeListener((v, isChecked) -> mState.setShowTaps(isChecked));
+
         mStopDotSwitch = findViewById(R.id.screenrecord_stopdot_switch);
+        mStopDotSwitch.setChecked(mState.getShowStopDot());
+        mStopDotSwitch.setOnCheckedChangeListener((v, isChecked) -> mState.setShowStopDot(isChecked));
+
         mLowQualitySwitch = findViewById(R.id.screenrecord_lowquality_switch);
+        mLowQualitySwitch.setChecked(mState.isLowQuality());
+        mLowQualitySwitch.setOnCheckedChangeListener((v, isChecked) -> mState.setLowQuality(isChecked));
+
         mOptions = findViewById(R.id.screen_recording_options);
         ArrayAdapter a = new ScreenRecordingAdapter(getContext().getApplicationContext(),
                 android.R.layout.simple_spinner_dropdown_item,
                 MODES);
         a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mOptions.setAdapter(a);
+        mOptions.setSelection(mState.getAudioSource());
         mOptions.setOnItemClickListenerInt((parent, view, position, id) -> {
             mAudioSwitch.setChecked(true);
+            mState.setAudioSource(position);
         });
     }
 
@@ -168,7 +187,7 @@ public class ScreenRecordDialog extends SystemUIDialog {
      *                      null to record the whole screen
      */
     private void requestScreenCapture(@Nullable MediaProjectionCaptureTarget captureTarget) {
-        Context userContext = mUserContextProvider.getUserContext();
+        final Context userContext = mUserContextProvider.getUserContext();
         boolean showTaps = mTapsSwitch.isChecked();
         boolean showStopDot = mStopDotSwitch.isChecked();
         boolean lowQuality = mLowQualitySwitch.isChecked();

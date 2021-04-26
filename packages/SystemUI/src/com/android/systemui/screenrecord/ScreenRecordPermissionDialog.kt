@@ -45,15 +45,16 @@ class ScreenRecordPermissionDialog(
     private val activityStarter: ActivityStarter,
     private val dialogLaunchAnimator: DialogLaunchAnimator,
     private val userContextProvider: UserContextProvider,
-    private val onStartRecordingClicked: Runnable?
-) :
-    BaseScreenSharePermissionDialog(
+    private val onStartRecordingClicked: Runnable?,
+    private val state: State,
+) : BaseScreenSharePermissionDialog(
         context,
         createOptionList(),
         null,
         R.drawable.ic_screenrecord,
         R.color.screenrecord_icon_color
-    ) {
+) {
+
     private lateinit var tapsSwitch: Switch
     private lateinit var tapsView: View
     private lateinit var audioSwitch: Switch
@@ -94,18 +95,48 @@ class ScreenRecordPermissionDialog(
 
     private fun initRecordOptionsView() {
         audioSwitch = findViewById(R.id.screenrecord_audio_switch)
+        audioSwitch.apply {
+            isChecked = state.useAudio
+            setOnCheckedChangeListener { _, isChecked ->
+                state.useAudio = isChecked
+            }
+        }
+
         tapsSwitch = findViewById(R.id.screenrecord_taps_switch)
+        tapsSwitch.apply {
+            isChecked = state.showTaps
+            setOnCheckedChangeListener { _, isChecked ->
+                state.useAudio = isChecked
+            }
+        }
         tapsView = findViewById(R.id.show_taps)
         updateTapsViewVisibility()
+
         stopDotSwitch = findViewById(R.id.screenrecord_stopdot_switch)
+        stopDotSwitch.apply {
+            isChecked = state.showStopDot
+            setOnCheckedChangeListener { _, isChecked ->
+                state.showStopDot = isChecked
+            }
+        }
+
         lowQualitySwitch = findViewById(R.id.screenrecord_lowquality_switch)
+        lowQualitySwitch.apply {
+            isChecked = state.isLowQuality
+            setOnCheckedChangeListener { _, isChecked ->
+                state.isLowQuality = isChecked
+            }
+        }
+
         options = findViewById(R.id.screen_recording_options)
         val a: ArrayAdapter<*> =
             ScreenRecordingAdapter(context, android.R.layout.simple_spinner_dropdown_item, MODES)
         a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         options.adapter = a
-        options.setOnItemClickListenerInt { _: AdapterView<*>?, _: View?, _: Int, _: Long ->
+        options.setSelection(state.audioSource)
+        options.setOnItemClickListenerInt { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
             audioSwitch.isChecked = true
+            state.audioSource = position
         }
     }
 
