@@ -56,6 +56,12 @@ class State(private val userContextProvider: UserContextProvider) {
             Prefs.putInt(context, KEY_AUDIO_SOURCE, value)
         }
 
+    var shouldUseLongerTimeout: Boolean
+        get() = Prefs.getBoolean(context, KEY_USE_LONGER_TIMEOUT, false)
+        set(value) {
+            Prefs.putBoolean(context, KEY_USE_LONGER_TIMEOUT, value)
+        }
+
     companion object {
         private const val KEY_PREFIX = "screenrecord_"
 
@@ -64,5 +70,6 @@ class State(private val userContextProvider: UserContextProvider) {
         const val KEY_LOW_QUALITY = KEY_PREFIX + "use_low_quality"
         const val KEY_USE_AUDIO = KEY_PREFIX + "use_audio"
         const val KEY_AUDIO_SOURCE = KEY_PREFIX + "audio_source"
+        const val KEY_USE_LONGER_TIMEOUT = KEY_PREFIX + "use_longer_timeout"
     }
 }

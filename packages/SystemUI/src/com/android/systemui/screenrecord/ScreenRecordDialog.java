@@ -79,6 +79,7 @@ public class ScreenRecordDialog extends SystemUIDialog {
     private Switch mTapsSwitch;
     private Switch mStopDotSwitch;
     private Switch mLowQualitySwitch;
+    private Switch mLongerSwitch;
     private Switch mAudioSwitch;
     private Spinner mOptions;
 
@@ -168,6 +169,10 @@ public class ScreenRecordDialog extends SystemUIDialog {
         mLowQualitySwitch.setChecked(mState.isLowQuality());
         mLowQualitySwitch.setOnCheckedChangeListener((v, isChecked) -> mState.setLowQuality(isChecked));
 
+        mLongerSwitch = findViewById(R.id.screenrecord_longer_timeout_switch);
+        mLongerSwitch.setChecked(mState.getShouldUseLongerTimeout());
+        mLongerSwitch.setOnCheckedChangeListener((v, isChecked) -> mState.setShouldUseLongerTimeout(isChecked));
+
         mOptions = findViewById(R.id.screen_recording_options);
         ArrayAdapter a = new ScreenRecordingAdapter(getContext().getApplicationContext(),
                 android.R.layout.simple_spinner_dropdown_item,
@@ -191,6 +196,7 @@ public class ScreenRecordDialog extends SystemUIDialog {
         boolean showTaps = mTapsSwitch.isChecked();
         boolean showStopDot = mStopDotSwitch.isChecked();
         boolean lowQuality = mLowQualitySwitch.isChecked();
+        boolean longerDuration = mLongerSwitch.isChecked();
         ScreenRecordingAudioSource audioMode = mAudioSwitch.isChecked()
                 ? (ScreenRecordingAudioSource) mOptions.getSelectedItem()
                 : NONE;
@@ -198,7 +204,8 @@ public class ScreenRecordDialog extends SystemUIDialog {
                 RecordingService.REQUEST_CODE,
                 RecordingService.getStartIntent(
                         userContext, Activity.RESULT_OK,
-                        audioMode.ordinal(), showTaps, captureTarget, showStopDot, lowQuality),
+                        audioMode.ordinal(), showTaps, captureTarget,
+                        showStopDot, lowQuality, longerDuration),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         PendingIntent stopIntent = PendingIntent.getService(userContext,
                 RecordingService.REQUEST_CODE,
