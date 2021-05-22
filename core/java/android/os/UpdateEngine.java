@@ -127,6 +127,23 @@ public class UpdateEngine {
         public static final int DOWNLOAD_PAYLOAD_VERIFICATION_ERROR = 12;
 
         /**
+         * Error code: an update failed to apply due to invalid metadata
+         * magic string.
+         */
+        public static final int DOWNLOAD_INVALID_METADATA_MAGIC_STRING = 21;
+
+        /**
+         * Error code: an update failed to apply due to metadata signature
+         * mismatch.
+         */
+        public static final int DOWNLOAD_METADATA_SIGNATURE_MISMATCH = 26;
+
+        /**
+         * Error code: an update failed to apply because user requested cancellation
+         */
+        public static final int USER_CANCELLED = 48;
+
+        /**
          * Error code: an update failed to apply due to a downgrade in payload
          * timestamp.
          *
@@ -173,6 +190,9 @@ public class UpdateEngine {
             ErrorCodeConstants.PAYLOAD_HASH_MISMATCH_ERROR,
             ErrorCodeConstants.PAYLOAD_SIZE_MISMATCH_ERROR,
             ErrorCodeConstants.DOWNLOAD_PAYLOAD_VERIFICATION_ERROR,
+            ErrorCodeConstants.DOWNLOAD_INVALID_METADATA_MAGIC_STRING,
+            ErrorCodeConstants.DOWNLOAD_METADATA_SIGNATURE_MISMATCH,
+            ErrorCodeConstants.USER_CANCELLED,
             ErrorCodeConstants.PAYLOAD_TIMESTAMP_ERROR,
             ErrorCodeConstants.UPDATED_BUT_NOT_ACTIVE,
             ErrorCodeConstants.NOT_ENOUGH_SPACE,
@@ -236,6 +256,11 @@ public class UpdateEngine {
          * Update status code: update engine is in disabled state.
          */
         public static final int DISABLED = 9;
+
+        /**
+         * Update status code: update engine is cleaning up previous update.
+         */
+        public static final int CLEANUP_PREVIOUS_UPDATE = 11;
     }
 
     private IUpdateEngine mUpdateEngine;
