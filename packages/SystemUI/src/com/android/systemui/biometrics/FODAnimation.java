@@ -16,65 +16,56 @@
 
 package com.android.systemui.biometrics;
 
+import static android.graphics.PixelFormat.TRANSLUCENT;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
+import static android.view.Gravity.CENTER;
+import static android.view.Gravity.TOP;
+import static android.widget.ImageView.ScaleType.CENTER_INSIDE;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.PixelFormat;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 
 import com.android.systemui.R;
 
 public class FODAnimation extends ImageView {
 
-    private Context mContext;
-    private int mAnimationOffset;
-    private int mAnimationSize;
-    private LayoutInflater mInflater;
-    private WindowManager mWindowManager;
-    private boolean mShowing = false;
-    private boolean mIsKeyguard;
+    private final Context mContext;
+    private final WindowManager mWindowManager;
+    private final LayoutParams mAnimParams;
+    private final int mAnimationOffset;
+    private final int mAnimationSize;
     private AnimationDrawable recognizingAnim;
-    private LayoutParams mAnimParams;
-    private TypedArray mFODAnims;
+    private boolean mIsShowing = false;
+    private boolean mIsKeyguard = false;
 
-    public FODAnimation(Context context, WindowManager windowManager, int mPositionX, int mPositionY) {
+    public FODAnimation(Context context, WindowManager windowManager, int posY) {
         super(context);
-
         mContext = context;
-        Resources res = mContext.getResources();
-        mAnimationSize = res.getDimensionPixelSize(R.dimen.fod_animation_size);
-        mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final Resources res = mContext.getResources();
         mWindowManager = windowManager;
-
+        mAnimationSize = res.getDimensionPixelSize(R.dimen.fod_animation_size);
         mAnimationOffset = res.getDimensionPixelSize(R.dimen.fod_animation_offset);
-
         mAnimParams = new LayoutParams();
-        mAnimParams.height = mAnimationSize;
-        mAnimParams.width = mAnimationSize;
-        mAnimParams.format = PixelFormat.TRANSLUCENT;
-        mAnimParams.type = LayoutParams.TYPE_VOLUME_OVERLAY; // it must be behind FOD icon
-        mAnimParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE
-                | LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_LAYOUT_NO_LIMITS;
-        mAnimParams.gravity = Gravity.TOP | Gravity.CENTER;
-        mAnimParams.y = getAnimParamsY(mPositionY);
-
-        mFODAnims = res.obtainTypedArray(com.krypton.settings.R.array.config_fodAnims);
-
-        setScaleType(ScaleType.CENTER_INSIDE);
+        mAnimParams.height = mAnimParams.width = mAnimationSize;
+        mAnimParams.format = TRANSLUCENT;
+        mAnimParams.type = TYPE_VOLUME_OVERLAY; // it must be behind FOD icon
+        mAnimParams.flags = FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCH_MODAL | FLAG_LAYOUT_NO_LIMITS;
+        mAnimParams.gravity = TOP | CENTER;
+        updateParams(posY);
+        setScaleType(CENTER_INSIDE);
     }
 
     public void updateParams(int mDreamingOffsetY) {
-        mAnimParams.y = getAnimParamsY(mDreamingOffsetY);
-    }
-
-    private int getAnimParamsY(int position) {
-        return (int) Math.round(position - (mAnimationSize / 2) + mAnimationOffset);
+        mAnimParams.y = (int) Math.round(mDreamingOffsetY -
+            (mAnimationSize / 2) + mAnimationOffset);
     }
 
     public void setAnimationKeyguard(boolean state) {
@@ -82,17 +73,19 @@ public class FODAnimation extends ImageView {
     }
 
     public void setFODAnim(int index) {
-        if (mFODAnims != null) {
-            setBackgroundResource(mFODAnims.getResourceId(index, 0));
-            recognizingAnim = (AnimationDrawable) getBackground();
-        }
+        TypedArray mFODAnims = mContext.getResources().obtainTypedArray(
+            com.krypton.settings.R.array.config_fodAnims);
+        setBackgroundResource(mFODAnims.getResourceId(index, 0));
+        recognizingAnim = (AnimationDrawable) getBackground();
+        mFODAnims.recycle();
     }
 
     public void showFODanimation() {
-        if (mAnimParams != null && !mShowing && mIsKeyguard) {
-            mShowing = true;
-            if (getWindowToken() == null){
+        if (!mIsShowing && mIsKeyguard) {
+            mIsShowing = true;
+            if (getWindowToken() == null) {
                 mWindowManager.addView(this, mAnimParams);
+            } else {
                 mWindowManager.updateViewLayout(this, mAnimParams);
             }
             if (recognizingAnim != null) {
@@ -102,8 +95,8 @@ public class FODAnimation extends ImageView {
     }
 
     public void hideFODanimation() {
-        if (mShowing) {
-            mShowing = false;
+        if (mIsShowing) {
+            mIsShowing = false;
             if (recognizingAnim != null) {
                 clearAnimation();
                 recognizingAnim.stop();
