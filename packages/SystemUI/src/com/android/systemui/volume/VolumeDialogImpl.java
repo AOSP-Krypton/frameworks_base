@@ -765,6 +765,7 @@ public class VolumeDialogImpl implements VolumeDialog,
     }
 
     private void updateCaptionsIcon() {
+        if (mODICaptionsIcon == null) return;
         boolean captionsEnabled = mController.areCaptionsEnabled();
         if (mODICaptionsIcon.getCaptionsEnabled() != captionsEnabled) {
             mHandler.post(mODICaptionsIcon.setCaptionsEnabled(captionsEnabled));
