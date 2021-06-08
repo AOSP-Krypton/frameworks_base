@@ -19,6 +19,8 @@ package com.android.systemui.biometrics;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_NUMERIC;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Context.FINGERPRINT_SERVICE;
 import static android.graphics.PixelFormat.TRANSLUCENT;
 import static android.graphics.PorterDuff.Mode.SRC_ATOP;
@@ -59,12 +61,15 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.ActivityManager.StackInfo;
+import android.app.ActivityTaskManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
+import android.graphics.drawable.Drawable;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -81,6 +86,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.util.Spline;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -96,6 +102,8 @@ import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.Dependency;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.R;
+import com.android.systemui.shared.system.ActivityManagerWrapper;
+import com.android.systemui.shared.system.TaskStackChangeListener;
 
 import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreen;
 import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreenCallback;
@@ -105,6 +113,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class FODCircleView extends ImageView {
+    private static final String TAG = "FODCircleView";
     private static final int FADE_ANIM_DURATION = 250;
     private final int mPositionX;
     private final int mPositionY;
@@ -114,7 +123,6 @@ public class FODCircleView extends ImageView {
     private final boolean mShouldBoostBrightness;
     private final boolean mTargetUsesInKernelDimming;
     private final Context mContext;
-    private final ContentResolver mResolver;
     private final Handler mHandler;
     private final Paint mPaintFingerprintBackground = new Paint();
     private final Paint mPaintFingerprint = new Paint();
@@ -125,10 +133,11 @@ public class FODCircleView extends ImageView {
     private IFingerprintInscreen mFingerprintInscreenDaemon;
 
     private int mDreamingOffsetY;
-    private int mFodIconIndex = 0;
     private int mCurrBrightness = 0;
+    private int mDozeBrightness = 0;
 
     private boolean mLockedOut = false;
+    private boolean mIsAssistantVisible = false;
     private boolean mIsBouncer = false;
     private boolean mIsDreaming = false;
     private boolean mIsShowing = false;
@@ -137,6 +146,8 @@ public class FODCircleView extends ImageView {
     private boolean mIsAlwaysOn = false;
     private boolean mHasCustomDozeBrightness = false;
     private boolean mIsRecognizingAnimEnabled = false;
+
+    private Drawable mFODIcon;
 
     private final ImageView mPressedView;
     private final ValueAnimator mValueAnimator;
@@ -166,6 +177,11 @@ public class FODCircleView extends ImageView {
         @Override
         public void onDreamingStateChanged(boolean dreaming) {
             mIsDreaming = dreaming;
+            if (mIsDreaming) {
+                mObserver.unobserve();
+            } else {
+                mObserver.observe();
+            }
             updateIconDim(false);
             if (mIsDreaming) {
                 mBurnInProtectionTimer = new Timer();
@@ -190,24 +206,11 @@ public class FODCircleView extends ImageView {
 
         @Override
         public void onKeyguardVisibilityChanged(boolean showing) {
-            if (showing && !mIsDreaming) {
-                mObserver.observe();
-            } else {
-                mObserver.unobserve();
-            }
             if (!showing && !mIsDreaming) {
                 mHandler.post(() -> hide());
             }
             if (mIsRecognizingAnimEnabled) {
                 mFODAnimation.setAnimationKeyguard(showing);
-            }
-        }
-
-        @Override
-        public void onBiometricAuthenticated(int userId, BiometricSourceType biometricSourceType,
-                boolean isStrongBiometric) {
-            if (biometricSourceType == FINGERPRINT) {
-                mObserver.unobserve();
             }
         }
 
@@ -218,7 +221,6 @@ public class FODCircleView extends ImageView {
                     (msgId == FINGERPRINT_ERROR_LOCKOUT ||
                         msgId == FINGERPRINT_ERROR_LOCKOUT_PERMANENT)) {
                 mLockedOut = true;
-                mObserver.unobserve();
             }
         }
 
@@ -236,9 +238,6 @@ public class FODCircleView extends ImageView {
         public void onLockoutReset() {
             if (mLockedOut) {
                 mLockedOut = false;
-                if (!mIsDreaming) {
-                    mObserver.observe();
-                }
             }
         }
     };
@@ -247,9 +246,6 @@ public class FODCircleView extends ImageView {
             mScreenObserver = new ScreenLifecycle.Observer() {
         @Override
         public void onScreenTurningOn() {
-            if (!mIsDreaming) {
-                mObserver.observe();
-            }
             if (mUpdateMonitor.isFingerprintDetectionRunning()) {
                 mHandler.post(() -> show());
             }
@@ -257,9 +253,34 @@ public class FODCircleView extends ImageView {
 
         @Override
         public void onScreenTurningOff() {
-            mObserver.unobserve();
             if (!mIsAlwaysOn) {
                 mHandler.post(() -> hide());
+            }
+        }
+    };
+
+    private final TaskStackChangeListener
+            mTaskStackChangeListener = new TaskStackChangeListener() {
+        @Override
+        public void onTaskStackChangedBackground() {
+            try {
+                StackInfo stackInfo = ActivityTaskManager.getService().getStackInfo(
+                        WINDOWING_MODE_UNDEFINED, ACTIVITY_TYPE_ASSISTANT);
+                if (stackInfo == null) {
+                    if (mIsAssistantVisible) {
+                        mIsAssistantVisible = false;
+                        if (mUpdateMonitor.isFingerprintDetectionRunning()) {
+                            mHandler.post(() -> show());
+                        }
+                    }
+                    return;
+                }
+                mIsAssistantVisible = stackInfo.visible;
+                if (mIsAssistantVisible) {
+                    mHandler.post(() -> hide());
+                }
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to retrieve StackInfo", e);
             }
         }
     };
@@ -267,11 +288,10 @@ public class FODCircleView extends ImageView {
     public FODCircleView(Context context) {
         super(context);
         mContext = context;
-        mResolver = mContext.getContentResolver();
         mHandler = new Handler(Looper.getMainLooper());
         mWindowManager = mContext.getSystemService(WindowManager.class);
-
-        mObserver = new CustomSettingsObserver(mHandler);
+        mObserver = new CustomSettingsObserver(mHandler, mContext.getContentResolver());
+        ActivityManagerWrapper.getInstance().registerTaskStackListener(mTaskStackChangeListener);
 
         final IFingerprintInscreen daemon = getFingerprintInScreenDaemon();
         if (daemon == null) {
@@ -314,9 +334,6 @@ public class FODCircleView extends ImageView {
         mPressedParams.setTitle("Fingerprint on display.touched");
         mPressedParams.flags |= FLAG_DIM_BEHIND;
 
-        setScaleType(CENTER_CROP);
-        mObserver.observe();
-
         mPressedView = new ImageView(mContext)  {
             @Override
             protected void onDraw(Canvas canvas) {
@@ -329,7 +346,10 @@ public class FODCircleView extends ImageView {
         mPressedView.setImageResource(R.drawable.fod_icon_pressed);
         mWindowManager.addView(this, mParams);
         updatePosition();
-        hide();
+        setVisibility(GONE);
+        setScaleType(CENTER_CROP);
+
+        mObserver.observe();
 
         mValueAnimator = new ValueAnimator();
         mValueAnimator.addUpdateListener(valueAnimator -> setColorFilter(new PorterDuffColorFilter(
@@ -391,7 +411,7 @@ public class FODCircleView extends ImageView {
 
     private int getCurrentBrightness() {
         if (mIsDreaming && mHasCustomDozeBrightness) {
-            return Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
+            return mDozeBrightness;
         }
         return mCurrBrightness;
     }
@@ -490,6 +510,9 @@ public class FODCircleView extends ImageView {
     }
 
     private void showCircle() {
+        if (mIsCircleShowing) {
+            return;
+        }
         mIsCircleShowing = true;
         setKeepScreenOn(true);
         setDim(true);
@@ -504,11 +527,11 @@ public class FODCircleView extends ImageView {
     }
 
     private void hideCircle() {
+        if (!mIsCircleShowing) {
+            return;
+        }
         mIsCircleShowing = false;
-        TypedArray mFodIcons = mContext.getResources().obtainTypedArray(
-            com.krypton.settings.R.array.config_fodIcons);
-        setImageDrawable(mFodIcons.getDrawable(mFodIconIndex));
-        mFodIcons.recycle();
+        setImageDrawable(mFODIcon);
         invalidate();
         dispatchRelease();
         setDim(false);
@@ -523,11 +546,15 @@ public class FODCircleView extends ImageView {
     }
 
     public void show() {
+        if (mIsShowing) {
+            return;
+        }
         if (isStrongAuthRequired(mUpdateMonitor.getCurrentUser())) {
             // do not show if device is locked down for whatever reason
             return;
         }
-        if (mLockedOut) {
+        if (mLockedOut || mIsAssistantVisible) {
+            // Return if fingerprint authentication is locked out or assistant ui is visible
             return;
         }
         if (mIsBouncer && !isPinOrPattern()) {
@@ -542,10 +569,21 @@ public class FODCircleView extends ImageView {
     }
 
     public void hide() {
+        if (!mIsShowing) {
+            return;
+        }
         mIsShowing = false;
         setVisibility(GONE);
         hideCircle();
         dispatchHide();
+    }
+
+    private void updateFODIcon(int index) {
+        TypedArray mFodIcons = mContext.getResources().obtainTypedArray(
+            com.krypton.settings.R.array.config_fodIcons);
+        mFODIcon = mFodIcons.getDrawable(index);
+        mHandler.post(() -> setImageDrawable(mFODIcon));
+        mFodIcons.recycle();
     }
 
     private void updatePosition() {
@@ -642,11 +680,14 @@ public class FODCircleView extends ImageView {
         final Uri FOD_ANIM_URI = Settings.System.getUriFor(FOD_ANIM);
         final Uri DOZE_ALWAYS_ON_URI = Settings.Secure.getUriFor(DOZE_ALWAYS_ON);
         final Uri DOZE_CUSTOM_MODE_URI = Settings.Secure.getUriFor(DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE);
+        final Uri DOZE_BRIGHTNESS_URI = Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS);
 
+        private final ContentResolver mResolver;
         private boolean observing = false;
 
-        CustomSettingsObserver(Handler handler) {
+        CustomSettingsObserver(Handler handler, ContentResolver resolver) {
             super(handler);
+            mResolver = resolver;
         }
 
         synchronized void observe() {
@@ -675,33 +716,34 @@ public class FODCircleView extends ImageView {
                 mCurrBrightness = Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS, 255);
                 updateIconDim(false);
             } else if (uri.equals(FOD_ICON_URI)) {
-                mFodIconIndex = Settings.System.getInt(mResolver, FOD_ICON, 0);
+                updateFODIcon(Settings.System.getInt(mResolver, FOD_ICON, 0));
             } else if (uri.equals(FOD_RECOGNIZING_ANIM_URI)) {
                 mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                     FOD_RECOGNIZING_ANIMATION, 0) == 1;
-            } else if (uri.equals(FOD_ANIM_URI) && mIsRecognizingAnimEnabled) {
+            } else if (uri.equals(FOD_ANIM_URI)) {
                 mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
             } else if (uri.equals(DOZE_ALWAYS_ON_URI)) {
                 mIsAlwaysOn = Settings.Secure.getInt(mResolver, DOZE_ALWAYS_ON, 0) == 1;
             } else if (uri.equals(DOZE_CUSTOM_MODE_URI)) {
                 mHasCustomDozeBrightness = Settings.Secure.getInt(mResolver,
                     DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0) == 1;
+            } else if (uri.equals(DOZE_BRIGHTNESS_URI)) {
+                mDozeBrightness = Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
             }
         }
 
         private void update() {
             mCurrBrightness = Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS, 255);
             updateIconDim(false);
-            mFodIconIndex = Settings.System.getInt(mResolver, FOD_ICON, 0);
+            updateFODIcon(Settings.System.getInt(mResolver, FOD_ICON, 0));
             mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                 FOD_RECOGNIZING_ANIMATION, 0) == 1;
-            if (mIsRecognizingAnimEnabled) {
-                mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
-            }
+            mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
             mIsAlwaysOn = Settings.Secure.getIntForUser(mResolver,
                 DOZE_ALWAYS_ON, 0, USER_CURRENT) == 1;
             mHasCustomDozeBrightness = Settings.Secure.getIntForUser(mResolver,
                 DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0, USER_CURRENT) == 1;
+            mDozeBrightness = Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
         }
     }
 

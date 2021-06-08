@@ -25,12 +25,11 @@ import com.android.systemui.SystemUI;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.CommandQueue.Callbacks;
 
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class FODCircleViewImpl extends SystemUI implements CommandQueue.Callbacks {
+public class FODCircleViewImpl extends SystemUI implements Callbacks {
     private static final String TAG = "FODCircleViewImpl";
 
     private FODCircleView mFodCircleView;
