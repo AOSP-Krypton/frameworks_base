@@ -344,6 +344,7 @@ import com.android.server.AlarmManagerInternal;
 import com.android.server.AttributeCache;
 import com.android.server.DeviceIdleInternal;
 import com.android.server.DisplayThread;
+import com.android.server.GamingModeController;
 import com.android.server.IntentResolver;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
@@ -379,8 +380,6 @@ import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowManagerInternal;
 import com.android.server.wm.WindowManagerService;
 import com.android.server.wm.WindowProcessController;
-
-import com.krypton.settings.controller.GamingModeController;
 
 import dalvik.system.VMRuntime;
 
@@ -16217,7 +16216,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                         mAtmInternal.onPackageUninstalled(ssp);
                                         mBatteryStatsService.notePackageUninstalled(ssp);
                                         if (mGamingModeController != null) {
-                                            mGamingModeController.notifyPackageRemoved(ssp);
+                                            mGamingModeController.onPackageUninstalled(ssp);
                                         }
                                         KryptonUtils.removePackageIfInList(mContext.getContentResolver(), ssp);
                                     }
@@ -17957,7 +17956,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             if (mCurResumedPackage != null) {
                 if (mGamingModeController.isEnabled()) {
-                    mGamingModeController.notifyAppOpened(mCurResumedPackage);
+                    mGamingModeController.onAppOpened(mCurResumedPackage);
                 }
             }
         }

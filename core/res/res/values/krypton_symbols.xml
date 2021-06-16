@@ -17,4 +17,8 @@
 
     <!-- OnePlus proprietary vibrator -->
     <java-symbol type="bool" name="config_hasOnePlusHapticMotor" />
+
+    <!-- GamingMode toast messages -->
+    <java-symbol type="string" name="gamingmode_enabled" />
+    <java-symbol type="string" name="gamingmode_disabled" />
 </resources>
