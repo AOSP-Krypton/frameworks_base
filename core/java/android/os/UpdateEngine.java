@@ -127,6 +127,13 @@ public class UpdateEngine {
         public static final int DOWNLOAD_PAYLOAD_VERIFICATION_ERROR = 12;
 
         /**
+         * Error code: an update failed to apply due to new rootfs verification
+         * error. Usually happens when user tries to update using the same OTA file
+         * on a slot which already has that update installed
+         */
+        public static final int NEW_ROOTFS_VERIFICATION_ERROR = 15;
+
+        /**
          * Error code: an update failed to apply due to invalid metadata
          * magic string.
          */
@@ -190,6 +197,7 @@ public class UpdateEngine {
             ErrorCodeConstants.PAYLOAD_HASH_MISMATCH_ERROR,
             ErrorCodeConstants.PAYLOAD_SIZE_MISMATCH_ERROR,
             ErrorCodeConstants.DOWNLOAD_PAYLOAD_VERIFICATION_ERROR,
+            ErrorCodeConstants.NEW_ROOTFS_VERIFICATION_ERROR,
             ErrorCodeConstants.DOWNLOAD_INVALID_METADATA_MAGIC_STRING,
             ErrorCodeConstants.DOWNLOAD_METADATA_SIGNATURE_MISMATCH,
             ErrorCodeConstants.USER_CANCELLED,
