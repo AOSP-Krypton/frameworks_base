@@ -28,7 +28,7 @@
     <dimen name="alertslider_step_size">11dp</dimen>
 
     <!-- Recognizing fingerprint animation -->
-    <dimen name="fod_animation_size">280dp</dimen>
+    <dimen name="fod_animation_size">240dp</dimen>
     <dimen name="fod_animation_offset">0dp</dimen>
 
     <!-- Biometric Prompt -->

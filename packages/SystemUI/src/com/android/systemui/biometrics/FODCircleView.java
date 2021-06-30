@@ -49,10 +49,6 @@ import static android.view.MotionEvent.AXIS_Y;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
-import static android.view.Surface.ROTATION_0;
-import static android.view.Surface.ROTATION_90;
-import static android.view.Surface.ROTATION_180;
-import static android.view.Surface.ROTATION_270;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static android.widget.ImageView.ScaleType.CENTER_CROP;
@@ -65,7 +61,6 @@ import android.app.ActivityManager.StackInfo;
 import android.app.ActivityTaskManager;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
@@ -73,8 +68,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.hardware.biometrics.BiometricSourceType;
@@ -87,7 +80,6 @@ import android.os.RemoteException;
 import android.provider.Settings;
 import android.util.Spline;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -95,7 +87,6 @@ import android.widget.ImageView;
 
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker;
-import com.android.keyguard.KeyguardSecurityModel.SecurityMode;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.settingslib.utils.ThreadUtils;
@@ -119,7 +110,6 @@ public class FODCircleView extends ImageView {
     private final int mPositionY;
     private final int mSize;
     private final int mDreamingMaxOffset;
-    private final int mNavigationBarSize;
     private final boolean mShouldBoostBrightness;
     private final boolean mTargetUsesInKernelDimming;
     private final Context mContext;
@@ -297,7 +287,6 @@ public class FODCircleView extends ImageView {
         if (daemon == null) {
             throw new RuntimeException("Unable to get IFingerprintInscreen");
         }
-
         try {
             mShouldBoostBrightness = daemon.shouldBoostBrightness();
             mPositionX = daemon.getPositionX();
@@ -312,9 +301,7 @@ public class FODCircleView extends ImageView {
         final Resources res = mContext.getResources();
         mSpline = Spline.createSpline(getFloatArray(res.getIntArray(R.array.config_FODiconDisplayBrightness)),
             getFloatArray(res.getIntArray(R.array.config_FODiconDimAmount)));
-
         mTargetUsesInKernelDimming = res.getBoolean(com.android.internal.R.bool.config_targetUsesInKernelDimming);
-        mNavigationBarSize = res.getDimensionPixelSize(R.dimen.navigation_bar_size);
         mPaintFingerprint.setColor(res.getColor(R.color.config_fodColor));
         mPaintFingerprint.setAntiAlias(true);
         mPaintFingerprintBackground.setColor(res.getColor(R.color.config_fodColorBackground));
@@ -446,11 +433,6 @@ public class FODCircleView extends ImageView {
             default:
                 return false;
         }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        updatePosition();
     }
 
     private IFingerprintInscreen getFingerprintInScreenDaemon() {
@@ -587,42 +569,14 @@ public class FODCircleView extends ImageView {
     }
 
     private void updatePosition() {
-        final Display display = mContext.getDisplay();
-        final Point size = new Point();
-        display.getRealSize(size);
-        int rotation = display.getRotation();
-        int x, y;
-        switch (rotation) {
-            case ROTATION_0:
-                x = mPositionX;
-                y = mPositionY;
-                break;
-            case ROTATION_90:
-                x = mPositionY;
-                y = mPositionX;
-                break;
-            case ROTATION_180:
-                x = mPositionX;
-                y = size.y - mPositionY - mSize;
-                break;
-            case ROTATION_270:
-                x = size.x - mPositionY - mSize - mNavigationBarSize;
-                y = mPositionX;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown rotation: " + rotation);
-        }
-
-        mPressedParams.x = mParams.x = x;
-        mPressedParams.y = mParams.y = y;
-
+        mPressedParams.x = mParams.x = mPositionX;
+        mPressedParams.y = mParams.y = mPositionY;
         if (mIsDreaming && !mIsCircleShowing) {
             mParams.y += mDreamingOffsetY;
             if (mIsRecognizingAnimEnabled) {
                 mFODAnimation.updateParams(mParams.y);
             }
         }
-
         mWindowManager.updateViewLayout(this, mParams);
         if (mPressedView.getParent() != null) {
             mWindowManager.updateViewLayout(mPressedView, mPressedParams);
