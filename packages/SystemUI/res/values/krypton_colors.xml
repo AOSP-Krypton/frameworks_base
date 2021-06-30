@@ -15,6 +15,6 @@
 -->
 <resources>
     <!-- AlertSlider -->
-    <color name="alertslider_bg_color">#FF2A2637</color>
+    <color name="alertslider_bg_color">#161617</color>
 
 </resources>

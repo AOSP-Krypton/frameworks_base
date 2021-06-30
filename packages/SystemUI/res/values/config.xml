@@ -296,12 +296,6 @@
     <!-- Whether to show the full screen user switcher. -->
     <bool name="config_enableFullscreenUserSwitcher">false</bool>
 
-    <!-- Whether device has hardware alert slider -->
-    <bool name="config_hasAlertSlider">false</bool>
-
-    <!-- Offset for alert slider dialog from status bar -->
-    <integer name="config_alertSliderOffset">0</integer>
-
     <!-- SystemUIFactory component -->
     <string name="config_systemUIFactoryComponent" translatable="false">com.android.systemui.SystemUIFactory</string>
 

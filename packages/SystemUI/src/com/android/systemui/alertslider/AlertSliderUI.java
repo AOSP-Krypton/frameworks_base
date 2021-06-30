@@ -30,7 +30,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class AlertSliderUI extends SystemUI {
+public final class AlertSliderUI extends SystemUI {
     private static final String TAG = "AlertSliderUI";
     private boolean mEnabled;
     private AlertSliderController mController;

@@ -4685,6 +4685,14 @@ public class Intent implements Parcelable, Cloneable {
     public static final String ACTION_SCREEN_CAMERA_GESTURE =
             "android.intent.action.SCREEN_CAMERA_GESTURE";
 
+    /**
+     * Broadcast action: alertslider position has changed
+     * @hide
+     */
+    @SystemApi
+    public static final String ACTION_SLIDER_POSITION_CHANGED =
+            "android.intent.action.SLIDER_POSITION_CHANGED";
+
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
     // Standard intent categories (see addCategory()).

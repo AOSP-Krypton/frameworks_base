@@ -19,14 +19,13 @@
     <dimen name="vertical_max_swift">1.0dp</dimen>
 
     <!-- AlertSlider -->
-    <dimen name="alertslider_bg_radius">20dp</dimen>
-    <dimen name="alertslider_dialog_minheight">40dp</dimen>
-    <dimen name="alertslider_dialog_minwidth">90dp</dimen>
-    <dimen name="alertslider_image_marginstart">12dp</dimen>
-    <dimen name="alertslider_image_margintop">10.5dp</dimen>
-    <dimen name="alertslider_text_marginstart">6dp</dimen>
-    <dimen name="alertslider_text_margintop">10dp</dimen>
-    <dimen name="alertslider_text_fontsize">14dp</dimen>
+    <dimen name="alertslider_bg_radius">24dp</dimen>
+    <dimen name="alertslider_dialog_minheight">48dp</dimen>
+    <dimen name="alertslider_dialog_minwidth">108dp</dimen>
+    <dimen name="alertslider_padding_inner_edge">15dp</dimen>
+    <dimen name="alertslider_padding_inner_top">15dp</dimen>
+    <dimen name="alertslider_text_fontsize">14sp</dimen>
+    <dimen name="alertslider_step_size">11dp</dimen>
 
     <!-- Recognizing fingerprint animation -->
     <dimen name="fod_animation_size">280dp</dimen>

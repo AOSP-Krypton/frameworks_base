@@ -18,23 +18,29 @@
     android:layout_height="wrap_content"
     android:minHeight="@dimen/alertslider_dialog_minheight"
     android:minWidth="@dimen/alertslider_dialog_minwidth"
-    android:background="@drawable/alertslider_background">
+    android:paddingStart="@dimen/alertslider_padding_inner_edge"
+    android:paddingTop="@dimen/alertslider_padding_inner_top"
+    android:paddingBottom="@dimen/alertslider_padding_inner_top"
+    android:paddingEnd="@dimen/alertslider_padding_inner_edge"
+    android:background="@drawable/alertslider_background"
+    android:orientation="horizontal">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/alertslider_image_margintop"
-        android:layout_marginStart="@dimen/alertslider_image_marginstart"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:layout_weight="2"
         android:background="@drawable/ic_slider_middle" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:textColor="@android:color/white"
         android:textSize="@dimen/alertslider_text_fontsize"
-        android:layout_marginTop="@dimen/alertslider_text_margintop"
-        android:layout_marginStart="@dimen/alertslider_text_marginstart"
-        android:layout_marginBottom="@dimen/alertslider_text_margintop"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="5"
+        android:gravity="center"
         android:text="@string/alertslider_middle_text" />
 
 </LinearLayout>
