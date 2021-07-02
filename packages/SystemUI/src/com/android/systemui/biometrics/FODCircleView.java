@@ -186,11 +186,13 @@ public class FODCircleView extends ImageView {
         @Override
         public void onKeyguardBouncerChanged(boolean isBouncer) {
             mIsBouncer = isBouncer;
-            if (mUpdateMonitor.isFingerprintDetectionRunning() &&
-                    (isPinOrPattern() || !isBouncer)) {
-                mHandler.post(() -> show());
-            } else {
-                mHandler.post(() -> hide());
+            if (mUpdateMonitor.isFingerprintDetectionRunning()) {
+                if (isPinOrPattern() || !mIsBouncer) {
+                    mIsAssistantVisible = false;
+                    show();
+                } else {
+                    hide();
+                }
             }
         }
 
