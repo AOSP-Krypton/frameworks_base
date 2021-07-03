@@ -4916,6 +4916,12 @@ public final class Settings {
         public static final String QS_SHOW_BRIGHTNESS = "qs_show_brightness";
 
         /**
+         * Whether to show QS autobrightness icon
+         * @hide
+         */
+        public static final String QS_SHOW_AUTO_BRIGHTNESS_ICON = "qs_show_auto_brightness_icon";
+
+        /**
          * Whether to show QS brightness slider on bottom
          * @hide
          */

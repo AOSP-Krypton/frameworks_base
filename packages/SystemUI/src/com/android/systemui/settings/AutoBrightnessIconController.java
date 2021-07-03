@@ -16,88 +16,112 @@
 
 package com.android.systemui.settings;
 
+import static android.os.UserHandle.USER_ALL;
+import static android.provider.Settings.System.QS_SHOW_AUTO_BRIGHTNESS_ICON;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
+import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
+import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.view.View;
 import android.widget.ImageView;
 
-import com.android.systemui.Dependency;
-
 public class AutoBrightnessIconController {
-
-    private static final int MANUAL = Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
-    private static final int AUTO = Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
-    private static final ColorStateList COLOR_INACTIVE = ColorStateList.valueOf(Color.GRAY);
-
-    private boolean mRegistered = false;
-    private ContentResolver mResolver;
-    private Context mContext;
-    private Handler mHandler;
-    private ImageView mAutoBrightnessIcon;
-
-    private final Runnable mRegisterRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (mRegistered || mAutoBrightnessIcon == null) return;
-            mRegistered = true;
-            mAutoBrightnessIcon.setOnClickListener((View view) -> {
-                mUpdateModeRunnable.run();
-                mUpdateIconRunnable.run();
-            });
-            mUpdateIconRunnable.run();
-        }
-    };
-
-    private final Runnable mUpdateModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setBrightnessMode(getBrightnessMode() == MANUAL ? AUTO : MANUAL);
-        }
-    };
-
-    private final Runnable mUpdateIconRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (mAutoBrightnessIcon == null) return;
-            mAutoBrightnessIcon.setImageTintList(getBrightnessMode() == MANUAL ? COLOR_INACTIVE : null);
-        }
-    };
+    private final ContentResolver mResolver;
+    private final Context mContext;
+    private final ImageView mAutoBrightnessIcon;
+    private final SettingsObserver mObserver;
+    private boolean mRegistered;
 
     public AutoBrightnessIconController(Context context, ImageView view) {
         mContext = context;
         mResolver = mContext.getContentResolver();
-        mHandler = new Handler(Looper.getMainLooper());
         mAutoBrightnessIcon = view;
-        updateStatus();
+        mObserver = new SettingsObserver(new Handler(Looper.getMainLooper()));
     }
 
     public void registerCallbacks() {
-        mHandler.post(mRegisterRunnable);
+        if (!mRegistered) {
+            mRegistered = true;
+            mObserver.register();
+            if (mAutoBrightnessIcon != null) {
+                mAutoBrightnessIcon.setOnClickListener(v -> toggleBrightnessMode());
+            }
+        }
     }
 
     public void unregisterCallbacks() {
-        if (!mRegistered || mAutoBrightnessIcon == null) return;
-        mRegistered = false;
-        mAutoBrightnessIcon.setOnClickListener(null);
+        if (mRegistered) {
+            mRegistered = false;
+            mObserver.unregister();
+            if (mAutoBrightnessIcon != null) {
+                mAutoBrightnessIcon.setOnClickListener(null);
+            }
+        }
     }
 
-    public void updateStatus() {
-        mHandler.post(mUpdateIconRunnable);
+    private void updateIconColor() {
+        if (mAutoBrightnessIcon != null) {
+            mAutoBrightnessIcon.setImageTintList(
+                getBrightnessMode() == SCREEN_BRIGHTNESS_MODE_MANUAL ?
+                    ColorStateList.valueOf(Color.GRAY) : null);
+        }
     }
 
-    private void setBrightnessMode(int mode) {
-        Settings.System.putInt(mResolver, SCREEN_BRIGHTNESS_MODE, mode);
+    private void updateIconVisibility() {
+        if (mAutoBrightnessIcon != null) {
+            mAutoBrightnessIcon.setVisibility(Settings.System.getInt(mResolver,
+                QS_SHOW_AUTO_BRIGHTNESS_ICON, 0) == 1 ? VISIBLE : GONE);
+        }
+    }
+
+    private void toggleBrightnessMode() {
+        Settings.System.putInt(mResolver, SCREEN_BRIGHTNESS_MODE,
+            getBrightnessMode() == SCREEN_BRIGHTNESS_MODE_MANUAL ?
+                SCREEN_BRIGHTNESS_MODE_AUTOMATIC : SCREEN_BRIGHTNESS_MODE_MANUAL);
+        updateIconColor();
     }
 
     private int getBrightnessMode() {
-        return Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS_MODE, MANUAL);
+        return Settings.System.getInt(mResolver,
+            SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
+    }
+
+    private final class SettingsObserver extends ContentObserver {
+        private final Uri BRIGHTNESS_MODE_URI = Settings.System.getUriFor(SCREEN_BRIGHTNESS_MODE);
+        private final Uri QS_SHOW_AUTO_BRIGHTNESS_ICON_URI = Settings.System.getUriFor(QS_SHOW_AUTO_BRIGHTNESS_ICON);
+
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void register() {
+            mResolver.registerContentObserver(BRIGHTNESS_MODE_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(QS_SHOW_AUTO_BRIGHTNESS_ICON_URI, false, this, USER_ALL);
+            updateIconColor();
+            updateIconVisibility();
+        }
+
+        void unregister() {
+            mResolver.unregisterContentObserver(this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (uri.equals(BRIGHTNESS_MODE_URI)) {
+                updateIconColor();
+            } else if (uri.equals(QS_SHOW_AUTO_BRIGHTNESS_ICON_URI)) {
+                updateIconVisibility();
+            }
+        }
     }
 }
