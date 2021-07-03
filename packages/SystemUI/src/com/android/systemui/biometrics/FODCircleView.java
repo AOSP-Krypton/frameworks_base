@@ -34,6 +34,7 @@ import static android.provider.Settings.Secure.DOZE_ALWAYS_ON;
 import static android.provider.Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.Secure.DOZE_SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.FOD_ANIM;
+import static android.provider.Settings.System.FOD_ANIM_ALWAYS_ON;
 import static android.provider.Settings.System.FOD_ICON;
 import static android.provider.Settings.System.FOD_RECOGNIZING_ANIMATION;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
@@ -123,19 +124,20 @@ public class FODCircleView extends ImageView {
     private IFingerprintInscreen mFingerprintInscreenDaemon;
 
     private int mDreamingOffsetY;
-    private int mCurrBrightness = 0;
-    private int mDozeBrightness = 0;
+    private int mCurrBrightness;
+    private int mDozeBrightness;
 
-    private boolean mLockedOut = false;
-    private boolean mIsAssistantVisible = false;
-    private boolean mIsBouncer = false;
-    private boolean mIsDreaming = false;
-    private boolean mIsShowing = false;
-    private boolean mIsCircleShowing = false;
-    private boolean mIsAnimating = false;
-    private boolean mIsAlwaysOn = false;
-    private boolean mHasCustomDozeBrightness = false;
-    private boolean mIsRecognizingAnimEnabled = false;
+    private boolean mLockedOut;
+    private boolean mIsAssistantVisible;
+    private boolean mIsBouncer;
+    private boolean mIsDreaming;
+    private boolean mIsShowing;
+    private boolean mIsCircleShowing;
+    private boolean mIsAnimating;
+    private boolean mIsAlwaysOn;
+    private boolean mHasCustomDozeBrightness;
+    private boolean mIsRecognizingAnimEnabled;
+    private boolean mIsAnimationAlwaysOn;
 
     private Drawable mFODIcon;
 
@@ -202,7 +204,7 @@ public class FODCircleView extends ImageView {
                 mHandler.post(() -> hide());
             }
             if (mIsRecognizingAnimEnabled) {
-                mFODAnimation.setAnimationKeyguard(showing);
+                mFODAnimation.setShouldShowAnimation(mIsAnimationAlwaysOn || showing);
             }
         }
 
@@ -634,6 +636,7 @@ public class FODCircleView extends ImageView {
         final Uri FOD_ICON_URI = Settings.System.getUriFor(FOD_ICON);
         final Uri FOD_RECOGNIZING_ANIM_URI = Settings.System.getUriFor(FOD_RECOGNIZING_ANIMATION);
         final Uri FOD_ANIM_URI = Settings.System.getUriFor(FOD_ANIM);
+        final Uri FOD_ANIM_ALWAYS_ON_URI = Settings.System.getUriFor(FOD_ANIM_ALWAYS_ON);
         final Uri DOZE_ALWAYS_ON_URI = Settings.Secure.getUriFor(DOZE_ALWAYS_ON);
         final Uri DOZE_CUSTOM_MODE_URI = Settings.Secure.getUriFor(DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE);
         final Uri DOZE_BRIGHTNESS_URI = Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS);
@@ -654,6 +657,7 @@ public class FODCircleView extends ImageView {
                 mResolver.registerContentObserver(FOD_ICON_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(FOD_RECOGNIZING_ANIM_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(FOD_ANIM_URI, false, this, USER_ALL);
+                mResolver.registerContentObserver(FOD_ANIM_ALWAYS_ON_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(DOZE_ALWAYS_ON_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(DOZE_CUSTOM_MODE_URI, false, this, USER_ALL);
             }
@@ -678,6 +682,8 @@ public class FODCircleView extends ImageView {
                     FOD_RECOGNIZING_ANIMATION, 0) == 1;
             } else if (uri.equals(FOD_ANIM_URI)) {
                 mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
+            } else if (uri.equals(FOD_ANIM_ALWAYS_ON_URI)) {
+                mIsAnimationAlwaysOn = Settings.System.getInt(mResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
             } else if (uri.equals(DOZE_ALWAYS_ON_URI)) {
                 mIsAlwaysOn = Settings.Secure.getInt(mResolver, DOZE_ALWAYS_ON, 0) == 1;
             } else if (uri.equals(DOZE_CUSTOM_MODE_URI)) {
@@ -695,6 +701,7 @@ public class FODCircleView extends ImageView {
             mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                 FOD_RECOGNIZING_ANIMATION, 0) == 1;
             mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
+            mIsAnimationAlwaysOn = Settings.System.getInt(mResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
             mIsAlwaysOn = Settings.Secure.getIntForUser(mResolver,
                 DOZE_ALWAYS_ON, 0, USER_CURRENT) == 1;
             mHasCustomDozeBrightness = Settings.Secure.getIntForUser(mResolver,

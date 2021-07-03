@@ -43,8 +43,8 @@ public class FODAnimation extends ImageView {
     private final int mAnimationOffset;
     private final int mAnimationSize;
     private AnimationDrawable recognizingAnim;
-    private boolean mIsShowing = false;
-    private boolean mIsKeyguard = false;
+    private boolean mIsShowing;
+    private boolean mShouldShow;
 
     public FODAnimation(Context context, WindowManager windowManager, int posY) {
         super(context);
@@ -68,8 +68,8 @@ public class FODAnimation extends ImageView {
             (mAnimationSize / 2) + mAnimationOffset);
     }
 
-    public void setAnimationKeyguard(boolean state) {
-        mIsKeyguard = state;
+    public void setShouldShowAnimation(boolean show) {
+        mShouldShow = show;
     }
 
     public void setFODAnim(int index) {
@@ -81,7 +81,7 @@ public class FODAnimation extends ImageView {
     }
 
     public void showFODanimation() {
-        if (!mIsShowing && mIsKeyguard) {
+        if (!mIsShowing && mShouldShow) {
             mIsShowing = true;
             if (getWindowToken() == null) {
                 mWindowManager.addView(this, mAnimParams);

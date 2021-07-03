@@ -4852,6 +4852,12 @@ public final class Settings {
         public static final String FOD_ANIM = "fod_anim";
 
         /**
+        * Whether to show FOD animation everywhere FOD is used
+        * @hide
+        */
+        public static final String FOD_ANIM_ALWAYS_ON = "fod_anim_always_on";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage
