@@ -19,9 +19,14 @@ package com.android.systemui.statusbar.notification.interruption;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
 
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.hardware.display.AmbientDisplayConfiguration;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.RemoteException;
@@ -66,15 +71,17 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
     private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
     private final BatteryController mBatteryController;
     private final ContentObserver mHeadsUpObserver;
-    private HeadsUpManager mHeadsUpManager;
+    private final HeadsUpManager mHeadsUpManager;
+    private final CustomSettingsObserver mCustomSettingsObserver;
 
     @VisibleForTesting
     protected boolean mUseHeadsUp = false;
 
-    private boolean mDisableHeadsUp = false;
+    private boolean mDisableHeadsUp, mDisableHeadsUpEnabled;
 
     @Inject
     public NotificationInterruptStateProviderImpl(
+            Context context,
             ContentResolver contentResolver,
             PowerManager powerManager,
             IDreamManager dreamManager,
@@ -122,6 +129,10 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
                     mHeadsUpObserver);
         }
         mHeadsUpObserver.onChange(true); // set up
+        mCustomSettingsObserver = new CustomSettingsObserver(mainHandler);
+        mCustomSettingsObserver.observe();
+        context.registerReceiver(new CustomBroadcastReceiver(),
+            new IntentFilter(Intent.ACTION_GAMINGMODE_STATE_CHANGED));
     }
 
     @Override
@@ -183,7 +194,7 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
     }
 
     @Override
-    public void disableHeadsUpIfGaming(boolean disableHeadsUp) {
+    public void disableHeadsUp(boolean disableHeadsUp) {
         mDisableHeadsUp = disableHeadsUp;
     }
 
@@ -380,5 +391,42 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
 
     private boolean isSnoozedPackage(StatusBarNotification sbn) {
         return mHeadsUpManager.isSnoozed(sbn.getPackageName());
+    }
+
+    private class CustomSettingsObserver extends ContentObserver {
+        private final Uri GAMINGMODE_DISABLE_HEADSUP_URI = Settings.System.getUriFor(Settings.System.GAMINGMODE_DISABLE_HEADSUP);
+
+        CustomSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            update();
+            mContentResolver.registerContentObserver(GAMINGMODE_DISABLE_HEADSUP_URI, false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (uri.equals(GAMINGMODE_DISABLE_HEADSUP_URI)) {
+                mDisableHeadsUpEnabled = Settings.System.getIntForUser(mContentResolver,
+                    Settings.System.GAMINGMODE_DISABLE_HEADSUP, 0, UserHandle.USER_CURRENT) == 1;
+            }
+        }
+
+        private void update() {
+            mDisableHeadsUpEnabled = Settings.System.getIntForUser(mContentResolver,
+                Settings.System.GAMINGMODE_DISABLE_HEADSUP, 0, UserHandle.USER_CURRENT) == 1;
+        }
+    }
+
+    private final class CustomBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_GAMINGMODE_STATE_CHANGED)) {
+                if (mDisableHeadsUpEnabled) {
+                    mDisableHeadsUp = intent.getBooleanExtra(Intent.EXTRA_GAMINGMODE_STATUS, false);
+                }
+            }
+        }
     }
 }

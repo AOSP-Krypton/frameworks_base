@@ -883,7 +883,6 @@ public class StatusBar extends SystemUI implements DemoMode,
         createAndAddWindows(result);
 
         mSettingsObserver.observe();
-        mSettingsObserver.update();
 
         if (mWallpaperSupported) {
             // Make sure we always have the most current wallpaper info.
@@ -3895,44 +3894,37 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
     };
 
-    private KryptonSettingsObserver mSettingsObserver = new KryptonSettingsObserver(mHandler);
+    private final KryptonSettingsObserver mSettingsObserver = new KryptonSettingsObserver();
     private class KryptonSettingsObserver extends ContentObserver {
-        KryptonSettingsObserver(Handler handler) {
-            super(handler);
+        private final Uri DOUBLE_TAP_SLEEP_GESTURE_URI = Settings.System.getUriFor(Settings.System.DOUBLE_TAP_SLEEP_GESTURE);
+        private final Uri DOUBLE_TAP_SLEEP_LOCKSCREEN_URI = Settings.System.getUriFor(Settings.System.DOUBLE_TAP_SLEEP_LOCKSCREEN);
+        private final ContentResolver mResolver;
+
+        KryptonSettingsObserver() {
+            super(mHandler);
+            mResolver = mContext.getContentResolver();
         }
 
         void observe() {
-            final ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.GAMINGMODE_ACTIVE), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.GAMINGMODE_DISABLE_HEADSUP), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.DOUBLE_TAP_SLEEP_GESTURE), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.DOUBLE_TAP_SLEEP_LOCKSCREEN), false, this);
+            update();
+            mResolver.registerContentObserver(DOUBLE_TAP_SLEEP_GESTURE_URI, false, this);
+            mResolver.registerContentObserver(DOUBLE_TAP_SLEEP_LOCKSCREEN_URI, false, this);
         }
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            update();
-        }
-
-        void update() {
-            updateGamingMode();
-            if (mNotificationShadeWindowViewController != null) {
-                mNotificationShadeWindowViewController.updateSettings();
+            if (uri.equals(DOUBLE_TAP_SLEEP_GESTURE_URI) ||
+                    uri.equals(DOUBLE_TAP_SLEEP_LOCKSCREEN_URI)) {
+                if (mNotificationShadeWindowViewController != null) {
+                    mNotificationShadeWindowViewController.updateSettings();
+                }
             }
         }
 
-        private void updateGamingMode() {
-            mGamingModeActivated = Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.GAMINGMODE_ACTIVE, -1,
-                UserHandle.USER_CURRENT) == 1;
-            mDisableHeadsUp = Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.GAMINGMODE_DISABLE_HEADSUP, -1,
-                UserHandle.USER_CURRENT) == 1;
-            mNotificationInterruptStateProvider.disableHeadsUpIfGaming(mGamingModeActivated && mDisableHeadsUp);
+        private void update() {
+            if (mNotificationShadeWindowViewController != null) {
+                mNotificationShadeWindowViewController.updateSettings();
+            }
         }
     }
 

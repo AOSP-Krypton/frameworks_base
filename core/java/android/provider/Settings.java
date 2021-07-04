@@ -4774,12 +4774,6 @@ public final class Settings {
         public static final String GAMINGMODE_ENABLED = "gamingmode_enabled";
 
         /**
-         * Gaming mode active state
-         * @hide
-         */
-        public static final String GAMINGMODE_ACTIVE = "gamingmode_active";
-
-        /**
          * Gaming mode enabled apps
          * @hide
          */

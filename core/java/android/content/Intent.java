@@ -4693,6 +4693,27 @@ public class Intent implements Parcelable, Cloneable {
     public static final String ACTION_SLIDER_POSITION_CHANGED =
             "android.intent.action.SLIDER_POSITION_CHANGED";
 
+    /**
+     * Extra data for the position of alertslider
+     */
+    public static final String EXTRA_SLIDER_POSITION =
+            "android.intent.extra.SLIDER_POSITION";
+
+    /**
+     * Broadcast action: alertslider position has changed
+     * @hide
+     */
+    @SystemApi
+    public static final String ACTION_GAMINGMODE_STATE_CHANGED =
+            "android.intent.action.GAMINGMODE_STATE_CHANGED";
+
+    /**
+     * State indicating whether gaming mode is active or not
+     * @hide
+     */
+    public static final String EXTRA_GAMINGMODE_STATUS =
+            "android.intent.extra.GAMINGMODE_STATUS";
+
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
     // Standard intent categories (see addCategory()).

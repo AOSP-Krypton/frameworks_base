@@ -58,7 +58,7 @@ public interface NotificationInterruptStateProvider {
     void addSuppressor(NotificationInterruptSuppressor suppressor);
 
     /**
-     * Whether to disable heads-up notifications when gaming.
+     * Whether to disable heads-up notifications.
      */
-    void disableHeadsUpIfGaming(boolean disableHeadsUp);
+    void disableHeadsUp(boolean disableHeadsUp);
 }

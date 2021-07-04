@@ -672,6 +672,12 @@
     <!-- Used to get camera status. -->
     <protected-broadcast android:name="android.intent.action.CAMERA_STATUS_CHANGED" />
 
+    <!-- Used to notify that alertslider position has changed -->
+    <protected-broadcast android:name="android.intent.action.SLIDER_POSITION_CHANGED" />
+
+    <!-- Used to notify whether gaming mode is active or not -->
+    <protected-broadcast android:name="android.intent.action.GAMINGMODE_STATE_CHANGED" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->

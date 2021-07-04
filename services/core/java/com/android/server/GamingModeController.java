@@ -19,8 +19,8 @@ package com.android.server;
 import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
+import static android.os.UserHandle.CURRENT;
 import static android.os.UserHandle.USER_ALL;
-import static android.provider.Settings.System.GAMINGMODE_ACTIVE;
 import static android.provider.Settings.System.GAMINGMODE_APPS;
 import static android.provider.Settings.System.GAMINGMODE_BRIGHTNESS;
 import static android.provider.Settings.System.GAMINGMODE_LOCK_BRIGHTNESS;
@@ -36,11 +36,13 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.widget.Toast;
 
@@ -58,17 +60,15 @@ public final class GamingModeController {
     private final Handler mHandler;
     private final ExecutorService mExecutor;
     private String mEnabledApps;
-    private boolean mIsEnabled = false;
-    private boolean mIsActive = false;
-    private boolean mShouldLockBrightness = false;
-    private boolean mShouldRestoreBrightness = false;
-    private boolean mShouldShowToast = false;
-    private boolean mIsRestoringBrightness = false;
-    private boolean mBrightnessModeChanged = false;
-    private int mUserBrightness = 0;
+    private boolean mIsEnabled;
+    private boolean mIsActive;
+    private boolean mShouldLockBrightness, mShouldRestoreBrightness;
+    private boolean mShouldShowToast;
+    private boolean mIsRestoringBrightness, mBrightnessModeChanged;
+    private int mUserBrightness;
     private int mUserBrightnessMode = SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
     private int mUserRingerMode = RINGER_MODE_NORMAL;
-    private int mRingerMode = 0;
+    private int mRingerMode;
 
     public GamingModeController(Context context) {
         mContext = context;
@@ -134,7 +134,9 @@ public final class GamingModeController {
 
     private void setActive(boolean active) {
         mIsActive = active;
-        putInt(GAMINGMODE_ACTIVE, mIsActive ? 1 : 0);
+        final Intent intent = new Intent(Intent.ACTION_GAMINGMODE_STATE_CHANGED);
+        intent.putExtra(Intent.EXTRA_GAMINGMODE_STATUS, mIsActive);
+        mContext.sendBroadcastAsUser(intent, CURRENT);
     }
 
     private void restoreBrightness() {

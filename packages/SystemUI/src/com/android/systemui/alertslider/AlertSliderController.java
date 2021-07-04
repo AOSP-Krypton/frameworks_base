@@ -17,6 +17,7 @@
 package com.android.systemui.alertslider;
 
 import static android.content.Intent.ACTION_SLIDER_POSITION_CHANGED;
+import static android.content.Intent.EXTRA_SLIDER_POSITION;
 import static android.graphics.Color.TRANSPARENT;
 import static android.graphics.PixelFormat.TRANSLUCENT;
 import static android.view.WindowManager.LayoutParams.WRAP_CONTENT;
@@ -154,7 +155,7 @@ public final class AlertSliderController {
     private final class AlertSliderReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            notifyController(intent.getIntExtra("SLIDER_POSITION", 0));
+            notifyController(intent.getIntExtra(EXTRA_SLIDER_POSITION, 0));
         }
     }
 
