@@ -16215,9 +16215,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                         mServices.forceStopPackageLocked(ssp, userId);
                                         mAtmInternal.onPackageUninstalled(ssp);
                                         mBatteryStatsService.notePackageUninstalled(ssp);
-                                        if (mGamingModeController != null) {
-                                            mGamingModeController.onPackageUninstalled(ssp);
-                                        }
+                                        mGamingModeController.onPackageUninstalled(ssp);
                                         KryptonUtils.removePackageIfInList(mContext.getContentResolver(), ssp);
                                     }
                                 } else {
@@ -17954,10 +17952,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 Binder.restoreCallingIdentity(identity);
             }
 
-            if (mCurResumedPackage != null) {
-                if (mGamingModeController.isEnabled()) {
-                    mGamingModeController.onAppOpened(mCurResumedPackage);
-                }
+            if (mCurResumedPackage != null && mGamingModeController.isEnabled()) {
+                mGamingModeController.onAppOpened(mCurResumedPackage);
             }
         }
         return r;

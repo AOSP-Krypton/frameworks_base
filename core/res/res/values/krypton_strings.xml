@@ -15,6 +15,6 @@
 -->
 <resources>
     <!-- GamingMode toast messages -->
-    <string name="gamingmode_enabled">Gaming mode enabled</string>
-    <string name="gamingmode_disabled">Gaming mode disabled</string>
+    <string name="gamingmode_active">Gaming mode active</string>
+    <string name="gamingmode_inactive">Gaming mode inactive</string>
 </resources>

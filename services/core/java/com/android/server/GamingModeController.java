@@ -19,8 +19,6 @@ package com.android.server;
 import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
-import static android.os.UserHandle.CURRENT;
-import static android.os.UserHandle.USER_ALL;
 import static android.provider.Settings.System.GAMINGMODE_APPS;
 import static android.provider.Settings.System.GAMINGMODE_BRIGHTNESS;
 import static android.provider.Settings.System.GAMINGMODE_LOCK_BRIGHTNESS;
@@ -34,37 +32,49 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 import static android.widget.Toast.LENGTH_SHORT;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
+import android.os.Message;
+import android.os.Process;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.widget.Toast;
+import android.util.ArraySet;
 
 import com.android.internal.R;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
+public final class GamingModeController implements Handler.Callback {
+    private static final String TAG = "GamingModeController";
 
-public final class GamingModeController {
+    // String separator used to separate package names in the stored list
+    private static final String mSeparator = "|";
+    private static final String mSeparatorRegex = "\\|";
+
+    // Message constants
+    private static final int MSG_GAMINGMODE_ACTIVE = 1;
+    private static final int MSG_GAMINGMODE_INACTIVE = 2;
+    private static final int MSG_PACKAGE_UNINSTALLED = 3;
 
     private final Context mContext;
     private final ContentResolver mResolver;
     private final AudioManager mAudioManager;
     private final SettingsObserver mObserver;
     private final Handler mHandler;
-    private final ExecutorService mExecutor;
-    private String mEnabledApps;
+    private final ArraySet<String> mPackageList;
     private boolean mIsEnabled;
     private boolean mIsActive;
     private boolean mShouldLockBrightness, mShouldRestoreBrightness;
     private boolean mShouldShowToast;
-    private boolean mIsRestoringBrightness, mBrightnessModeChanged;
+    private boolean mBrightnessModeChanged;
+    private boolean mSettingChanged;
     private int mUserBrightness;
     private int mUserBrightnessMode = SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
     private int mUserRingerMode = RINGER_MODE_NORMAL;
@@ -72,94 +82,120 @@ public final class GamingModeController {
 
     public GamingModeController(Context context) {
         mContext = context;
-        mResolver = mContext.getContentResolver();
-        mHandler = new Handler(Looper.getMainLooper());
-        mExecutor = Executors.newSingleThreadExecutor();
-        mObserver = new SettingsObserver(mHandler);
-        mObserver.observe();
+        final HandlerThread thread = new HandlerThread(TAG, Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+        mHandler = new Handler(thread.getLooper(), this);
         mAudioManager = mContext.getSystemService(AudioManager.class);
+        mPackageList = new ArraySet<>();
+        mResolver = mContext.getContentResolver();
+        mObserver = new SettingsObserver();
+        mObserver.observe();
+        mContext.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (mIsActive) {
+                    mIsActive = false;
+                    mHandler.sendEmptyMessage(MSG_GAMINGMODE_INACTIVE);
+                }
+            }
+        }, new IntentFilter(Intent.ACTION_SCREEN_OFF), null, mHandler);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+            case MSG_GAMINGMODE_ACTIVE:
+                onGamingModeActive();
+                break;
+            case MSG_GAMINGMODE_INACTIVE:
+                onGamingModeInactive();
+                break;
+            case MSG_PACKAGE_UNINSTALLED:
+                updateListInSettings();
+        }
+        return true;
     }
 
     public void onAppOpened(String packageName) {
-        mExecutor.execute(() -> {
-            if (!mIsActive && isEnabledForApp(packageName)) {
-                setActive(true);
-                changeRingerMode();
-                if (mShouldLockBrightness && isAdaptiveBrightnessOn()) {
-                    enableAdaptiveBrightness(false);
-                    mBrightnessModeChanged = true;
-                }
-                if (mShouldRestoreBrightness) {
-                    restoreBrightness();
-                }
-                if (mShouldShowToast) {
-                    mHandler.post(() ->
-                        Toast.makeText(mContext, R.string.gamingmode_enabled, LENGTH_SHORT).show());
-                }
-            } else if (mIsActive && !isEnabledForApp(packageName)){
-                setActive(false);
-                if (mRingerMode != 0) {
-                    mAudioManager.setRingerModeInternal(mUserRingerMode);
-                }
-                if (mBrightnessModeChanged) {
-                    enableAdaptiveBrightness(true);
-                    mBrightnessModeChanged = false;
-                }
-                if (mShouldRestoreBrightness) {
-                    restoreBrightness();
-                }
-                if (mShouldShowToast) {
-                    mHandler.post(() ->
-                        Toast.makeText(mContext, R.string.gamingmode_disabled, LENGTH_SHORT).show());
-                }
-            }
-        });
+        if (!mIsActive && mPackageList.contains(packageName)) {
+            mIsActive = true;
+            mHandler.sendEmptyMessage(MSG_GAMINGMODE_ACTIVE);
+        } else if (mIsActive && !mPackageList.contains(packageName)) {
+            mIsActive = false;
+            mHandler.sendEmptyMessage(MSG_GAMINGMODE_INACTIVE);
+        }
+    }
+
+    private void onGamingModeActive() {
+        broadcast();
+        changeRingerMode();
+        if (mShouldLockBrightness && isAdaptiveBrightnessOn()) {
+            enableAdaptiveBrightness(false);
+            mBrightnessModeChanged = true;
+        }
+        if (mShouldRestoreBrightness) {
+            restoreBrightness();
+        }
+        if (mShouldShowToast) {
+            Toast.makeText(mContext, R.string.gamingmode_active, LENGTH_SHORT).show();
+        }
+    }
+
+    private void onGamingModeInactive() {
+        broadcast();
+        if (mRingerMode != 0) {
+            mAudioManager.setRingerModeInternal(mUserRingerMode);
+        }
+        if (mBrightnessModeChanged) {
+            enableAdaptiveBrightness(true);
+            mBrightnessModeChanged = false;
+        }
+        if (mShouldRestoreBrightness) {
+            restoreBrightness();
+        }
+        if (mShouldShowToast) {
+            Toast.makeText(mContext, R.string.gamingmode_inactive, LENGTH_SHORT).show();
+        }
     }
 
     public boolean isEnabled() {
         return mIsEnabled;
     }
 
-    private boolean isEnabledForApp(String packageName) {
-        boolean enabled = mEnabledApps != null && mEnabledApps.contains(packageName);
-        return enabled;
-    }
-
     public void onPackageUninstalled(String packageName) {
-        if (isEnabledForApp(packageName) && mEnabledApps != null) {
-            mEnabledApps = mEnabledApps.replace(packageName + "|", "");
-            putString(GAMINGMODE_APPS, mEnabledApps);
+        if (mPackageList.contains(packageName)) {
+            mPackageList.remove(packageName);
+            mHandler.sendEmptyMessage(MSG_PACKAGE_UNINSTALLED);
         }
     }
 
-    private void setActive(boolean active) {
-        mIsActive = active;
+    private void broadcast() {
         final Intent intent = new Intent(Intent.ACTION_GAMINGMODE_STATE_CHANGED);
         intent.putExtra(Intent.EXTRA_GAMINGMODE_STATUS, mIsActive);
-        mContext.sendBroadcastAsUser(intent, CURRENT);
+        mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 
     private void restoreBrightness() {
         if (mIsActive) {
-            if (!mIsRestoringBrightness) {
-                mIsRestoringBrightness = true;
-                mUserBrightness = getInt(SCREEN_BRIGHTNESS, 1);
-                setBrightnessLinear(getInt(GAMINGMODE_BRIGHTNESS));
-            }
+            mSettingChanged = true;
+            mUserBrightness = getInt(SCREEN_BRIGHTNESS, 1);
+            setBrightness(getInt(GAMINGMODE_BRIGHTNESS));
         } else {
-            setBrightnessLinear(mUserBrightness);
+            setBrightness(mUserBrightness);
         }
     }
 
     private void changeRingerMode() {
         mUserRingerMode = mAudioManager.getRingerModeInternal();
         switch (mRingerMode) {
+            case 0:
+                mAudioManager.setRingerModeInternal(RINGER_MODE_NORMAL);
+                break;
             case 1:
                 mAudioManager.setRingerModeInternal(RINGER_MODE_VIBRATE);
                 break;
             case 2:
                 mAudioManager.setRingerModeInternal(RINGER_MODE_SILENT);
-                break;
         }
     }
 
@@ -173,9 +209,8 @@ public final class GamingModeController {
             SCREEN_BRIGHTNESS_MODE_AUTOMATIC : SCREEN_BRIGHTNESS_MODE_MANUAL);
     }
 
-    private void setBrightnessLinear(int brightness) {
+    private void setBrightness(int brightness) {
         putInt(SCREEN_BRIGHTNESS, brightness);
-        mIsRestoringBrightness = false;
     }
 
     private int getInt(String key) {
@@ -191,15 +226,26 @@ public final class GamingModeController {
     }
 
     private boolean getBool(String key) {
-        return getInt(key) == 1 ? true : false;
+        return getInt(key) == 1;
     }
 
-    private String getString(String key) {
-        return Settings.System.getString(mResolver, key);
+    private void reloadPackageList() {
+        mPackageList.clear();
+        String list = Settings.System.getString(mResolver, GAMINGMODE_APPS);
+        if (list != null && !list.equals("")) {
+            for (String pkg: list.split(mSeparatorRegex)) {
+                mPackageList.add(pkg);
+            }
+        }
     }
 
-    private void putString(String key, String value) {
-        Settings.System.putString(mResolver, key, value);
+    private void updateListInSettings() {
+        String newList = "";
+        for (String pkg: mPackageList) {
+            newList += pkg + mSeparator;
+        }
+        mSettingChanged = true;
+        Settings.System.putString(mResolver, GAMINGMODE_APPS, newList);
     }
 
     private final class SettingsObserver extends ContentObserver {
@@ -212,8 +258,8 @@ public final class GamingModeController {
         final Uri GAMINGMODE_TOAST_URI = getUri(GAMINGMODE_TOAST);
         final Uri GAMINGMODE_APPS_URI = getUri(GAMINGMODE_APPS);
 
-        SettingsObserver(Handler handler) {
-            super(handler);
+        SettingsObserver() {
+            super(mHandler);
         }
 
         void observe() {
@@ -242,13 +288,21 @@ public final class GamingModeController {
             } else if (uri.equals(GAMINGMODE_TOAST_URI)) {
                 mShouldShowToast = getBool(GAMINGMODE_TOAST);
             } else if (uri.equals(GAMINGMODE_APPS_URI)) {
-                mEnabledApps = getString(GAMINGMODE_APPS);
+                if (mSettingChanged) {
+                    mSettingChanged = false;
+                } else {
+                    reloadPackageList();
+                }
             }
         }
 
-        public void updateBrightness() {
-            if (mIsActive && !mIsRestoringBrightness) {
-                putInt(GAMINGMODE_BRIGHTNESS, getInt(SCREEN_BRIGHTNESS, 0));
+        private void updateBrightness() {
+            if (mIsActive) {
+                if (mSettingChanged) {
+                    mSettingChanged = false;
+                } else {
+                    putInt(GAMINGMODE_BRIGHTNESS, getInt(SCREEN_BRIGHTNESS, 0));
+                }
             }
         }
 
@@ -259,7 +313,7 @@ public final class GamingModeController {
             mShouldRestoreBrightness = getBool(GAMINGMODE_RESTORE_BRIGHTNESS);
             mRingerMode = getInt(GAMINGMODE_RINGERMODE, 0);
             mShouldShowToast = getBool(GAMINGMODE_TOAST);
-            mEnabledApps = getString(GAMINGMODE_APPS);
+            reloadPackageList();
         }
 
         private Uri getUri(String key) {
@@ -267,7 +321,7 @@ public final class GamingModeController {
         }
 
         private void register(Uri uri) {
-            mResolver.registerContentObserver(uri, false, this, USER_ALL);
+            mResolver.registerContentObserver(uri, false, this, UserHandle.USER_CURRENT);
         }
     }
 }

@@ -19,8 +19,8 @@
     <java-symbol type="bool" name="config_hasOnePlusHapticMotor" />
 
     <!-- GamingMode toast messages -->
-    <java-symbol type="string" name="gamingmode_enabled" />
-    <java-symbol type="string" name="gamingmode_disabled" />
+    <java-symbol type="string" name="gamingmode_active" />
+    <java-symbol type="string" name="gamingmode_inactive" />
 
     <!-- Max visible notification icons -->
     <java-symbol type="integer" name="config_maxVisibleNotificationIcons" />
