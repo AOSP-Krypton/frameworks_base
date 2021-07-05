@@ -16,7 +16,6 @@
 
 package com.android.internal.util.krypton;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.input.InputManager;
@@ -26,7 +25,6 @@ import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -99,12 +97,6 @@ public class KryptonUtils {
                     // do nothing.
                 }
             }
-        }
-    }
-
-    public static void removePackageIfInList(ContentResolver resolver, String packageName) {
-        if (Settings.System.CUSTOM_REFRESH_RATE_MODE_APPS.contains(packageName)) {
-            Settings.System.CUSTOM_REFRESH_RATE_MODE_APPS.remove(packageName);
         }
     }
 }

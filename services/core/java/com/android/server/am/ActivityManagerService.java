@@ -339,9 +339,9 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.util.function.HeptFunction;
 import com.android.internal.util.function.QuadFunction;
 import com.android.internal.util.function.TriFunction;
-import com.android.internal.util.krypton.KryptonUtils;
 import com.android.server.AlarmManagerInternal;
 import com.android.server.AttributeCache;
+import com.android.server.display.CustomRefreshRateController;
 import com.android.server.DeviceIdleInternal;
 import com.android.server.DisplayThread;
 import com.android.server.GamingModeController;
@@ -1684,6 +1684,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     static final HostingRecord sNullHostingRecord = new HostingRecord(null);
 
     private GamingModeController mGamingModeController;
+    private CustomRefreshRateController mCustomRefreshRateController;
 
     /**
      * Used to notify activity lifecycle events.
@@ -7935,6 +7936,9 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // GamingMode controller
         mGamingModeController = new GamingModeController(mContext);
+
+        // Per app refresh rate controller
+        mCustomRefreshRateController = new CustomRefreshRateController(mContext);
     }
 
     void startPersistentApps(int matchFlags) {
@@ -16216,7 +16220,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                         mAtmInternal.onPackageUninstalled(ssp);
                                         mBatteryStatsService.notePackageUninstalled(ssp);
                                         mGamingModeController.onPackageUninstalled(ssp);
-                                        KryptonUtils.removePackageIfInList(mContext.getContentResolver(), ssp);
+                                        mCustomRefreshRateController.onPackageUninstalled(ssp);
                                     }
                                 } else {
                                     if (killProcess) {
@@ -17951,9 +17955,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
-
-            if (mCurResumedPackage != null && mGamingModeController.isEnabled()) {
-                mGamingModeController.onAppOpened(mCurResumedPackage);
+            if (mCurResumedPackage != null) {
+                if (mGamingModeController.isEnabled()) {
+                    mGamingModeController.onAppOpened(mCurResumedPackage);
+                }
+                if (mCustomRefreshRateController.isEnabled()) {
+                    mCustomRefreshRateController.onAppOpened(mCurResumedPackage);
+                }
             }
         }
         return r;
