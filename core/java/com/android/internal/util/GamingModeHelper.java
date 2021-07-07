@@ -134,6 +134,10 @@ public final class GamingModeHelper {
             return;
         }
 
+        if (GAMING_MODE_PACKAGE.equals(packageName)) {
+            return;
+        }
+
         if (mGamingPackages.contains(packageName)) {
             startGamingMode(packageName);
             return;
