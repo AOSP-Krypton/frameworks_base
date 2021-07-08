@@ -73,4 +73,7 @@
 
     <java-symbol type="array" name="config_systemLocationWhitelistedPackages" />
 
+    <!-- For dynamic default font styles -->
+    <java-symbol type="string" name="config_bodyFontFamily" />
+
 </resources>
