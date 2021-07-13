@@ -97,7 +97,6 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
         Settings.System.NETWORK_TRAFFIC_ARROW,
         Settings.System.NETWORK_TRAFFIC_VIEW_LOCATION,
-        Settings.System.SMART_SPACE,
         Settings.System.NOTIFICATION_PULSE,
         Settings.System.AOD_NOTIFICATION_PULSE,
         Settings.System.AOD_NOTIFICATION_PULSE_CLEAR,
