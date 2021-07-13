@@ -803,7 +803,7 @@ public class NotificationStackScrollLayout extends ViewGroup implements ScrollAd
     }
 
     /** @hide */
-    public ExpandableNotificationRow getFirstActiveClearableNotifications(@SelectedRows int selection) {
+    public ExpandableNotificationRow getFirstActiveNotification(@SelectedRows int selection) {
         if (mDynamicPrivacyController.isInLockedDownShade()) {
             return null;
         }
@@ -814,7 +814,7 @@ public class NotificationStackScrollLayout extends ViewGroup implements ScrollAd
                 continue;
             }
             final ExpandableNotificationRow row = (ExpandableNotificationRow) child;
-            if (row.canViewBeDismissed() && matchesSelection(row, selection)) {
+            if (matchesSelection(row, selection)) {
                 return row;
             }
         }

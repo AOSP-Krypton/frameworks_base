@@ -28,7 +28,6 @@ import com.android.systemui.R;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.doze.AlwaysOnDisplayPolicy;
 import com.android.systemui.doze.DozeScreenState;
-import com.android.systemui.tuner.TunerService;
 
 import java.io.PrintWriter;
 
@@ -157,7 +156,7 @@ public class DozeParameters implements
      * @return {@code true} if enabled and available.
      */
     public boolean getAlwaysOn() {
-        return mAmbientDisplayConfiguration.alwaysOnEnabled(UserHandle.USER_CURRENT) ? true : false;
+        return mAmbientDisplayConfiguration.alwaysOnEnabled(UserHandle.USER_CURRENT);
     }
 
     /**
