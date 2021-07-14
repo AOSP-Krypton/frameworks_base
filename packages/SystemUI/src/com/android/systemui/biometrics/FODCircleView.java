@@ -56,6 +56,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.app.ActivityManager.StackInfo;
 import android.app.ActivityTaskManager;
 import android.content.ContentResolver;
@@ -287,6 +288,7 @@ public class FODCircleView extends ImageView {
         }
     };
 
+    @SuppressLint("RtlHardcoded")
     public FODCircleView(Context context) {
         super(context);
         mContext = context;
@@ -314,9 +316,9 @@ public class FODCircleView extends ImageView {
         mSpline = Spline.createSpline(getFloatArray(res.getIntArray(R.array.config_FODiconDisplayBrightness)),
             getFloatArray(res.getIntArray(R.array.config_FODiconDimAmount)));
         mTargetUsesInKernelDimming = res.getBoolean(com.android.internal.R.bool.config_targetUsesInKernelDimming);
-        mPaintFingerprint.setColor(res.getColor(R.color.config_fodColor));
+        mPaintFingerprint.setColor(res.getColor(R.color.config_fodColor, null));
         mPaintFingerprint.setAntiAlias(true);
-        mPaintFingerprintBackground.setColor(res.getColor(R.color.config_fodColorBackground));
+        mPaintFingerprintBackground.setColor(res.getColor(R.color.config_fodColorBackground, null));
         mPaintFingerprintBackground.setAntiAlias(true);
 
         mDreamingMaxOffset = (int) (mSize * 0.1f);
@@ -423,6 +425,7 @@ public class FODCircleView extends ImageView {
         super.onDraw(canvas);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = Math.abs(event.getAxisValue(AXIS_X));
