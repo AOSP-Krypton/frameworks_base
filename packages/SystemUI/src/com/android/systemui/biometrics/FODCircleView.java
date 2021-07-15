@@ -310,7 +310,7 @@ public class FODCircleView extends ImageView {
             throw new RuntimeException("Failed to retrieve FOD circle position or size");
         }
 
-        mFODAnimation = new FODAnimation(mContext, mWindowManager, mPositionY);
+        mFODAnimation = new FODAnimation(mContext, mPositionY);
 
         final Resources res = mContext.getResources();
         mSpline = Spline.createSpline(getFloatArray(res.getIntArray(R.array.config_FODiconDisplayBrightness)),
@@ -376,8 +376,7 @@ public class FODCircleView extends ImageView {
         mUpdateMonitor.registerCallback(mMonitorCallback);
         Dependency.get(ScreenLifecycle.class).addObserver(mScreenObserver);
         Dependency.get(WakefulnessLifecycle.class).addObserver(mWakefulnessObserver);
-        FingerprintManager mFpManager = mContext.getSystemService(FingerprintManager.class);
-        mFpManager.addLockoutResetCallback(mLockoutResetCallback);
+        mContext.getSystemService(FingerprintManager.class).addLockoutResetCallback(mLockoutResetCallback);
     }
 
     private float[] getFloatArray(int[] array) {

@@ -29,15 +29,19 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AnimationDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageView;
 
+import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.R;
 
 public class FODAnimation extends ImageView {
 
     private final Context mContext;
+    private final Handler mHandler;
     private final WindowManager mWindowManager;
     private final LayoutParams mAnimParams;
     private final int mAnimationOffset;
@@ -46,11 +50,12 @@ public class FODAnimation extends ImageView {
     private boolean mIsShowing;
     private boolean mShouldShow;
 
-    public FODAnimation(Context context, WindowManager windowManager, int posY) {
+    public FODAnimation(Context context, int posY) {
         super(context);
         mContext = context;
+        mHandler = new Handler(Looper.getMainLooper());
+        mWindowManager = mContext.getSystemService(WindowManager.class);
         final Resources res = mContext.getResources();
-        mWindowManager = windowManager;
         mAnimationSize = res.getDimensionPixelSize(R.dimen.fod_animation_size);
         mAnimationOffset = res.getDimensionPixelSize(R.dimen.fod_animation_offset);
         mAnimParams = new LayoutParams();
@@ -72,12 +77,16 @@ public class FODAnimation extends ImageView {
         mShouldShow = show;
     }
 
-    public void setFODAnim(int index) {
-        TypedArray mFODAnims = mContext.getResources().obtainTypedArray(
-            com.krypton.settings.R.array.config_fodAnims);
-        setBackgroundResource(mFODAnims.getResourceId(index, 0));
-        recognizingAnim = (AnimationDrawable) getBackground();
-        mFODAnims.recycle();
+    public void setFODAnim(final int index) {
+        ThreadUtils.postOnBackgroundThread(() -> {
+            TypedArray mFODAnims = mContext.getResources().obtainTypedArray(
+                com.krypton.settings.R.array.config_fodAnims);
+            mHandler.post(() -> {
+                setBackgroundResource(mFODAnims.getResourceId(index, 0));
+                recognizingAnim = (AnimationDrawable) getBackground();
+                mFODAnims.recycle();
+            });
+        });
     }
 
     public void showFODanimation() {
