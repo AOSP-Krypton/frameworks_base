@@ -71,6 +71,7 @@ import android.widget.TextView;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.util.krypton.KryptonUtils;
 import com.android.internal.util.LatencyTracker;
 import com.android.keyguard.KeyguardClockSwitch;
 import com.android.keyguard.KeyguardStatusView;
@@ -80,6 +81,7 @@ import com.android.systemui.DejankUtils;
 import com.android.systemui.Dependency;
 import com.android.systemui.Interpolators;
 import com.android.systemui.R;
+import com.android.systemui.biometrics.FODCircleViewImpl;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.doze.DozeLog;
@@ -127,8 +129,6 @@ import com.android.systemui.statusbar.policy.KeyguardUserSwitcher;
 import com.android.systemui.statusbar.policy.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.util.InjectionInflationController;
-
-import com.android.internal.util.krypton.KryptonUtils;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -270,6 +270,7 @@ public class NotificationPanelViewController extends PanelViewController {
     private final ConversationNotificationManager mConversationNotificationManager;
     private final MediaHierarchyManager mMediaHierarchyManager;
     private final StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
+    private final FODCircleViewImpl mFODCircleViewImpl;
 
     private KeyguardAffordanceHelper mAffordanceHelper;
     private KeyguardUserSwitcher mKeyguardUserSwitcher;
@@ -524,7 +525,8 @@ public class NotificationPanelViewController extends PanelViewController {
             ConversationNotificationManager conversationNotificationManager,
             MediaHierarchyManager mediaHierarchyManager,
             BiometricUnlockController biometricUnlockController,
-            StatusBarKeyguardViewManager statusBarKeyguardViewManager) {
+            StatusBarKeyguardViewManager statusBarKeyguardViewManager,
+            FODCircleViewImpl fodCircleViewImpl) {
         super(view, falsingManager, dozeLog, keyguardStateController,
                 (SysuiStatusBarStateController) statusBarStateController, vibratorHelper,
                 latencyTracker, flingAnimationUtilsBuilder, statusBarTouchableRegionManager);
@@ -606,6 +608,7 @@ public class NotificationPanelViewController extends PanelViewController {
         mLockscreenUserManager = notificationLockscreenUserManager;
         mEntryManager = notificationEntryManager;
         mConversationNotificationManager = conversationNotificationManager;
+        mFODCircleViewImpl = fodCircleViewImpl;
 
         mView.setBackgroundColor(Color.TRANSPARENT);
         OnAttachStateChangeListener onAttachStateChangeListener = new OnAttachStateChangeListener();
@@ -3092,6 +3095,13 @@ public class NotificationPanelViewController extends PanelViewController {
         mKeyguardStatusView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
         mKeyguardStatusBar.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
         mKeyguardBottomArea.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        if (mUpdateMonitor.isFingerprintDetectionRunning()) {
+            if (show) {
+                mFODCircleViewImpl.showInDisplayFingerprintView();
+            } else {
+                mFODCircleViewImpl.hideInDisplayFingerprintView();
+            }
+        }
     }
 
     public void setAmbientIndicationBottomPadding(int ambientIndicationBottomPadding) {
