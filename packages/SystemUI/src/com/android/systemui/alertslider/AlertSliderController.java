@@ -45,9 +45,13 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.Point;
 import android.os.Handler;
 import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.systemui.R;
 
@@ -56,81 +60,99 @@ import javax.inject.Singleton;
 
 @Singleton
 public final class AlertSliderController {
-    private final AlertSliderDialog mDialog;
-    private final AlertSliderReceiver mReceiver;
+    private static final int TIMEOUT = 1000; // In millis
     private final Context mContext;
     private final Handler mHandler;
-    private final Runnable mDismissDialogRunnable;
-    private final int mDialogTimeout = 1000; // In millis
+    private WindowManager mWindowManager;
+    private LayoutParams mLayoutParams;
+    private View mDialogView;
+    private ImageView mIcon;
+    private TextView mText;
+    private Runnable mDismissDialogRunnable;
     private int mAlertSlideOffset;
     private float mStepSize;
-    private Window mWindow;
-    private LayoutParams mLayoutParams;
 
     @Inject
     public AlertSliderController(Context context, Handler handler) {
         mContext = context;
         mHandler = handler;
-        mReceiver = new AlertSliderReceiver();
-        mDialog = new AlertSliderDialog(mContext);
-        mDismissDialogRunnable = () -> mDialog.dismiss();
     }
 
     protected void register() {
+        mWindowManager = mContext.getSystemService(WindowManager.class);
         final Resources res = mContext.getResources();
         mAlertSlideOffset = res.getInteger(R.integer.config_alertSliderOffset);
         mStepSize = res.getDimension(R.dimen.alertslider_step_size);
-        mContext.registerReceiver(mReceiver, new IntentFilter(ACTION_SLIDER_POSITION_CHANGED));
+        mContext.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                notifyController(intent.getIntExtra(EXTRA_SLIDER_POSITION, 0));
+            }
+        }, new IntentFilter(ACTION_SLIDER_POSITION_CHANGED));
+        initDialog();
+    }
+
+    protected void updateConfiguration() {
+        if (mDialogView.getParent() != null) {
+            mWindowManager.removeViewImmediate(mDialogView);
+        }
         initDialog();
     }
 
     private void notifyController(int position) {
         switch (position) {
             case 0:
-                mDialog.setContentView(R.layout.alertslider_dialog_down);
+                mIcon.setImageResource(R.drawable.ic_slider_down);
+                mText.setText(R.string.alertslider_down_text);
                 break;
             case 1:
-                mDialog.setContentView(R.layout.alertslider_dialog_middle);
+                mIcon.setImageResource(R.drawable.ic_slider_middle);
+                mText.setText(R.string.alertslider_middle_text);
                 break;
             case 2:
-                mDialog.setContentView(R.layout.alertslider_dialog_up);
+                mIcon.setImageResource(R.drawable.ic_slider_up);
+                mText.setText(R.string.alertslider_up_text);
         }
         showDialog(position);
     }
 
     private void showDialog(int position) {
-        boolean isVisible = false;
         if (mHandler.hasCallbacks(mDismissDialogRunnable)) {
-            isVisible = true;
             mHandler.removeCallbacks(mDismissDialogRunnable);
         }
         final Point pos = getLayoutPositionParams(position);
         mLayoutParams.x = pos.x;
         mLayoutParams.y = pos.y;
         mLayoutParams.gravity = pos.x == 0 ? RIGHT : TOP;
-        mWindow.setAttributes(mLayoutParams);
-        if (!isVisible) {
-            mDialog.show();
+        if (mDialogView.getParent() == null) {
+            mWindowManager.addView(mDialogView, mLayoutParams);
+        } else {
+            mWindowManager.updateViewLayout(mDialogView, mLayoutParams);
         }
-        mHandler.postDelayed(mDismissDialogRunnable, mDialogTimeout);
+        mHandler.postDelayed(mDismissDialogRunnable, TIMEOUT);
     }
 
     private void initDialog() {
-        mWindow = mDialog.getWindow();
-        if (mWindow == null) {
-            return;
-        }
-        mWindow.requestFeature(FEATURE_NO_TITLE);
-        mWindow.setBackgroundDrawable(new ColorDrawable(TRANSPARENT));
-        mWindow.clearFlags(FLAG_DIM_BEHIND | FLAG_LAYOUT_INSET_DECOR);
-        mWindow.addFlags(FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCH_MODAL |
-            FLAG_SHOW_WHEN_LOCKED | FLAG_HARDWARE_ACCELERATED);
-        mWindow.setType(TYPE_SECURE_SYSTEM_OVERLAY);
-        mWindow.setWindowAnimations(com.android.internal.R.style.Animation_Toast);
-        mLayoutParams = mWindow.getAttributes();
+        mDialogView = LayoutInflater.from(mContext).inflate(
+            R.layout.alertslider_dialog, null, false);
+        mIcon = mDialogView.findViewById(R.id.icon);
+        mText = mDialogView.findViewById(R.id.text);
+
+        mLayoutParams = new LayoutParams();
+        mLayoutParams.width = mLayoutParams.height = WRAP_CONTENT;
+        mLayoutParams.flags &= ~FLAG_DIM_BEHIND;
+        mLayoutParams.flags &= ~FLAG_LAYOUT_INSET_DECOR;
+        mLayoutParams.flags |= FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCH_MODAL |
+            FLAG_SHOW_WHEN_LOCKED | FLAG_HARDWARE_ACCELERATED;
+        mLayoutParams.type = TYPE_SECURE_SYSTEM_OVERLAY;
         mLayoutParams.format = TRANSLUCENT;
         mLayoutParams.windowAnimations = -1;
-        mWindow.setLayout(WRAP_CONTENT, WRAP_CONTENT);
+
+        mDismissDialogRunnable = () -> {
+            if (mDialogView.getParent() != null) {
+                mWindowManager.removeViewImmediate(mDialogView);
+            }
+        };
     }
 
     private Point getLayoutPositionParams(int position) {
@@ -150,24 +172,5 @@ public final class AlertSliderController {
                 break;
         }
         return pos;
-    }
-
-    private final class AlertSliderReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            notifyController(intent.getIntExtra(EXTRA_SLIDER_POSITION, 0));
-        }
-    }
-
-    private final class AlertSliderDialog extends Dialog {
-        public AlertSliderDialog(Context context) {
-            super(context, R.style.qs_theme);
-        }
-
-        @Override
-        protected void onStart() {
-            super.setCanceledOnTouchOutside(true);
-            super.onStart();
-        }
     }
 }

@@ -18,7 +18,6 @@ package com.android.systemui.alertslider;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.util.Log;
 
 import com.android.systemui.R;
 import com.android.systemui.SystemUI;
@@ -31,9 +30,8 @@ import javax.inject.Singleton;
 
 @Singleton
 public final class AlertSliderUI extends SystemUI {
-    private static final String TAG = "AlertSliderUI";
-    private boolean mEnabled;
     private AlertSliderController mController;
+    private boolean mEnabled;
 
     @Inject
     public AlertSliderUI(Context context, AlertSliderController alertSliderController) {
@@ -45,8 +43,14 @@ public final class AlertSliderUI extends SystemUI {
     public void start() {
         mEnabled = mContext.getResources().getBoolean(R.bool.config_hasAlertSlider);
         if (!mEnabled) return;
-        Log.d(TAG, "Registering alertslider controller");
         mController.register();
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        if (mEnabled) {
+            mController.updateConfiguration();
+        }
     }
 
     @Override
