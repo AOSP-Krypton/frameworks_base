@@ -2811,13 +2811,13 @@ public final class BluetoothAdapter {
         if (bshClass != null) {
             Log.d(TAG, "Able to get BSH class handle");
             try {
-                bshClose =  bshClass.getDeclaredMethod("close", null);
+                bshClose =  bshClass.getDeclaredMethod("close");
             } catch (NoSuchMethodException e) {
                 Log.e(TAG, "no BSH:isSupported method exists");
             }
             if (bshClose != null) {
                 try {
-                   bshClose.invoke(proxy, null);
+                   bshClose.invoke(proxy);
                 } catch(IllegalAccessException e) {
                    Log.e(TAG, "bshClose IllegalAccessException");
                 } catch (InvocationTargetException e) {
@@ -2844,7 +2844,7 @@ public final class BluetoothAdapter {
         if (bshClass != null) {
             Log.d(TAG, "Able to get BSH class handle");
             try {
-                bshSupported =  bshClass.getDeclaredMethod("isSupported", null);
+                bshSupported =  bshClass.getDeclaredMethod("isSupported");
             } catch (NoSuchMethodException e) {
                 Log.e(TAG, "no BSH:isSupported method exists: gdm");
             }
@@ -2859,7 +2859,7 @@ public final class BluetoothAdapter {
         }
         if (bshClass != null && bshSupported != null && bshCons != null) {
             try {
-                isProfileSupported = (boolean)bshSupported.invoke(null, null);
+                isProfileSupported = (boolean)bshSupported.invoke(null);
             } catch(IllegalAccessException e) {
                 Log.e(TAG, "BSH:isSupported IllegalAccessException");
             } catch (InvocationTargetException e) {
@@ -3090,19 +3090,19 @@ public final class BluetoothAdapter {
         Class<?> broadcastClass = null;
         Method broadcastClose = null;
         try {
-            broadcastClass = Class.forName("android.bluetooth.BluetootBroadcast");
+            broadcastClass = Class.forName("android.bluetooth.BluetoothBroadcast");
         } catch (ClassNotFoundException ex) {
             Log.e(TAG, "no BluetoothBroadcast: exists");
         }
         if (broadcastClass != null) {
             try {
-                broadcastClose =  broadcastClass.getDeclaredMethod("close", null);
+                broadcastClose =  broadcastClass.getDeclaredMethod("close");
             } catch (NoSuchMethodException e) {
                 Log.e(TAG, "no Broadcast:close method exists");
             }
             if (broadcastClose != null) {
                 try {
-                    broadcastClose.invoke(proxy, null);
+                    broadcastClose.invoke(proxy);
                 } catch(IllegalAccessException | InvocationTargetException ex) {
                     ex.printStackTrace();
                 }
