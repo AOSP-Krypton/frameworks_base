@@ -541,7 +541,7 @@ public class FODCircleView extends ImageView {
     }
 
     public void show() {
-        if (mIsShowing) {
+        if (!mIsScreenTurnedOn || mIsShowing) {
             return;
         }
         if (isStrongAuthRequired(mUpdateMonitor.getCurrentUser())) {
