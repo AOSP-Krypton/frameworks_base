@@ -4953,6 +4953,12 @@ public final class Settings {
         public static final String NETWORK_TRAFFIC_ARROW = "network_traffic_arrow";
 
         /**
+         * Whether to enable SmartSpace
+         * @hide
+         */
+        public static final String SMART_SPACE = "smart_space";
+
+        /**
          * Show network traffic indicator
          * 0 - Statusbar (default)
          * 1 - QS Header

@@ -98,6 +98,7 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_ARROW,
         Settings.System.NETWORK_TRAFFIC_VIEW_LOCATION,
         Settings.System.NETWORK_TRAFFIC_FONT_SIZE,
+        Settings.System.SMART_SPACE,
         Settings.System.NOTIFICATION_PULSE,
         Settings.System.AOD_NOTIFICATION_PULSE,
         Settings.System.AOD_NOTIFICATION_PULSE_CLEAR,
