@@ -4828,6 +4828,21 @@ public final class Settings {
         public static final String FOD_ICON = "fod_icon";
 
         /**
+         * FOD icon tint mode
+         * 0: None
+         * 1: Accent
+         * 2: Custom color set by FOD_ICON_TINT_COLOR
+         * @hide
+         */
+        public static final String FOD_ICON_TINT_MODE = "fod_icon_tint_mode";
+
+        /**
+         * FOD icon tint color
+         * @hide
+         */
+        public static final String FOD_ICON_TINT_COLOR = "fod_icon_tint_color";
+
+        /**
          * FOD recognizing animation
          * @hide
          */

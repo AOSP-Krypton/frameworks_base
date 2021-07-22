@@ -92,7 +92,7 @@ public class FODAnimation extends ImageView {
     public void showFODanimation() {
         if (!mIsShowing && mShouldShow) {
             mIsShowing = true;
-            if (getWindowToken() == null) {
+            if (getParent() == null) {
                 mWindowManager.addView(this, mAnimParams);
             } else {
                 mWindowManager.updateViewLayout(this, mAnimParams);
@@ -111,7 +111,7 @@ public class FODAnimation extends ImageView {
                 recognizingAnim.stop();
                 recognizingAnim.selectDrawable(0);
             }
-            if (getWindowToken() != null) {
+            if (getParent() != null) {
                 mWindowManager.removeView(this);
             }
         }

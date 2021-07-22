@@ -22,7 +22,6 @@ import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.graphics.PixelFormat.TRANSLUCENT;
-import static android.graphics.PorterDuff.Mode.SRC_ATOP;
 import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.hardware.biometrics.BiometricSourceType.FINGERPRINT;
 import static android.hardware.fingerprint.FingerprintManager.FINGERPRINT_ERROR_LOCKOUT;
@@ -34,6 +33,8 @@ import static android.provider.Settings.Secure.DOZE_SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.FOD_ANIM;
 import static android.provider.Settings.System.FOD_ANIM_ALWAYS_ON;
 import static android.provider.Settings.System.FOD_ICON;
+import static android.provider.Settings.System.FOD_ICON_TINT_COLOR;
+import static android.provider.Settings.System.FOD_ICON_TINT_MODE;
 import static android.provider.Settings.System.FOD_RECOGNIZING_ANIMATION;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND;
@@ -68,7 +69,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.hardware.biometrics.BiometricSourceType;
 import android.hardware.fingerprint.FingerprintManager;
@@ -89,6 +89,7 @@ import com.android.internal.widget.LockPatternUtils.StrongAuthTracker;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.settingslib.utils.ThreadUtils;
+import com.android.settingslib.Utils;
 import com.android.systemui.Dependency;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
@@ -353,8 +354,8 @@ public class FODCircleView extends ImageView {
         mObserver.observe();
 
         mValueAnimator = new ValueAnimator();
-        mValueAnimator.addUpdateListener(valueAnimator -> setColorFilter(new PorterDuffColorFilter(
-            Color.argb((Integer) valueAnimator.getAnimatedValue(), 0, 0, 0), SRC_ATOP)));
+        mValueAnimator.addUpdateListener(valueAnimator -> setImageAlpha(
+            (Integer) valueAnimator.getAnimatedValue()));
         mValueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animator) {
@@ -389,7 +390,7 @@ public class FODCircleView extends ImageView {
     }
 
     private int getDimAlpha() {
-        return Math.round(mSpline.interpolate(getCurrentBrightness()));
+        return 255 - Math.round(mSpline.interpolate(getCurrentBrightness()));
     }
 
     private void updateIconDim(boolean animate) {
@@ -399,12 +400,10 @@ public class FODCircleView extends ImageView {
                 mValueAnimator.setIntValues(0, getDimAlpha());
                 mValueAnimator.start();
             } else if (!mIsAnimating) {
-                mHandler.post(() -> setColorFilter(new PorterDuffColorFilter(
-                    Color.argb(getDimAlpha(), 0, 0, 0), SRC_ATOP)));
+                setImageAlpha(getDimAlpha());
             }
         } else {
-            mHandler.post(() -> setColorFilter(new PorterDuffColorFilter(
-                Color.argb(0, 0, 0, 0), SRC_ATOP)));
+            setImageAlpha(255);
         }
     }
 
@@ -577,7 +576,7 @@ public class FODCircleView extends ImageView {
         TypedArray mFodIcons = mContext.getResources().obtainTypedArray(
             com.krypton.settings.R.array.config_fodIcons);
         mFODIcon = mFodIcons.getDrawable(index);
-        mHandler.post(() -> setImageDrawable(mFODIcon));
+        setImageDrawable(mFODIcon);
         mFodIcons.recycle();
     }
 
@@ -643,6 +642,8 @@ public class FODCircleView extends ImageView {
 
         final Uri SCREEN_BRIGHTNESS_URI = Settings.System.getUriFor(SCREEN_BRIGHTNESS);
         final Uri FOD_ICON_URI = Settings.System.getUriFor(FOD_ICON);
+        final Uri FOD_ICON_TINT_MODE_URI = Settings.System.getUriFor(FOD_ICON_TINT_MODE);
+        final Uri FOD_ICON_TINT_COLOR_URI = Settings.System.getUriFor(FOD_ICON_TINT_COLOR);
         final Uri FOD_RECOGNIZING_ANIM_URI = Settings.System.getUriFor(FOD_RECOGNIZING_ANIMATION);
         final Uri FOD_ANIM_URI = Settings.System.getUriFor(FOD_ANIM);
         final Uri FOD_ANIM_ALWAYS_ON_URI = Settings.System.getUriFor(FOD_ANIM_ALWAYS_ON);
@@ -650,7 +651,8 @@ public class FODCircleView extends ImageView {
         final Uri DOZE_BRIGHTNESS_URI = Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS);
 
         private final ContentResolver mResolver;
-        private boolean observing = false;
+        private boolean mIsObserving = false;
+        private int mTintMode = 0;
 
         CustomSettingsObserver(Handler handler, ContentResolver resolver) {
             super(handler);
@@ -658,11 +660,13 @@ public class FODCircleView extends ImageView {
         }
 
         synchronized void observe() {
-            if (!observing) {
-                observing = true;
+            if (!mIsObserving) {
+                mIsObserving = true;
                 update();
                 mResolver.registerContentObserver(SCREEN_BRIGHTNESS_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(FOD_ICON_URI, false, this, USER_ALL);
+                mResolver.registerContentObserver(FOD_ICON_TINT_MODE_URI, false, this, USER_ALL);
+                mResolver.registerContentObserver(FOD_ICON_TINT_COLOR_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(FOD_RECOGNIZING_ANIM_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(FOD_ANIM_URI, false, this, USER_ALL);
                 mResolver.registerContentObserver(FOD_ANIM_ALWAYS_ON_URI, false, this, USER_ALL);
@@ -671,8 +675,8 @@ public class FODCircleView extends ImageView {
         }
 
         synchronized void unobserve() {
-            if (observing) {
-                observing = false;
+            if (mIsObserving) {
+                mIsObserving = false;
                 mResolver.unregisterContentObserver(this);
             }
         }
@@ -684,6 +688,10 @@ public class FODCircleView extends ImageView {
                 updateIconDim(false);
             } else if (uri.equals(FOD_ICON_URI)) {
                 updateFODIcon(Settings.System.getInt(mResolver, FOD_ICON, 0));
+            } else if (uri.equals(FOD_ICON_TINT_MODE_URI)) {
+                updateFODIconTintMode();
+            } else if (uri.equals(FOD_ICON_TINT_COLOR_URI)) {
+                updateFODIconTintColor();
             } else if (uri.equals(FOD_RECOGNIZING_ANIM_URI)) {
                 mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                     FOD_RECOGNIZING_ANIMATION, 0) == 1;
@@ -703,6 +711,7 @@ public class FODCircleView extends ImageView {
             mCurrBrightness = Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS, 255);
             updateIconDim(false);
             updateFODIcon(Settings.System.getInt(mResolver, FOD_ICON, 0));
+            updateFODIconTintMode();
             mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                 FOD_RECOGNIZING_ANIMATION, 0) == 1;
             mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
@@ -710,6 +719,23 @@ public class FODCircleView extends ImageView {
             mHasCustomDozeBrightness = Settings.Secure.getIntForUser(mResolver,
                 DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0, USER_CURRENT) == 1;
             mDozeBrightness = Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
+        }
+
+        private void updateFODIconTintMode() {
+            switch (Settings.System.getInt(mResolver, FOD_ICON_TINT_MODE, 0)) {
+                case 0:
+                    clearColorFilter();
+                    break;
+                case 1:
+                    setColorFilter(Utils.getColorAccentDefaultColor(mContext));
+                    break;
+                case 2:
+                    updateFODIconTintColor();
+            }
+        }
+
+        private void updateFODIconTintColor() {
+            setColorFilter(Settings.System.getInt(mResolver, FOD_ICON_TINT_COLOR, -1));
         }
     }
 
