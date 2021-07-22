@@ -1,105 +1,104 @@
 package com.google.android.systemui.statusbar.phone;
 
-import com.android.systemui.Dependency;
-import com.android.systemui.statusbar.NotificationLockscreenUserManager;
-import com.android.systemui.statusbar.phone.StatusBar;
-import com.google.android.systemui.NotificationLockscreenUserManagerGoogle;
-import com.google.android.systemui.smartspace.SmartSpaceController;
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
+import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
 
+import android.annotation.Nullable;
 import android.content.Context;
-import com.android.systemui.statusbar.notification.init.NotificationsController;
-import com.android.systemui.statusbar.phone.LightBarController;
-import com.android.systemui.statusbar.phone.AutoHideController;
-import com.android.keyguard.KeyguardUpdateMonitor;
-import com.android.systemui.statusbar.phone.StatusBarIconController;
-import com.android.systemui.statusbar.PulseExpansionHandler;
-import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
-import com.android.systemui.statusbar.phone.KeyguardBypassController;
-import com.android.systemui.statusbar.policy.KeyguardStateController;
-import com.android.systemui.statusbar.phone.HeadsUpManagerPhone;
-import com.android.systemui.statusbar.notification.DynamicPrivacyController;
-import com.android.systemui.statusbar.notification.interruption.BypassHeadsUpNotifier;
-import com.android.systemui.plugins.FalsingManager;
-import com.android.systemui.broadcast.BroadcastDispatcher;
-import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler;
-import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
-import com.android.systemui.statusbar.NotificationRemoteInputManager;
-import com.android.systemui.statusbar.notification.logging.NotificationLogger;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProvider;
-import com.android.systemui.statusbar.NotificationViewHierarchyManager;
-import com.android.systemui.keyguard.KeyguardViewMediator;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.util.DisplayMetrics;
+
 import com.android.internal.logging.MetricsLogger;
-import com.android.systemui.statusbar.NotificationMediaManager;
-import com.android.systemui.statusbar.NotificationLockscreenUserManager;
-import com.android.systemui.statusbar.policy.UserSwitcherController;
-import com.android.systemui.statusbar.policy.NetworkController;
-import com.android.systemui.statusbar.policy.BatteryController;
+import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.keyguard.ViewMediatorCallback;
+import com.android.systemui.assist.AssistManager;
+import com.android.systemui.biometrics.FODCircleViewImpl;
+import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.bubbles.BubbleController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
+import com.android.systemui.dagger.qualifiers.UiBackground;
+import com.android.systemui.Dependency;
+import com.android.systemui.InitController;
+import com.android.systemui.keyguard.DismissCallbackRegistry;
+import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
-import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.statusbar.VibratorHelper;
-import com.android.systemui.bubbles.BubbleController;
-import com.android.systemui.statusbar.phone.NotificationGroupManager;
-import com.android.systemui.statusbar.notification.VisualStabilityManager;
-import com.android.systemui.statusbar.policy.DeviceProvisionedController;
-import com.android.systemui.statusbar.NavigationBarController;
-import com.android.systemui.assist.AssistManager;
-import com.android.systemui.statusbar.phone.BiometricUnlockController;
-import com.android.systemui.statusbar.policy.ConfigurationController;
-import com.android.systemui.statusbar.phone.NotificationShadeWindowController;
-import com.android.systemui.statusbar.phone.LockscreenLockIconController;
-import com.android.systemui.statusbar.phone.DozeParameters;
-import com.android.systemui.statusbar.phone.ScrimController;
-import com.android.systemui.statusbar.phone.KeyguardLiftController;
-import com.android.systemui.statusbar.phone.LockscreenWallpaper;
-import com.android.systemui.statusbar.phone.DozeServiceHost;
-import android.os.PowerManager;
-import com.android.systemui.recents.ScreenPinningRequest;
-import com.android.systemui.statusbar.phone.DozeScrimController;
-import com.android.systemui.volume.VolumeComponent;
-import com.android.systemui.statusbar.CommandQueue;
+import com.android.systemui.plugins.DarkIconDispatcher;
+import com.android.systemui.plugins.FalsingManager;
+import com.android.systemui.plugins.PluginDependencyProvider;
 import com.android.systemui.recents.Recents;
-import com.android.systemui.statusbar.phone.dagger.StatusBarComponent;
+import com.android.systemui.recents.ScreenPinningRequest;
 import com.android.systemui.shared.plugins.PluginManager;
 import com.android.systemui.stackdivider.Divider;
-import com.android.systemui.statusbar.phone.LightsOutNotifController;
-import com.android.systemui.statusbar.policy.FlashlightController;
-import com.android.systemui.statusbar.phone.StatusBarNotificationActivityStarter;
-import com.android.systemui.statusbar.phone.ShadeController;
-import com.android.systemui.statusbar.SuperStatusBarViewFactory;
-import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
-import com.android.keyguard.ViewMediatorCallback;
-import com.android.systemui.InitController;
-import com.android.systemui.plugins.DarkIconDispatcher;
-import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
-import android.os.Handler;
-import com.android.systemui.plugins.PluginDependencyProvider;
-import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
-import com.android.systemui.statusbar.policy.ExtensionController;
-import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
-import com.android.systemui.statusbar.phone.PhoneStatusBarPolicy;
+import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.KeyguardIndicationController;
-import com.android.systemui.keyguard.DismissCallbackRegistry;
+import com.android.systemui.statusbar.NavigationBarController;
+import com.android.systemui.statusbar.notification.DynamicPrivacyController;
+import com.android.systemui.statusbar.notification.init.NotificationsController;
+import com.android.systemui.statusbar.notification.interruption.BypassHeadsUpNotifier;
+import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProvider;
+import com.android.systemui.statusbar.notification.logging.NotificationLogger;
+import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
+import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
+import com.android.systemui.statusbar.notification.VisualStabilityManager;
+import com.android.systemui.statusbar.NotificationLockscreenUserManager;
+import com.android.systemui.statusbar.NotificationLockscreenUserManager;
+import com.android.systemui.statusbar.NotificationMediaManager;
+import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.NotificationShadeDepthController;
+import com.android.systemui.statusbar.NotificationViewHierarchyManager;
+import com.android.systemui.statusbar.phone.AutoHideController;
+import com.android.systemui.statusbar.phone.BiometricUnlockController;
+import com.android.systemui.statusbar.phone.dagger.StatusBarComponent;
+import com.android.systemui.statusbar.phone.DozeParameters;
+import com.android.systemui.statusbar.phone.DozeScrimController;
+import com.android.systemui.statusbar.phone.DozeServiceHost;
+import com.android.systemui.statusbar.phone.HeadsUpManagerPhone;
+import com.android.systemui.statusbar.phone.KeyguardBypassController;
+import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
+import com.android.systemui.statusbar.phone.KeyguardLiftController;
+import com.android.systemui.statusbar.phone.LightBarController;
+import com.android.systemui.statusbar.phone.LightsOutNotifController;
+import com.android.systemui.statusbar.phone.LockscreenLockIconController;
+import com.android.systemui.statusbar.phone.LockscreenWallpaper;
+import com.android.systemui.statusbar.phone.NotificationGroupManager;
+import com.android.systemui.statusbar.phone.NotificationShadeWindowController;
+import com.android.systemui.statusbar.phone.PhoneStatusBarPolicy;
+import com.android.systemui.statusbar.phone.ScrimController;
+import com.android.systemui.statusbar.phone.ShadeController;
+import com.android.systemui.statusbar.phone.StatusBar;
+import com.android.systemui.statusbar.phone.StatusBarIconController;
+import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
+import com.android.systemui.statusbar.phone.StatusBarNotificationActivityStarter;
 import com.android.systemui.statusbar.phone.StatusBarTouchableRegionManager;
+import com.android.systemui.statusbar.policy.BatteryController;
+import com.android.systemui.statusbar.policy.ConfigurationController;
+import com.android.systemui.statusbar.policy.DeviceProvisionedController;
+import com.android.systemui.statusbar.policy.ExtensionController;
+import com.android.systemui.statusbar.policy.FlashlightController;
+import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.statusbar.policy.NetworkController;
+import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler;
+import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
+import com.android.systemui.statusbar.policy.UserSwitcherController;
+import com.android.systemui.statusbar.PulseExpansionHandler;
+import com.android.systemui.statusbar.SuperStatusBarViewFactory;
+import com.android.systemui.statusbar.SysuiStatusBarStateController;
+import com.android.systemui.statusbar.VibratorHelper;
+import com.android.systemui.volume.VolumeComponent;
+
+import com.google.android.systemui.NotificationLockscreenUserManagerGoogle;
+import com.google.android.systemui.smartspace.SmartSpaceController;
+
+import dagger.Lazy;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Executor;
-import com.android.systemui.dagger.qualifiers.UiBackground;
+import java.util.Optional;
 
 import javax.inject.Named;
 import javax.inject.Provider;
-import dagger.Lazy;
-import javax.inject.Inject;
-import java.util.concurrent.Executor;
-import android.annotation.Nullable;
 
 public class StatusBarGoogle extends StatusBar {
 
@@ -182,15 +181,16 @@ public class StatusBarGoogle extends StatusBar {
             KeyguardIndicationController keyguardIndicationController,
             DismissCallbackRegistry dismissCallbackRegistry,
             Lazy<NotificationShadeDepthController> notificationShadeDepthControllerLazy,
-            StatusBarTouchableRegionManager statusBarTouchableRegionManager) {
+            StatusBarTouchableRegionManager statusBarTouchableRegionManager,
+            FODCircleViewImpl fodCircleViewImpl) {
 
-        super(context, 
+        super(context,
             notificationsController,
             lightBarController,
             autoHideController,
             keyguardUpdateMonitor,
             statusBarIconController,
-            pulseExpansionHandler, 
+            pulseExpansionHandler,
             notificationWakeUpCoordinator,
             keyguardBypassController,
             keyguardStateController,
@@ -261,7 +261,8 @@ public class StatusBarGoogle extends StatusBar {
             keyguardIndicationController,
             dismissCallbackRegistry,
             notificationShadeDepthControllerLazy,
-            statusBarTouchableRegionManager);
+            statusBarTouchableRegionManager,
+            fodCircleViewImpl);
         }
 
     @Override
