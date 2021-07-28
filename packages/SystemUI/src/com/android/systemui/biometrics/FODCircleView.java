@@ -78,6 +78,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.Spline;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -97,6 +98,9 @@ import com.android.systemui.R;
 import com.android.systemui.shared.system.ActivityManagerWrapper;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -105,6 +109,7 @@ import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreen;
 import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreenCallback;
 
 public class FODCircleView extends ImageView {
+    private static final String TAG = "FODCircleView";
     private static final int FADE_ANIM_DURATION = 125;
     private final int mPositionX;
     private final int mPositionY;
@@ -572,14 +577,6 @@ public class FODCircleView extends ImageView {
         dispatchHide();
     }
 
-    private void updateFODIcon(int index) {
-        TypedArray mFodIcons = mContext.getResources().obtainTypedArray(
-            com.krypton.settings.R.array.config_fodIcons);
-        mFODIcon = mFodIcons.getDrawable(index);
-        setImageDrawable(mFODIcon);
-        mFodIcons.recycle();
-    }
-
     private void updatePosition() {
         mPressedParams.x = mParams.x = mPositionX;
         mPressedParams.y = mParams.y = mPositionY;
@@ -719,6 +716,27 @@ public class FODCircleView extends ImageView {
             mHasCustomDozeBrightness = Settings.Secure.getIntForUser(mResolver,
                 DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0, USER_CURRENT) == 1;
             mDozeBrightness = Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
+        }
+
+        private void updateFODIcon(int index) {
+            final TypedArray icons = mContext.getResources().obtainTypedArray(
+                com.krypton.settings.R.array.config_fodIcons);
+            if (index < icons.length()) {
+                mFODIcon = icons.getDrawable(index);
+            } else {
+                try (FileInputStream in = new FileInputStream("/data/system/fod/" + index)) {
+                    final Drawable icon = Drawable.createFromStream(in, null);
+                    if (icon != null) {
+                        mFODIcon = icon;
+                    } else {
+                        Log.d(TAG, "Unable to parse drawable " + index);
+                    }
+                } catch(IOException e) {
+                    Log.e(TAG, "IOException when reading file " + index);
+                }
+            }
+            setImageDrawable(mFODIcon);
+            icons.recycle();
         }
 
         private void updateFODIconTintMode() {
