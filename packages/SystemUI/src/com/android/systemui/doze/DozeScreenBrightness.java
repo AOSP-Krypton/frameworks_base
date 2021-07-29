@@ -17,6 +17,7 @@
 package com.android.systemui.doze;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -200,17 +201,21 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
     }
     //TODO: brightnessfloat change usages to float.
     private int clampToUserSetting(int brightness) {
-        boolean customMode = Settings.Secure.getInt(mContext.getContentResolver(),
-                Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, -1) == 1 ? true : false;
-        if (customMode) {
-            return Settings.Secure.getInt(mContext.getContentResolver(),
-                Settings.Secure.DOZE_SCREEN_BRIGHTNESS, 1);
-        } else {
-            int userSetting = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.SCREEN_BRIGHTNESS, Integer.MAX_VALUE,
-                    UserHandle.USER_CURRENT);
-            return Math.min(brightness, userSetting);
+        final ContentResolver resolver = mContext.getContentResolver();
+        final boolean alwaysOn = Settings.Secure.getIntForUser(resolver,
+                Settings.Secure.DOZE_ALWAYS_ON, 0, UserHandle.USER_CURRENT) == 1;
+        if (alwaysOn) {
+            final boolean customMode = Settings.Secure.getInt(resolver,
+                    Settings.Secure.DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0) == 1;
+            if (customMode) {
+                return Settings.Secure.getInt(resolver,
+                    Settings.Secure.DOZE_SCREEN_BRIGHTNESS, 1);
+            }
         }
+        int userSetting = Settings.System.getIntForUser(resolver,
+                Settings.System.SCREEN_BRIGHTNESS, Integer.MAX_VALUE,
+                UserHandle.USER_CURRENT);
+        return Math.min(brightness, userSetting);
     }
 
     private void setLightSensorEnabled(boolean enabled) {
