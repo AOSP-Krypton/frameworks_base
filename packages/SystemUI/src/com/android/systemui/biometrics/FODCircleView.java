@@ -173,11 +173,6 @@ public class FODCircleView extends ImageView {
         @Override
         public void onDreamingStateChanged(boolean dreaming) {
             mIsDreaming = dreaming;
-            if (mIsDreaming) {
-                mObserver.unobserve();
-            } else {
-                mObserver.observe();
-            }
             updateIconDim(false);
             if (mIsDreaming) {
                 mBurnInProtectionTimer = new Timer();
@@ -300,7 +295,7 @@ public class FODCircleView extends ImageView {
         mContext = context;
         mHandler = new Handler(Looper.getMainLooper());
         mWindowManager = mContext.getSystemService(WindowManager.class);
-        mObserver = new CustomSettingsObserver(mHandler, mContext.getContentResolver());
+        mObserver = new CustomSettingsObserver();
         ActivityManagerWrapper.getInstance().registerTaskStackListener(mTaskStackChangeListener);
 
         final IFingerprintInscreen daemon = getFingerprintInScreenDaemon();
@@ -326,6 +321,7 @@ public class FODCircleView extends ImageView {
         mPaintFingerprint.setAntiAlias(true);
         mPaintFingerprintBackground.setColor(res.getColor(R.color.config_fodColorBackground, null));
         mPaintFingerprintBackground.setAntiAlias(true);
+        mPaintFingerprintBackground.setXfermode(new PorterDuffXfermode(SRC_IN));
 
         mDreamingMaxOffset = (int) (mSize * 0.1f);
 
@@ -345,7 +341,8 @@ public class FODCircleView extends ImageView {
             @Override
             protected void onDraw(Canvas canvas) {
                 if (mIsCircleShowing) {
-                    canvas.drawCircle(mSize / 2, mSize / 2, mSize / 2.0f, mPaintFingerprint);
+                    final float size = mSize / 2.0f;
+                    canvas.drawCircle(size, size, size, mPaintFingerprint);
                 }
                 super.onDraw(canvas);
             }
@@ -422,8 +419,8 @@ public class FODCircleView extends ImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         if (!mIsCircleShowing) {
-            mPaintFingerprintBackground.setXfermode(new PorterDuffXfermode(SRC_IN));
-            canvas.drawCircle(mSize / 2, mSize / 2, mSize / 2.0f, mPaintFingerprintBackground);
+            final float size = mSize / 2.0f;
+            canvas.drawCircle(size, size, size, mPaintFingerprintBackground);
         }
         super.onDraw(canvas);
     }
@@ -636,7 +633,6 @@ public class FODCircleView extends ImageView {
     }
 
     private class CustomSettingsObserver extends ContentObserver {
-
         final Uri SCREEN_BRIGHTNESS_URI = Settings.System.getUriFor(SCREEN_BRIGHTNESS);
         final Uri FOD_ICON_URI = Settings.System.getUriFor(FOD_ICON);
         final Uri FOD_ICON_TINT_MODE_URI = Settings.System.getUriFor(FOD_ICON_TINT_MODE);
@@ -648,34 +644,23 @@ public class FODCircleView extends ImageView {
         final Uri DOZE_BRIGHTNESS_URI = Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS);
 
         private final ContentResolver mResolver;
-        private boolean mIsObserving = false;
-        private int mTintMode = 0;
 
-        CustomSettingsObserver(Handler handler, ContentResolver resolver) {
-            super(handler);
-            mResolver = resolver;
+        CustomSettingsObserver() {
+            super(mHandler);
+            mResolver = mContext.getContentResolver();
         }
 
-        synchronized void observe() {
-            if (!mIsObserving) {
-                mIsObserving = true;
-                update();
-                mResolver.registerContentObserver(SCREEN_BRIGHTNESS_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(FOD_ICON_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(FOD_ICON_TINT_MODE_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(FOD_ICON_TINT_COLOR_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(FOD_RECOGNIZING_ANIM_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(FOD_ANIM_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(FOD_ANIM_ALWAYS_ON_URI, false, this, USER_ALL);
-                mResolver.registerContentObserver(DOZE_CUSTOM_MODE_URI, false, this, USER_ALL);
-            }
-        }
-
-        synchronized void unobserve() {
-            if (mIsObserving) {
-                mIsObserving = false;
-                mResolver.unregisterContentObserver(this);
-            }
+        void observe() {
+            update();
+            mResolver.registerContentObserver(SCREEN_BRIGHTNESS_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(FOD_ICON_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(FOD_ICON_TINT_MODE_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(FOD_ICON_TINT_COLOR_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(FOD_RECOGNIZING_ANIM_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(FOD_ANIM_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(FOD_ANIM_ALWAYS_ON_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(DOZE_CUSTOM_MODE_URI, false, this, USER_ALL);
+            mResolver.registerContentObserver(DOZE_BRIGHTNESS_URI, false, this, USER_ALL);
         }
 
         @Override
