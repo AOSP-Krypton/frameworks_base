@@ -210,6 +210,14 @@ public class FODCircleView extends ImageView {
         }
 
         @Override
+        public void onBiometricAuthenticated(int userId, BiometricSourceType biometricSourceType,
+                boolean isStrongBiometric) {
+            if (biometricSourceType == FINGERPRINT) {
+                mHandler.post(() -> hide());
+            }
+        }
+
+        @Override
         public void onBiometricError(int msgId, String errString,
                 BiometricSourceType biometricSourceType) {
             if (biometricSourceType == FINGERPRINT &&
