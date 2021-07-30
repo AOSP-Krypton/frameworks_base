@@ -12,7 +12,6 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.assist.AssistManager;
-import com.android.systemui.biometrics.FODCircleViewImpl;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.bubbles.BubbleController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
@@ -181,8 +180,7 @@ public class StatusBarGoogle extends StatusBar {
             KeyguardIndicationController keyguardIndicationController,
             DismissCallbackRegistry dismissCallbackRegistry,
             Lazy<NotificationShadeDepthController> notificationShadeDepthControllerLazy,
-            StatusBarTouchableRegionManager statusBarTouchableRegionManager,
-            FODCircleViewImpl fodCircleViewImpl) {
+            StatusBarTouchableRegionManager statusBarTouchableRegionManager) {
 
         super(context,
             notificationsController,
@@ -261,8 +259,7 @@ public class StatusBarGoogle extends StatusBar {
             keyguardIndicationController,
             dismissCallbackRegistry,
             notificationShadeDepthControllerLazy,
-            statusBarTouchableRegionManager,
-            fodCircleViewImpl);
+            statusBarTouchableRegionManager);
         }
 
     @Override

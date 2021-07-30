@@ -30,7 +30,6 @@ import android.view.RemoteAnimationAdapter;
 import android.view.View;
 
 import com.android.systemui.SysuiTestCase;
-import com.android.systemui.biometrics.FODCircleViewImpl;
 import com.android.systemui.statusbar.NotificationShadeDepthController;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
@@ -70,8 +69,6 @@ public class ActivityLaunchAnimatorTest extends SysuiTestCase {
     private NotificationShadeDepthController mNotificationShadeDepthController;
     @Mock
     private NotificationPanelViewController mNotificationPanelViewController;
-    @Mock
-    private FODCircleViewImpl mFODCircleViewImpl;
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
@@ -87,8 +84,7 @@ public class ActivityLaunchAnimatorTest extends SysuiTestCase {
                 mNotificationPanelViewController,
                 mNotificationShadeDepthController,
                 mNotificationContainer,
-                mExecutor,
-                mFODCircleViewImpl);
+                mExecutor);
     }
 
     @Test
