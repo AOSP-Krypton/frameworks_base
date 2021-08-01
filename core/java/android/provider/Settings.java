@@ -5060,6 +5060,18 @@ public final class Settings {
         public static final String ARTWORK_MEDIA_BACKGROUND = "artwork_media_background";
 
         /**
+         * Whether to enable artwork blur
+         * @hide
+         */
+        public static final String ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR = "artwork_media_background_enable_blur";
+
+        /**
+         * Adjust blur radius for background media
+         * @hide
+         */
+        public static final String ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS = "artwork_media_background_blur_radius";
+
+        /**
          * Whether to inverse keys in navigation bar
          * @hide
          */
