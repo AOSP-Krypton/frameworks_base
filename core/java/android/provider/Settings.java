@@ -5084,6 +5084,18 @@ public final class Settings {
         public static final String KEYGAURD_MEDIA_ART = "keygaurd_media_art";
 
         /**
+         * Whether to enable blur for media album art on keyguard
+         * @hide
+         */
+        public static final String KEYGAURD_MEDIA_ART_ENABLE_BLUR = "keygaurd_media_art_enable_blur";
+
+        /**
+         * Adjust blur radius for media album art on keyguard
+         * @hide
+         */
+        public static final String KEYGAURD_MEDIA_ART_BLUR_RADIUS = "keygaurd_media_art_blur_radius";
+
+        /**
          * Style of battery to show.
          * 0 = protrait (default)
          * 1 = circle
