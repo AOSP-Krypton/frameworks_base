@@ -20,6 +20,7 @@ import static android.app.Notification.safeCharSequence;
 import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -50,6 +51,7 @@ import com.android.systemui.R;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.media.dialog.MediaOutputDialogFactory;
 import com.android.systemui.plugins.ActivityStarter;
+import com.android.systemui.statusbar.MediaArtworkProcessor;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.util.animation.TransitionLayout;
 
@@ -97,6 +99,7 @@ public class MediaControlPanel {
     // This will provide the corners for the album art.
     private final ViewOutlineProvider mViewOutlineProvider;
     private final MediaOutputDialogFactory mMediaOutputDialogFactory;
+    private final MediaArtworkProcessor mMediaArtworkProcessor;
 
     /**
      * Initialize a new control panel
@@ -109,7 +112,7 @@ public class MediaControlPanel {
             ActivityStarter activityStarter, MediaViewController mediaViewController,
             SeekBarViewModel seekBarViewModel, Lazy<MediaDataManager> lazyMediaDataManager,
             KeyguardDismissUtil keyguardDismissUtil, MediaOutputDialogFactory
-            mediaOutputDialogFactory) {
+            mediaOutputDialogFactory, MediaArtworkProcessor mediaArtworkProcessor) {
         mContext = context;
         mBackgroundExecutor = backgroundExecutor;
         mActivityStarter = activityStarter;
@@ -118,6 +121,7 @@ public class MediaControlPanel {
         mMediaDataManagerLazy = lazyMediaDataManager;
         mKeyguardDismissUtil = keyguardDismissUtil;
         mMediaOutputDialogFactory = mediaOutputDialogFactory;
+        mMediaArtworkProcessor = mediaArtworkProcessor;
         loadDimens();
 
         mViewOutlineProvider = new ViewOutlineProvider() {
@@ -233,8 +237,13 @@ public class MediaControlPanel {
         ConstraintSet expandedSet = mMediaViewController.getExpandedLayout();
         ConstraintSet collapsedSet = mMediaViewController.getCollapsedLayout();
 
-        boolean backgroundArtwork = Settings.System.getInt(mContext.getContentResolver(),
+        ContentResolver resolver = mContext.getContentResolver();
+        boolean backgroundArtwork = Settings.System.getInt(resolver,
                 Settings.System.ARTWORK_MEDIA_BACKGROUND, 0) == 1;
+        boolean enableBlur = Settings.System.getInt(resolver,
+                Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR, 0) == 1;
+        int blurRadius = Settings.System.getInt(resolver,
+                Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS, 1);
         ImageView backgroundImage = mViewHolder.getPlayer().findViewById(R.id.bg_album_art);
 
         mViewHolder.getPlayer().setBackgroundTintList(
@@ -259,7 +268,13 @@ public class MediaControlPanel {
         setVisibleAndAlpha(expandedSet, R.id.album_art, hasArtwork && !backgroundArtwork);
 
         if (hasArtwork) {
-            backgroundImage.setImageDrawable(artwork.loadDrawable(mContext));
+            BitmapDrawable drawable = (BitmapDrawable) artwork.loadDrawable(mContext);
+            if (enableBlur) {
+                drawable = new BitmapDrawable(mContext.getResources(),
+                    mMediaArtworkProcessor.processArtwork(mContext,
+                        drawable.getBitmap(), (float) blurRadius));
+            }
+            backgroundImage.setImageDrawable(drawable);
             backgroundImage.setClipToOutline(true);
             backgroundImage.setOutlineProvider(new ViewOutlineProvider() {
                 @Override

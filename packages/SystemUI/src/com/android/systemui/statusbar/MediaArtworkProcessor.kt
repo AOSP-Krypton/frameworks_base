@@ -45,6 +45,10 @@ class MediaArtworkProcessor @Inject constructor() {
     private var mArtworkCache: Bitmap? = null
 
     fun processArtwork(context: Context, artwork: Bitmap): Bitmap? {
+        return processArtwork(context, artwork, BLUR_RADIUS)
+    }
+
+    fun processArtwork(context: Context, artwork: Bitmap, radius: Float): Bitmap? {
         if (mArtworkCache != null) {
             return mArtworkCache
         }
@@ -74,7 +78,7 @@ class MediaArtworkProcessor @Inject constructor() {
                     Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_GRAPHICS_TEXTURE)
             output = Allocation.createFromBitmap(renderScript, outBitmap)
 
-            blur.setRadius(BLUR_RADIUS)
+            blur.setRadius(radius)
             blur.setInput(input)
             blur.forEach(output)
             output.copyTo(outBitmap)
