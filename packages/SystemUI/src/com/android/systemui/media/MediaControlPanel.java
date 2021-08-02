@@ -20,7 +20,6 @@ import static android.app.Notification.safeCharSequence;
 import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
 import android.app.PendingIntent;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -32,7 +31,6 @@ import android.graphics.drawable.Icon;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewOutlineProvider;
@@ -100,6 +98,9 @@ public class MediaControlPanel {
     private final ViewOutlineProvider mViewOutlineProvider;
     private final MediaOutputDialogFactory mMediaOutputDialogFactory;
     private final MediaArtworkProcessor mMediaArtworkProcessor;
+    private boolean mBackgroundArtwork;
+    private boolean mBackgroundBlur;
+    private float mBlurRadius;
 
     /**
      * Initialize a new control panel
@@ -176,6 +177,13 @@ public class MediaControlPanel {
         mSeekBarViewModel.setListening(listening);
     }
 
+    public void updateBgArtworkParams(boolean backgroundArtwork,
+            boolean backgroundBlur, float blurRadius) {
+        mBackgroundArtwork = backgroundArtwork;
+        mBackgroundBlur = backgroundBlur;
+        mBlurRadius = blurRadius;
+    }
+
     /**
      * Get the context
      * @return context
@@ -237,13 +245,6 @@ public class MediaControlPanel {
         ConstraintSet expandedSet = mMediaViewController.getExpandedLayout();
         ConstraintSet collapsedSet = mMediaViewController.getCollapsedLayout();
 
-        ContentResolver resolver = mContext.getContentResolver();
-        boolean backgroundArtwork = Settings.System.getInt(resolver,
-                Settings.System.ARTWORK_MEDIA_BACKGROUND, 0) == 1;
-        boolean enableBlur = Settings.System.getInt(resolver,
-                Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR, 0) == 1;
-        int blurRadius = Settings.System.getInt(resolver,
-                Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS, 1);
         ImageView backgroundImage = mViewHolder.getPlayer().findViewById(R.id.bg_album_art);
 
         mViewHolder.getPlayer().setBackgroundTintList(
@@ -264,15 +265,15 @@ public class MediaControlPanel {
         if (hasArtwork) {
             albumView.setImageDrawable(scaleDrawable(artwork));
         }
-        setVisibleAndAlpha(collapsedSet, R.id.album_art, hasArtwork && !backgroundArtwork);
-        setVisibleAndAlpha(expandedSet, R.id.album_art, hasArtwork && !backgroundArtwork);
+        setVisibleAndAlpha(collapsedSet, R.id.album_art, hasArtwork && !mBackgroundArtwork);
+        setVisibleAndAlpha(expandedSet, R.id.album_art, hasArtwork && !mBackgroundArtwork);
 
         if (hasArtwork) {
             BitmapDrawable drawable = (BitmapDrawable) artwork.loadDrawable(mContext);
-            if (enableBlur) {
+            if (mBackgroundBlur) {
                 drawable = new BitmapDrawable(mContext.getResources(),
                     mMediaArtworkProcessor.processArtwork(mContext,
-                        drawable.getBitmap(), (float) blurRadius));
+                        drawable.getBitmap(), mBlurRadius));
             }
             backgroundImage.setImageDrawable(drawable);
             backgroundImage.setClipToOutline(true);
@@ -284,8 +285,8 @@ public class MediaControlPanel {
                 }
             });
         }
-        setVisibleAndAlpha(collapsedSet, R.id.bg_album_art, backgroundArtwork);
-        setVisibleAndAlpha(expandedSet, R.id.bg_album_art, backgroundArtwork);
+        setVisibleAndAlpha(collapsedSet, R.id.bg_album_art, mBackgroundArtwork);
+        setVisibleAndAlpha(expandedSet, R.id.bg_album_art, mBackgroundArtwork);
 
 
         // App icon
