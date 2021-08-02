@@ -45,6 +45,7 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.util.Assert;
+import com.android.internal.util.krypton.KryptonButtons;
 import com.android.systemui.util.sensors.AsyncSensorManager;
 import com.android.systemui.util.sensors.ProximitySensor;
 import com.android.systemui.util.wakelock.WakeLock;
@@ -265,10 +266,17 @@ public class DozeTriggers implements DozeMachine.Part {
                     return;
                 }
                 if (isDoubleTap || isTap) {
-                    if (screenX != -1 && screenY != -1) {
-                        mDozeHost.onSlpiTap(screenX, screenY);
+                    /* if in AoD try to trigger the double tap to skip Track otherwise just wake up gently.
+                    Without this check, when screen is OFF and AoD disabled, we could trigger the skip track action
+                    by mistake if tapping in the area where track infos are supposed to show up, even before
+                    waking up to lockscreen or ambient*/
+                    if (!mConfig.deviceHasSoli() && screenX != -1 && screenY != -1
+                            && mConfig.alwaysOnEnabled(UserHandle.USER_CURRENT)
+                            /*|| mMachine.getState() == DozeMachine.State.DOZE_PULSING*/) {
+                        mDozeHost.onSlpiTap(screenX, screenY, pulseReason);
+                    } else {
+                        gentleWakeUp(pulseReason);
                     }
-                    gentleWakeUp(pulseReason);
                 } else if (isPickup) {
                     gentleWakeUp(pulseReason);
                 } else {
@@ -597,6 +605,11 @@ public class DozeTriggers implements DozeMachine.Part {
                 nextState = DozeMachine.State.DOZE;
             }
             mMachine.requestState(nextState);
+        }
+
+        @Override
+        public void skipTrack() {
+            KryptonButtons.getAttachedInstance(mContext).skipTrack();
         }
     };
 }

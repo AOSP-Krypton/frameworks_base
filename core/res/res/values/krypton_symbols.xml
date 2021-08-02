@@ -25,4 +25,6 @@
     <!-- Max visible notification icons -->
     <java-symbol type="integer" name="config_maxVisibleNotificationIcons" />
     <java-symbol type="integer" name="config_maxVisibleNotificationIconsWhenDark" />
+
+    <java-symbol type="bool" name="config_has_Soli" />
 </resources>

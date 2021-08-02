@@ -149,6 +149,7 @@ import com.android.systemui.Prefs;
 import com.android.systemui.R;
 import com.android.systemui.SystemUI;
 import com.android.systemui.SystemUIFactory;
+import com.android.systemui.ambientmusic.AmbientIndicationContainer;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.bubbles.BubbleController;
@@ -1127,6 +1128,9 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         mAmbientIndicationContainer = mNotificationShadeWindowView.findViewById(
                 R.id.ambient_indication_container);
+        if (mAmbientIndicationContainer != null) {
+            ((AmbientIndicationContainer) mAmbientIndicationContainer).initializeView(this, mHandler);
+        }
 
         mAutoHideController.setStatusBar(new AutoHideUiElement() {
             @Override
@@ -1839,6 +1843,13 @@ public class StatusBar extends SystemUI implements DemoMode,
 
     public boolean isPulsing() {
         return mDozeServiceHost.isPulsing();
+    }
+
+    public boolean isDoubleTapOnMusicTicker(float screenX, float screenY) {
+         if (mDozeServiceHost != null) {
+            return mDozeServiceHost.isDoubleTapOnMusicTicker(screenX, screenY);
+        }
+        return false;
     }
 
     public boolean hideStatusBarIconsWhenExpanded() {
@@ -2915,6 +2926,10 @@ public class StatusBar extends SystemUI implements DemoMode,
         mScreenPinningRequest.onConfigurationChanged();
     }
 
+    public NotificationLockscreenUserManager getNotificationLockscreenUserManager() {
+        return mLockscreenUserManager;
+    }
+
     /**
      * Notify the shade controller that the current user changed
      *
@@ -3489,6 +3504,14 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         mNotificationPanelViewController.setDozing(mDozing, animate, mWakeUpTouchLocation);
         updateQsExpansionEnabled();
+
+        if (mAmbientIndicationContainer != null) {
+            ((AmbientIndicationContainer)mAmbientIndicationContainer)
+                    .updateDozingState(mDozing);
+        } else {
+            Log.d("StatusBar", "updateDozingState -> AmbientIndicationContainer null");
+        }
+
         Trace.endSection();
     }
 
@@ -3604,9 +3627,6 @@ public class StatusBar extends SystemUI implements DemoMode,
                         mStatusBarStateController.fromShadeLocked());
             }
             if (mStatusBarView != null) mStatusBarView.removePendingHideExpandedRunnables();
-            if (mAmbientIndicationContainer != null) {
-                mAmbientIndicationContainer.setVisibility(View.VISIBLE);
-            }
         } else {
             mKeyguardIndicationController.setVisible(false);
             if (mKeyguardUserSwitcher != null) {
@@ -3615,15 +3635,19 @@ public class StatusBar extends SystemUI implements DemoMode,
                                 mState == StatusBarState.SHADE_LOCKED ||
                                 mStatusBarStateController.fromShadeLocked());
             }
-            if (mAmbientIndicationContainer != null) {
-                mAmbientIndicationContainer.setVisibility(View.INVISIBLE);
-            }
         }
         updateDozingState();
         checkBarModes();
         updateScrimController();
         mPresenter.updateMediaMetaData(false, mState != StatusBarState.KEYGUARD);
         updateKeyguardState();
+    
+        if (mAmbientIndicationContainer != null) {
+            ((AmbientIndicationContainer)mAmbientIndicationContainer)
+                    .updateKeyguardState(mState == StatusBarState.KEYGUARD);
+        } else {
+            Log.d("StatusBar", "updateKeyguardState -> AmbientIndicationContainer null");
+        }
         Trace.endSection();
     }
 

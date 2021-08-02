@@ -24,16 +24,20 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.systemui.ambientmusic.AmbientIndicationContainer;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.doze.DozeReceiver;
+import com.android.systemui.keyguard.KeyguardSliceProvider;
 import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.statusbar.PulseExpansionHandler;
@@ -362,28 +366,49 @@ public final class DozeServiceHost implements DozeHost {
     }
 
     @Override
-    public void onSlpiTap(float screenX, float screenY) {
-        if (screenX > 0 && screenY > 0 && mAmbientIndicationContainer != null
-                && mAmbientIndicationContainer.getVisibility() == View.VISIBLE) {
-            int[] locationOnScreen = new int[2];
-            mAmbientIndicationContainer.getLocationOnScreen(locationOnScreen);
-            float viewX = screenX - locationOnScreen[0];
-            float viewY = screenY - locationOnScreen[1];
-            if (0 <= viewX && viewX <= mAmbientIndicationContainer.getWidth()
-                    && 0 <= viewY && viewY <= mAmbientIndicationContainer.getHeight()) {
-
-                // Dispatch a tap
-                long now = SystemClock.elapsedRealtime();
-                MotionEvent ev = MotionEvent.obtain(
-                        now, now, MotionEvent.ACTION_DOWN, screenX, screenY, 0);
-                mAmbientIndicationContainer.dispatchTouchEvent(ev);
-                ev.recycle();
-                ev = MotionEvent.obtain(
-                        now, now, MotionEvent.ACTION_UP, screenX, screenY, 0);
-                mAmbientIndicationContainer.dispatchTouchEvent(ev);
-                ev.recycle();
+    public void onSlpiTap(float screenX, float screenY, int pulseReason) {
+        if (isDoubleTapOnMusicTicker(screenX, screenY)) {
+            for (Callback callback : mCallbacks) {
+                callback.skipTrack();
+            }
+        } else {
+            for (Callback callback : mCallbacks) {
+                callback.wakeUpFromDoubleTap(pulseReason);
             }
         }
+    }
+
+    public boolean isDoubleTapOnMusicTicker(float screenX, float screenY) {
+        final KeyguardSliceProvider sliceProvider = KeyguardSliceProvider.getAttachedInstance();
+        View trackTitleView = null;
+        final int mMusicTicker = Settings.System.getIntForUser(
+                mAmbientIndicationContainer.getContext().getContentResolver(),
+                Settings.System.AMBIENT_MUSIC_TICKER, 1, UserHandle.USER_CURRENT);
+        if (mNotificationPanel != null) {
+            if (mMusicTicker == 1) { // ambient indication music ticker
+                trackTitleView = ((AmbientIndicationContainer)mAmbientIndicationContainer).getTitleView();
+            } else if (mMusicTicker == 2) { // keyguard slice music ticker
+                trackTitleView = mNotificationPanel.getKeyguardStatusView().getKeyguardSliceView().getTitleView();
+            }
+        }
+        boolean exitCriteria = true;
+        if (mMusicTicker == 1) { // ambient indication music ticker
+            exitCriteria = !((AmbientIndicationContainer)mAmbientIndicationContainer).shouldShow();
+        } else if (mMusicTicker == 2) { // keyguard slice music ticker
+            exitCriteria = sliceProvider == null || !sliceProvider.needsMediaLocked();
+        }
+        if (screenX <= 0 || screenY <= 0 || trackTitleView == null || exitCriteria) {
+            return false;
+        }
+        int[] locationOnScreen = new int[2];
+        trackTitleView.getLocationOnScreen(locationOnScreen);
+        float viewX = screenX - locationOnScreen[0];
+        float viewY = screenY - locationOnScreen[1];
+        if (0 <= viewX && viewX <= trackTitleView.getWidth()
+                && 0 <= viewY && viewY <= trackTitleView.getHeight()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
