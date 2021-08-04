@@ -106,8 +106,8 @@ import java.util.NoSuchElementException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreen;
-import vendor.krypton.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreenCallback;
+import vendor.lineage.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreen;
+import vendor.lineage.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreenCallback;
 
 public class FODCircleView extends ImageView {
     private static final String TAG = "FODCircleView";

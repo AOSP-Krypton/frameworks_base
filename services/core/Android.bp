@@ -131,7 +131,7 @@ java_library_static {
         "netd_aidl_interfaces-platform-java",
         "overlayable_policy_aidl-java",
         "SurfaceFlingerProperties",
-        "vendor.krypton.biometrics.fingerprint.inscreen-V1.0-java",
+        "vendor.lineage.biometrics.fingerprint.inscreen-V1.0-java",
     ],
 }
 
