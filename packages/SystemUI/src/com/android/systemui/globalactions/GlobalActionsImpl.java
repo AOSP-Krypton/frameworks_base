@@ -180,7 +180,7 @@ public class GlobalActionsImpl implements GlobalActions, CommandQueue.Callbacks 
         if (reason != null && reason.startsWith(PowerManager.REBOOT_RECOVERY_UPDATE)) {
             return mContext.getString(R.string.reboot_to_update_title);
         } else if (reason != null && reason.equals(PowerManager.REBOOT_RECOVERY)) {
-            return mContext.getString(R.string.reboot_to_recovery_title);
+            return mContext.getString(R.string.reboot_to_reset_title);
         } else {
             return null;
         }

@@ -917,7 +917,6 @@
   <java-symbol type="string" name="reboot_to_update_reboot" />
   <java-symbol type="string" name="reboot_to_reset_title" />
   <java-symbol type="string" name="reboot_to_reset_message" />
-  <java-symbol type="string" name="reboot_to_recovery_title" />
   <java-symbol type="string" name="reboot_safemode_confirm" />
   <java-symbol type="string" name="reboot_safemode_title" />
   <java-symbol type="string" name="relationTypeAssistant" />
@@ -1788,7 +1787,6 @@
   <java-symbol type="string" name="global_action_power_off" />
   <java-symbol type="string" name="global_action_power_options" />
   <java-symbol type="string" name="global_action_restart" />
-  <java-symbol type="string" name="global_action_restart_recovery" />
   <java-symbol type="string" name="global_actions_airplane_mode_off_status" />
   <java-symbol type="string" name="global_actions_airplane_mode_on_status" />
   <java-symbol type="string" name="global_actions_toggle_airplane_mode" />

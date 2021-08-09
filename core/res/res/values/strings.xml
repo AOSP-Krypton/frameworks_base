@@ -500,9 +500,6 @@
     <string name="reboot_to_reset_title">Factory data reset</string>
     <string name="reboot_to_reset_message">Restarting\u2026</string>
 
-    <!-- Reboot to recovery from power menu title. -->
-    <string name="reboot_to_recovery_title">Recovery Mode</string>
-
     <!-- Shutdown Progress Dialog. This is shown if the user chooses to power off the phone. -->
     <string name="shutdown_progress">Shutting down\u2026</string>
 
@@ -563,9 +560,6 @@
 
     <!-- label for item that restarts phone in phone options dialog [CHAR LIMIT=24]-->
     <string name="global_action_restart">Restart</string>
-
-    <!-- label for item that restarts to recovery in phone options dialog [CHAR LIMIT=24]-->
-    <string name="global_action_restart_recovery">Recovery</string>
 
     <!-- label for item that opens emergency features in the phone options dialog [CHAR LIMIT=24]-->
     <string name="global_action_emergency">Emergency</string>

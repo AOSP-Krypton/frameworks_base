@@ -1238,25 +1238,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         }
     }
 
-    /**
-     * Allows the status bar to reboot the device to recovery.
-     */
-    @Override
-    public void rebootToRecovery() {
-        enforceStatusBarService();
-        long identity = Binder.clearCallingIdentity();
-        try {
-            mNotificationDelegate.prepareForPossibleShutdown();
-            mHandler.post(() -> {
-                // ShutdownThread displays UI, so give it a UI context.
-                ShutdownThread.reboot(getUiContext(),
-                        PowerManager.REBOOT_RECOVERY, false);
-            });
-        } finally {
-            Binder.restoreCallingIdentity(identity);
-        }
-    }
-
     @Override
     public void onGlobalActionsShown() {
         enforceStatusBarService();

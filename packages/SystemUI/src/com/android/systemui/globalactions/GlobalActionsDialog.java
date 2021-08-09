@@ -182,7 +182,6 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
     private static final String GLOBAL_ACTION_KEY_VOICEASSIST = "voiceassist";
     private static final String GLOBAL_ACTION_KEY_ASSIST = "assist";
     static final String GLOBAL_ACTION_KEY_RESTART = "restart";
-    static final String GLOBAL_ACTION_KEY_RECOVERY = "recovery";
     private static final String GLOBAL_ACTION_KEY_LOGOUT = "logout";
     static final String GLOBAL_ACTION_KEY_EMERGENCY = "emergency";
     static final String GLOBAL_ACTION_KEY_SCREENSHOT = "screenshot";
@@ -599,10 +598,10 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
         mItems.clear();
         mOverflowItems.clear();
         mPowerItems.clear();
+        String[] defaultActions = getDefaultActions();
 
         ShutDownAction shutdownAction = new ShutDownAction();
         RestartAction restartAction = new RestartAction();
-        RebootToRecoveryAction rebootToRecoveryAction = new RebootToRecoveryAction();
         ArraySet<String> addedKeys = new ArraySet<String>();
         List<Action> tempActions = new ArrayList<>();
         CurrentUserProvider currentUser = new CurrentUserProvider();
@@ -613,7 +612,8 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
             addedKeys.add(GLOBAL_ACTION_KEY_EMERGENCY);
         }
 
-        for (String actionKey: getDefaultActions()) {
+        for (int i = 0; i < defaultActions.length; i++) {
+            String actionKey = defaultActions[i];
             if (addedKeys.contains(actionKey)) {
                 // If we already have added this, don't add it again.
                 continue;
@@ -646,8 +646,6 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
                 addIfShouldShowAction(tempActions, getAssistAction());
             } else if (GLOBAL_ACTION_KEY_RESTART.equals(actionKey)) {
                 addIfShouldShowAction(tempActions, restartAction);
-            } else if (GLOBAL_ACTION_KEY_RECOVERY.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, rebootToRecoveryAction);
             } else if (GLOBAL_ACTION_KEY_SCREENSHOT.equals(actionKey)) {
                 addIfShouldShowAction(tempActions, new ScreenshotAction());
             } else if (GLOBAL_ACTION_KEY_LOGOUT.equals(actionKey)) {
@@ -665,19 +663,16 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
             addedKeys.add(actionKey);
         }
 
-        // replace power, restart and recovery reboot option with a single power options action, if needed
-        if (tempActions.contains(shutdownAction)
-                && tempActions.contains(restartAction) && tempActions.contains(rebootToRecoveryAction)
+        // replace power and restart with a single power options action, if needed
+        if (tempActions.contains(shutdownAction) && tempActions.contains(restartAction)
                 && tempActions.size() > getMaxShownPowerItems()) {
-            // transfer shutdown, restart and recovery reboot to their own list of power actions
-            int powerOptionsIndex = Math.min(tempActions.indexOf(rebootToRecoveryAction),
+            // transfer shutdown and restart to their own list of power actions
+            int powerOptionsIndex = Math.min(tempActions.indexOf(restartAction),
                     tempActions.indexOf(shutdownAction));
             tempActions.remove(shutdownAction);
             tempActions.remove(restartAction);
-            tempActions.remove(rebootToRecoveryAction);
             mPowerItems.add(shutdownAction);
             mPowerItems.add(restartAction);
-            mPowerItems.add(rebootToRecoveryAction);
 
             // add the PowerOptionsAction after Emergency, if present
             tempActions.add(powerOptionsIndex, new PowerOptionsAction());
@@ -851,28 +846,6 @@ public class GlobalActionsDialog implements DialogInterface.OnDismissListener,
         public void onPress() {
             // shutdown by making sure radio and power are handled accordingly.
             mWindowManagerFuncs.shutdown();
-        }
-    }
-
-    final class RebootToRecoveryAction extends SinglePressAction {
-        private RebootToRecoveryAction() {
-            super(com.android.systemui.R.drawable.ic_android,
-                    R.string.global_action_restart_recovery);
-        }
-
-        @Override
-        public boolean showDuringKeyguard() {
-            return true;
-        }
-
-        @Override
-        public boolean showBeforeProvisioning() {
-            return true;
-        }
-
-        @Override
-        public void onPress() {
-            mWindowManagerFuncs.rebootToRecovery();
         }
     }
 

@@ -91,7 +91,6 @@ interface IStatusBarService
      */
     void shutdown();
     void reboot(boolean safeMode);
-    void rebootToRecovery();
 
     void addTile(in ComponentName tile);
     void remTile(in ComponentName tile);
