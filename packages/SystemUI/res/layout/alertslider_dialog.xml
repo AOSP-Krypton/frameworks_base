@@ -31,7 +31,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:gravity="center"
-        android:layout_weight="2" />
+        android:layout_weight="2"
+        android:tint="?android:attr/colorAccent" />
 
     <TextView
         android:id="@+id/text"

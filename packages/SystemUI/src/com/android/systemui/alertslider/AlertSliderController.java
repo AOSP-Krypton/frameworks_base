@@ -102,15 +102,15 @@ public final class AlertSliderController {
     private void notifyController(int position) {
         switch (position) {
             case 0:
-                mIcon.setImageResource(R.drawable.ic_slider_down);
+                mIcon.setImageResource(R.drawable.ic_volume_ringer);
                 mText.setText(R.string.alertslider_down_text);
                 break;
             case 1:
-                mIcon.setImageResource(R.drawable.ic_slider_middle);
+                mIcon.setImageResource(R.drawable.ic_volume_ringer_vibrate);
                 mText.setText(R.string.alertslider_middle_text);
                 break;
             case 2:
-                mIcon.setImageResource(R.drawable.ic_slider_up);
+                mIcon.setImageResource(R.drawable.ic_volume_ringer_mute);
                 mText.setText(R.string.alertslider_up_text);
         }
         showDialog(position);
