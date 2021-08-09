@@ -596,9 +596,9 @@ public class FODCircleView extends ImageView {
         mPressedParams.y = mParams.y = mPositionY;
         if (mIsDreaming && !mIsCircleShowing) {
             mParams.y += mDreamingOffsetY;
-            if (mIsRecognizingAnimEnabled) {
-                mFODAnimation.updateParams(mParams.y);
-            }
+        }
+        if (mIsRecognizingAnimEnabled) {
+            mFODAnimation.updateParams(mParams.y);
         }
         mWindowManager.updateViewLayout(this, mParams);
         if (mPressedView.getParent() != null) {
