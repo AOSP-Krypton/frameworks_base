@@ -5075,6 +5075,12 @@ public final class Settings {
         public static final String ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS = "artwork_media_background_blur_radius";
 
         /**
+         * Adjust alpha for background media
+         * @hide
+         */
+        public static final String ARTWORK_MEDIA_BACKGROUND_ALPHA = "artwork_media_background_alpha";
+
+        /**
          * Whether to inverse keys in navigation bar
          * @hide
          */

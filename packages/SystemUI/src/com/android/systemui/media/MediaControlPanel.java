@@ -100,7 +100,8 @@ public class MediaControlPanel {
     private final MediaArtworkProcessor mMediaArtworkProcessor;
     private boolean mBackgroundArtwork;
     private boolean mBackgroundBlur;
-    private float mBlurRadius;
+    private float mBlurRadius = 25f;
+    private int mBackgroundAlpha = 255;
 
     /**
      * Initialize a new control panel
@@ -178,10 +179,11 @@ public class MediaControlPanel {
     }
 
     public void updateBgArtworkParams(boolean backgroundArtwork,
-            boolean backgroundBlur, float blurRadius) {
+            boolean backgroundBlur, float blurRadius, int backgroundAlpha) {
         mBackgroundArtwork = backgroundArtwork;
         mBackgroundBlur = backgroundBlur;
         mBlurRadius = blurRadius;
+        mBackgroundAlpha = backgroundAlpha;
     }
 
     /**
@@ -247,9 +249,6 @@ public class MediaControlPanel {
 
         ImageView backgroundImage = mViewHolder.getPlayer().findViewById(R.id.bg_album_art);
 
-        mViewHolder.getPlayer().setBackgroundTintList(
-                ColorStateList.valueOf(mBackgroundColor));
-
         // Click action
         PendingIntent clickIntent = data.getClickIntent();
         if (clickIntent != null) {
@@ -263,31 +262,33 @@ public class MediaControlPanel {
         Icon artwork = data.getArtwork();
         boolean hasArtwork = artwork != null;
         if (hasArtwork) {
-            albumView.setImageDrawable(scaleDrawable(artwork));
-        }
-        setVisibleAndAlpha(collapsedSet, R.id.album_art, hasArtwork && !mBackgroundArtwork);
-        setVisibleAndAlpha(expandedSet, R.id.album_art, hasArtwork && !mBackgroundArtwork);
-
-        if (hasArtwork) {
-            BitmapDrawable drawable = (BitmapDrawable) artwork.loadDrawable(mContext);
-            if (mBackgroundBlur) {
-                drawable = new BitmapDrawable(mContext.getResources(),
-                    mMediaArtworkProcessor.processArtwork(mContext,
-                        drawable.getBitmap(), mBlurRadius));
-            }
-            backgroundImage.setImageDrawable(drawable);
-            backgroundImage.setClipToOutline(true);
-            backgroundImage.setOutlineProvider(new ViewOutlineProvider() {
-                @Override
-                public void getOutline(View view, Outline outline) {
-                    outline.setRoundRect(0, 0, backgroundImage.getWidth(),
-                        backgroundImage.getHeight(), mAlbumArtRadius);
+            if (mBackgroundArtwork) {
+                BitmapDrawable drawable = (BitmapDrawable) artwork.loadDrawable(mContext);
+                if (mBackgroundBlur) {
+                    drawable = new BitmapDrawable(mContext.getResources(),
+                        mMediaArtworkProcessor.processArtwork(mContext,
+                            drawable.getBitmap(), mBlurRadius, false));
                 }
-            });
+                backgroundImage.setImageDrawable(drawable);
+                backgroundImage.setImageAlpha(mBackgroundAlpha);
+                backgroundImage.setClipToOutline(true);
+                backgroundImage.setOutlineProvider(new ViewOutlineProvider() {
+                    @Override
+                    public void getOutline(View view, Outline outline) {
+                        outline.setRoundRect(0, 0, backgroundImage.getWidth(),
+                            backgroundImage.getHeight(), mAlbumArtRadius);
+                    }
+                });
+                setVisibleAndAlpha(collapsedSet, R.id.bg_album_art, true);
+                setVisibleAndAlpha(expandedSet, R.id.bg_album_art, true);
+            } else {
+                albumView.setImageDrawable(scaleDrawable(artwork));
+                mViewHolder.getPlayer().setBackgroundTintList(
+                        ColorStateList.valueOf(mBackgroundColor));
+                setVisibleAndAlpha(collapsedSet, R.id.album_art, true);
+                setVisibleAndAlpha(expandedSet, R.id.album_art, true);
+            }
         }
-        setVisibleAndAlpha(collapsedSet, R.id.bg_album_art, mBackgroundArtwork);
-        setVisibleAndAlpha(expandedSet, R.id.bg_album_art, mBackgroundArtwork);
-
 
         // App icon
         ImageView appIcon = mViewHolder.getAppIcon();

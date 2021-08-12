@@ -1,6 +1,5 @@
 package com.android.systemui.media
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -152,11 +151,11 @@ class MediaCarouselController @Inject constructor(
         }
     }
 
-    private var contentResolver: ContentResolver
     private val settingsObserver = SettingsObserver(context)
     private var backgroundArtwork: Boolean = false
     private var backgroundBlur: Boolean = false
     private var blurRadius: Float = 1f
+    private var backgroundAlpha: Int = 255
 
     init {
         mediaFrame = inflateMediaCarousel()
@@ -183,7 +182,6 @@ class MediaCarouselController @Inject constructor(
         }
         visualStabilityManager.addReorderingAllowedCallback(visualStabilityCallback,
                 true /* persistent */)
-        contentResolver = context.getContentResolver()
         settingsObserver.observe()
         mediaManager.addListener(object : MediaDataManager.Listener {
             override fun onMediaDataLoaded(key: String, oldKey: String?, data: MediaData) {
@@ -264,14 +262,16 @@ class MediaCarouselController @Inject constructor(
             val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT)
             newPlayer.view?.player?.setLayoutParams(lp)
-            newPlayer.updateBgArtworkParams(backgroundArtwork, backgroundBlur, blurRadius)
+            newPlayer.updateBgArtworkParams(backgroundArtwork, backgroundBlur,
+                blurRadius, backgroundAlpha)
             newPlayer.bind(data, key)
             newPlayer.setListening(currentlyExpanded)
             MediaPlayerData.addMediaPlayer(key, data, newPlayer)
             updatePlayerToState(newPlayer, noAnimation = true)
             reorderAllPlayers()
         } else {
-            existingPlayer.updateBgArtworkParams(backgroundArtwork, backgroundBlur, blurRadius)
+            existingPlayer.updateBgArtworkParams(backgroundArtwork, backgroundBlur,
+                blurRadius, backgroundAlpha)
             existingPlayer.bind(data, key)
             MediaPlayerData.addMediaPlayer(key, data, existingPlayer)
             if (visualStabilityManager.isReorderingAllowed) {
@@ -507,27 +507,27 @@ class MediaCarouselController @Inject constructor(
     }
 
     inner class SettingsObserver: ContentObserver {
-        private val ARTWORK_MEDIA_BACKGROUND_URI = Settings.System.getUriFor(
-            Settings.System.ARTWORK_MEDIA_BACKGROUND)
-        private val ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR_URI = Settings.System.getUriFor(
-            Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR)
-        private val ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS_URI = Settings.System.getUriFor(
-            Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS)
-
         constructor(context: Context): super(Handler(Looper.getMainLooper()))
 
         fun observe() {
             update()
-            contentResolver.registerContentObserver(ARTWORK_MEDIA_BACKGROUND_URI,
-                false, this, UserHandle.USER_CURRENT)
-            contentResolver.registerContentObserver(ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR_URI,
-                false, this, UserHandle.USER_CURRENT)
-            contentResolver.registerContentObserver(ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS_URI,
-                false, this, UserHandle.USER_CURRENT)
+            val contentResolver = context.getContentResolver()
+            contentResolver.registerContentObserver(Settings.System.getUriFor(
+                Settings.System.ARTWORK_MEDIA_BACKGROUND), false,
+                this, UserHandle.USER_CURRENT)
+            contentResolver.registerContentObserver(Settings.System.getUriFor(
+                Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR), false,
+                this, UserHandle.USER_CURRENT)
+            contentResolver.registerContentObserver(Settings.System.getUriFor(
+                Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS), false,
+                this, UserHandle.USER_CURRENT)
+            contentResolver.registerContentObserver(Settings.System.getUriFor(
+                Settings.System.ARTWORK_MEDIA_BACKGROUND_ALPHA), false,
+                this, UserHandle.USER_CURRENT)
         }
 
         fun unobserve() {
-            contentResolver.unregisterContentObserver(this);
+            context.getContentResolver().unregisterContentObserver(this);
         }
 
         override fun onChange(selfChange: Boolean, uri: Uri) {
@@ -536,12 +536,15 @@ class MediaCarouselController @Inject constructor(
         }
 
         private fun update() {
+            val contentResolver = context.getContentResolver()
             backgroundArtwork = Settings.System.getInt(contentResolver,
                 Settings.System.ARTWORK_MEDIA_BACKGROUND, 0) == 1;
             backgroundBlur = Settings.System.getInt(contentResolver,
                 Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR, 0) == 1;
             blurRadius = Settings.System.getInt(contentResolver,
                 Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS, 1).toFloat();
+            backgroundAlpha = Settings.System.getInt(contentResolver,
+                Settings.System.ARTWORK_MEDIA_BACKGROUND_ALPHA, 255);
         }
     }
 }

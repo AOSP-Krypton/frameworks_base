@@ -45,10 +45,10 @@ class MediaArtworkProcessor @Inject constructor() {
     private var mArtworkCache: Bitmap? = null
 
     fun processArtwork(context: Context, artwork: Bitmap): Bitmap? {
-        return processArtwork(context, artwork, BLUR_RADIUS)
+        return processArtwork(context, artwork, BLUR_RADIUS, true)
     }
 
-    fun processArtwork(context: Context, artwork: Bitmap, radius: Float): Bitmap? {
+    fun processArtwork(context: Context, artwork: Bitmap, radius: Float, withSwatchOverlay: Boolean): Bitmap? {
         if (mArtworkCache != null) {
             return mArtworkCache
         }
@@ -83,10 +83,12 @@ class MediaArtworkProcessor @Inject constructor() {
             blur.forEach(output)
             output.copyTo(outBitmap)
 
-            val swatch = MediaNotificationProcessor.findBackgroundSwatch(artwork)
+            if (withSwatchOverlay) {
+                val swatch = MediaNotificationProcessor.findBackgroundSwatch(artwork)
 
-            val canvas = Canvas(outBitmap)
-            canvas.drawColor(ColorUtils.setAlphaComponent(swatch.rgb, COLOR_ALPHA))
+                val canvas = Canvas(outBitmap)
+                canvas.drawColor(ColorUtils.setAlphaComponent(swatch.rgb, COLOR_ALPHA))
+            }
             return outBitmap
         } catch (ex: IllegalArgumentException) {
             Log.e(TAG, "error while processing artwork", ex)
