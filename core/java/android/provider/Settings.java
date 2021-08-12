@@ -5579,6 +5579,12 @@ public final class Settings {
         public static final String GAMING_MODE_APP_LIST = "gaming_mode_app_list";
 
         /**
+         * Opacity adjustment for the GamingMode's menu
+         * @hide
+         */
+        public static final String GAMING_MODE_MENU_OPACITY = "gaming_mode_menu_opacity";
+
+        /**
          * Auto answer call in gaming mode
          * @hide
          */
