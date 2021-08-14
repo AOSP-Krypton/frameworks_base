@@ -397,7 +397,7 @@
     <dimen name="qs_footer_margin">2dp</dimen>
 
     <!-- Padding on each QS Footer Icon to make the icons 20dpx20dp -->
-    <dimen name="qs_footer_icon_padding">12dp</dimen>
+    <dimen name="qs_footer_icon_padding">14dp</dimen>
 
     <!-- The padding between the notifications and the quick settings container -->
     <dimen name="qs_notification_padding">@dimen/notification_side_paddings</dimen>
@@ -484,11 +484,11 @@
 
     <dimen name="qs_tile_height">96dp</dimen>
     <!--notification_side_paddings + notification_content_margin_start - (qs_quick_tile_size - qs_tile_background_size) / 2 -->
-    <dimen name="qs_tile_layout_margin_side">9dp</dimen>
-    <dimen name="qs_tile_margin_horizontal">6dp</dimen>
+    <dimen name="qs_tile_layout_margin_side">18dp</dimen>
+    <dimen name="qs_tile_margin_horizontal">18dp</dimen>
     <dimen name="qs_tile_margin_horizontal_two_line">2dp</dimen>
-    <dimen name="qs_tile_margin_vertical">9dp</dimen>
-    <dimen name="qs_tile_margin_top_bottom">7dp</dimen>
+    <dimen name="qs_tile_margin_vertical">2dp</dimen>
+    <dimen name="qs_tile_margin_top_bottom">12dp</dimen>
     <dimen name="qs_tile_margin_top_bottom_negative">-12dp</dimen>
     <!-- The height of the qs customize header. Should be
          (qs_panel_padding_top (48dp) +  brightness_mirror_height (48dp) + qs_tile_margin_top (0dp)) -
@@ -497,21 +497,21 @@
     <dimen name="qs_customize_header_min_height">28dp</dimen>
     <dimen name="qs_tile_margin_top">0dp</dimen>
     <dimen name="qs_tile_icon_background_stroke_width">-1dp</dimen>
-    <dimen name="qs_tile_background_size">48dp</dimen>
-    <dimen name="qs_quick_tile_size">50dp</dimen>
-    <dimen name="qs_quick_tile_padding">16dp</dimen>
+    <dimen name="qs_tile_background_size">44dp</dimen>
+    <dimen name="qs_quick_tile_size">48dp</dimen>
+    <dimen name="qs_quick_tile_padding">12dp</dimen>
     <dimen name="qs_header_gear_translation">16dp</dimen>
     <dimen name="qs_header_tile_margin_bottom">18dp</dimen>
     <dimen name="qs_page_indicator_width">16dp</dimen>
     <dimen name="qs_page_indicator_height">8dp</dimen>
-    <dimen name="qs_tile_icon_size">20dp</dimen>
-    <dimen name="qs_tile_text_size">11sp</dimen>
+    <dimen name="qs_tile_icon_size">24dp</dimen>
+    <dimen name="qs_tile_text_size">12sp</dimen>
     <dimen name="qs_tile_divider_height">1dp</dimen>
     <dimen name="qs_panel_padding">16dp</dimen>
     <dimen name="qs_dual_tile_height">112dp</dimen>
     <dimen name="qs_dual_tile_padding_vertical">8dp</dimen>
     <dimen name="qs_dual_tile_padding_horizontal">6dp</dimen>
-    <dimen name="qs_tile_padding_top">0dp</dimen>
+    <dimen name="qs_tile_padding_top">14dp</dimen>
     <dimen name="qs_tile_padding_top_large_text">4dp</dimen>
     <dimen name="qs_tile_padding_bottom">16dp</dimen>
     <dimen name="qs_tile_spacing">4dp</dimen>
@@ -880,7 +880,7 @@
     <dimen name="signal_cluster_battery_padding">4dp</dimen>
 
     <!-- Padding for signal cluster and battery icon when there are not icons in signal cluster -->
-    <dimen name="no_signal_cluster_battery_padding">2dp</dimen>
+    <dimen name="no_signal_cluster_battery_padding">3dp</dimen>
 
     <!-- Screen pinning request width -->
     <dimen name="screen_pinning_request_width">@dimen/match_parent</dimen>
@@ -1184,7 +1184,7 @@
     <!-- Side padding between background of Ongoing App Ops chip and content -->
     <dimen name="ongoing_appops_chip_side_padding">8dp</dimen>
     <!-- Margin between icons of Ongoing App Ops chip when QQS-->
-    <dimen name="ongoing_appops_chip_icon_margin_collapsed">2dp</dimen>
+    <dimen name="ongoing_appops_chip_icon_margin_collapsed">4dp</dimen>
     <!-- Margin between icons of Ongoing App Ops chip when QS-->
     <dimen name="ongoing_appops_chip_icon_margin_expanded">4dp</dimen>
     <!-- Icon size of Ongoing App Ops chip -->
