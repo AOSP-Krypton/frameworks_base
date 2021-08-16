@@ -15,8 +15,13 @@
  */
 package com.android.systemui.theme;
 
+import static android.provider.Settings.Secure.ACCENT_DARK;
+import static android.provider.Settings.Secure.ACCENT_LIGHT;
+import static android.provider.Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES;
+
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -99,52 +104,51 @@ public class ThemeOverlayController extends SystemUI {
                 updateThemeOverlays();
             }
         }, filter, mBgHandler, UserHandle.ALL);
-        mContext.getContentResolver().registerContentObserver(
-                Settings.Secure.getUriFor(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES),
-                false,
-                new ContentObserver(mBgHandler) {
 
-                    @Override
-                    public void onChange(boolean selfChange, Collection<Uri> uris, int flags,
-                            int userId) {
-                        if (DEBUG) Log.d(TAG, "Overlay changed for user: " + userId);
+        final ContentObserver observer = new ContentObserver(mBgHandler) {
+            @Override
+            public void onChange(boolean selfChange, Collection<Uri> uris, int flags,
+                           int userId) {
+                if (DEBUG) Log.d(TAG, "Overlay changed for user: " + userId);
+                for (Uri uri: uris) {
+                    if (uri.equals(Settings.Secure.getUriFor(
+                            THEME_CUSTOMIZATION_OVERLAY_PACKAGES))) {
                         if (ActivityManager.getCurrentUser() == userId) {
                             updateThemeOverlays();
                         }
+                    } else {
+                        reloadAssets(userId);
                     }
-                },
-                UserHandle.USER_ALL);
+                    break;
+                }
+            }
 
-       ContentObserver observer = new ContentObserver(mBgHandler) {
-             @Override
-             public void onChange(boolean selfChange, Uri uri) {
-                 if (uri.equals(Settings.Secure.getUriFor("accent_dark")) ||
-                         uri.equals(Settings.Secure.getUriFor("accent_light"))) {
-                     reloadAssets("android");
-                     reloadAssets("com.android.systemui");
-                 }
-             }
-             private void reloadAssets(String packageName) {
-                 try {
-                     IOverlayManager.Stub.asInterface(ServiceManager.getService("overlay"))
-                             .reloadAssets(packageName, UserHandle.USER_CURRENT);
-                 } catch (RemoteException e) {
-                     Log.i(TAG, "Unable to reload resources for " + packageName);
-                 }
-             }
+            private void reloadAssets(int userId) {
+                try {
+                    IOverlayManager om = IOverlayManager.Stub.asInterface(
+                        ServiceManager.getService(Context.OVERLAY_SERVICE));
+                    om.reloadAssets("android", userId);
+                    om.reloadAssets("com.android.systemui", userId);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Unable to reload resources", e);
+                }
+            }
         };
-        mContext.getContentResolver().registerContentObserver(
-                Settings.Secure.getUriFor("accent_dark"),
+
+        final ContentResolver resolver = mContext.getContentResolver();
+        resolver.registerContentObserver(Settings.Secure.getUriFor(ACCENT_LIGHT),
                 false, observer, UserHandle.USER_ALL);
-        mContext.getContentResolver().registerContentObserver(
-                Settings.Secure.getUriFor("accent_light"),
+        resolver.registerContentObserver(Settings.Secure.getUriFor(ACCENT_DARK),
                 false, observer, UserHandle.USER_ALL);
+        resolver.registerContentObserver(Settings.Secure.getUriFor(
+                THEME_CUSTOMIZATION_OVERLAY_PACKAGES), false,
+                observer, UserHandle.USER_ALL);
     }
 
     private void updateThemeOverlays() {
         final int currentUser = ActivityManager.getCurrentUser();
         final String overlayPackageJson = Settings.Secure.getStringForUser(
-                mContext.getContentResolver(), Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                mContext.getContentResolver(), THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
                 currentUser);
         if (DEBUG) Log.d(TAG, "updateThemeOverlays: " + overlayPackageJson);
         final Map<String, String> categoryToPackage = new ArrayMap<>();
