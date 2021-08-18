@@ -403,10 +403,15 @@ public class NotificationHistoryDatabase {
             synchronized (mLock) {
                 // Remove packageName entries from pending history
                 mBuffer.removeNotificationsFromWrite(mPkg);
-
-                Iterator<AtomicFile> historyFileItr = mHistoryFiles.iterator();
-                while (historyFileItr.hasNext()) {
-                    final AtomicFile af = historyFileItr.next();
+                int size = mHistoryFiles.size();
+                for (int i = 0; i < size; i++) {
+                    final AtomicFile af = mHistoryFiles.get(i);
+                    // Pop it off the list if the file doesn't exist anymore
+                    if (!af.getBaseFile().exists()) {
+                        mHistoryFiles.remove(i);
+                        size--;
+                        continue;
+                    }
                     try {
                         final NotificationHistory notifications = new NotificationHistory();
                         readLocked(af, notifications,
@@ -443,10 +448,15 @@ public class NotificationHistoryDatabase {
             synchronized (mLock) {
                 // Remove from pending history
                 mBuffer.removeNotificationFromWrite(mPkg, mPostedTime);
-
-                Iterator<AtomicFile> historyFileItr = mHistoryFiles.iterator();
-                while (historyFileItr.hasNext()) {
-                    final AtomicFile af = historyFileItr.next();
+                int size = mHistoryFiles.size();
+                for (int i = 0; i < size; i++) {
+                    final AtomicFile af = mHistoryFiles.get(i);
+                    // Pop it off the list if the file doesn't exist anymore
+                    if (!af.getBaseFile().exists()) {
+                        mHistoryFiles.remove(i);
+                        size--;
+                        continue;
+                    }
                     try {
                         NotificationHistory notificationHistory = mNotificationHistory != null
                                 ? mNotificationHistory
@@ -486,10 +496,15 @@ public class NotificationHistoryDatabase {
             synchronized (mLock) {
                 // Remove from pending history
                 mBuffer.removeConversationFromWrite(mPkg, mConversationId);
-
-                Iterator<AtomicFile> historyFileItr = mHistoryFiles.iterator();
-                while (historyFileItr.hasNext()) {
-                    final AtomicFile af = historyFileItr.next();
+                int size = mHistoryFiles.size();
+                for (int i = 0; i < size; i++) {
+                    final AtomicFile af = mHistoryFiles.get(i);
+                    // Pop it off the list if the file doesn't exist anymore
+                    if (!af.getBaseFile().exists()) {
+                        mHistoryFiles.remove(i);
+                        size--;
+                        continue;
+                    }
                     try {
                         NotificationHistory notificationHistory = mNotificationHistory != null
                                 ? mNotificationHistory
