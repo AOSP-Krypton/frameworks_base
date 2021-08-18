@@ -24,6 +24,8 @@ import android.view.View;
 import com.android.systemui.SystemUI;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.CommandQueue.Callbacks;
+import com.android.systemui.statusbar.policy.ConfigurationController;
+import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,12 +36,15 @@ public class FODCircleViewImpl extends SystemUI implements Callbacks {
 
     private FODCircleView mFodCircleView;
     private final CommandQueue mCommandQueue;
+    private final ConfigurationController mConfigurationController;
     private final boolean mIsEnabled;
 
     @Inject
-    public FODCircleViewImpl(Context context, CommandQueue commandQueue) {
+    public FODCircleViewImpl(Context context, CommandQueue commandQueue,
+            ConfigurationController configurationController) {
         super(context);
         mCommandQueue = commandQueue;
+        mConfigurationController = configurationController;
         mIsEnabled = context.getResources().getBoolean(com.android.internal.R.bool.config_needCustomFODView);
     }
 
@@ -53,6 +58,12 @@ public class FODCircleViewImpl extends SystemUI implements Callbacks {
         mCommandQueue.addCallback(this);
         try {
             mFodCircleView = new FODCircleView(mContext);
+            mConfigurationController.addCallback(new ConfigurationListener() {
+                @Override
+                public void onOverlayChanged() {
+                    mFodCircleView.maybeReloadIconTint();
+                }
+            });
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to initialize FODCircleView", e);
         }

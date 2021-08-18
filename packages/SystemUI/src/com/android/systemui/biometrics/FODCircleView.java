@@ -459,6 +459,13 @@ public class FODCircleView extends ImageView {
         }
     }
 
+    public void maybeReloadIconTint() {
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                FOD_ICON_TINT_MODE, 0) == 1) {
+            setColorFilter(Utils.getColorAccentDefaultColor(mContext));
+        }
+    }
+
     private IFingerprintInscreen getFingerprintInScreenDaemon() {
         if (mFingerprintInscreenDaemon == null) {
             try {
