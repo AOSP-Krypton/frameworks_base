@@ -38,6 +38,7 @@ import android.hardware.biometrics.IBiometricServiceLockoutResetCallback;
 import android.hardware.biometrics.IBiometricServiceReceiverInternal;
 import android.hardware.fingerprint.Fingerprint;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.DeadObjectException;
 import android.os.Handler;
@@ -76,7 +77,7 @@ import java.util.Map;
 public abstract class BiometricServiceBase extends SystemService
         implements IHwBinder.DeathRecipient {
 
-    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private static final String KEY_LOCKOUT_RESET_USER = "lockout_reset_user";
     private static final int MSG_USER_SWITCHING = 10;

@@ -32,6 +32,7 @@ import android.hardware.biometrics.BiometricFaceConstants;
 import android.hardware.biometrics.CryptoObject;
 import android.hardware.biometrics.IBiometricServiceLockoutResetCallback;
 import android.os.Binder;
+import android.os.Build;
 import android.os.CancellationSignal;
 import android.os.CancellationSignal.OnCancelListener;
 import android.os.Handler;
@@ -58,7 +59,7 @@ import java.util.List;
 public class FaceManager implements BiometricAuthenticator, BiometricFaceConstants {
 
     private static final String TAG = "FaceManager";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
     private static final int MSG_ENROLL_RESULT = 100;
     private static final int MSG_ACQUIRED = 101;
     private static final int MSG_AUTHENTICATION_SUCCEEDED = 102;

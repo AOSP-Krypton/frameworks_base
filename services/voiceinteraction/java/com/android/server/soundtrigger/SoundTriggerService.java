@@ -58,6 +58,7 @@ import android.media.soundtrigger.ISoundTriggerDetectionService;
 import android.media.soundtrigger.ISoundTriggerDetectionServiceClient;
 import android.media.soundtrigger.SoundTriggerDetectionService;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -97,7 +98,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class SoundTriggerService extends SystemService {
     private static final String TAG = "SoundTriggerService";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     final Context mContext;
     private Object mLock;

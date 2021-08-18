@@ -35,6 +35,7 @@ import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.IBiometricServiceReceiverInternal;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -62,7 +63,7 @@ public class AuthController extends SystemUI implements CommandQueue.Callbacks,
         AuthDialogCallback {
 
     private static final String TAG = "BiometricPrompt/AuthController";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private final CommandQueue mCommandQueue;
     private final Injector mInjector;

@@ -24,6 +24,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
@@ -50,7 +51,7 @@ public class TileServiceManager {
     private static final long MIN_BIND_TIME = 5000;
     private static final long UNBIND_DELAY = 30000;
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private static final String TAG = "TileServiceManager";
 

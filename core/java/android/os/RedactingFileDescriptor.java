@@ -17,6 +17,7 @@
 package android.os;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.storage.StorageManager;
 import android.system.ErrnoException;
 import android.system.Os;
@@ -41,7 +42,7 @@ import java.util.Arrays;
  */
 public class RedactingFileDescriptor {
     private static final String TAG = "RedactingFileDescriptor";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private volatile long[] mRedactRanges;
     private volatile long[] mFreeOffsets;

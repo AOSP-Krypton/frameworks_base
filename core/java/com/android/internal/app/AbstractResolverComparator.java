@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -43,7 +44,7 @@ import java.util.List;
 public abstract class AbstractResolverComparator implements Comparator<ResolvedComponentInfo> {
 
     private static final int NUM_OF_TOP_ANNOTATIONS_TO_USE = 3;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
     private static final String TAG = "AbstractResolverComp";
 
     protected AfterCompute mAfterCompute;

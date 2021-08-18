@@ -95,7 +95,7 @@ import java.util.Map;
 public class FaceService extends BiometricServiceBase {
 
     protected static final String TAG = "FaceService";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
     private static final String FACE_DATA_DIR = "facedata";
     private static final String ACTION_LOCKOUT_RESET =
             "com.android.server.biometrics.face.ACTION_LOCKOUT_RESET";

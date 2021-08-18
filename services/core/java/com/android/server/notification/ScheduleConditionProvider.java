@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.provider.Settings;
 import android.service.notification.Condition;
 import android.service.notification.IConditionProvider;
@@ -51,7 +52,7 @@ import java.util.List;
  */
 public class ScheduleConditionProvider extends SystemConditionProviderService {
     static final String TAG = "ConditionProviders.SCP";
-    static final boolean DEBUG = true || Log.isLoggable("ConditionProviders", Log.DEBUG);
+    static final boolean DEBUG = Log.isLoggable("ConditionProviders", Log.DEBUG);
 
     public static final ComponentName COMPONENT =
             new ComponentName("android", ScheduleConditionProvider.class.getName());

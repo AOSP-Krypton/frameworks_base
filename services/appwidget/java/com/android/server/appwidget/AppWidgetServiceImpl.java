@@ -4311,8 +4311,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     private final class BackupRestoreController {
         private static final String TAG = "BackupRestoreController";
 
-        private static final boolean DEBUG = true;
-
         // Version of backed-up widget state.
         private static final int WIDGET_STATE_VERSION = 2;
 

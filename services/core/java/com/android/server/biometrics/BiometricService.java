@@ -45,6 +45,7 @@ import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IBiometricServiceReceiverInternal;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.DeadObjectException;
 import android.os.Handler;
@@ -80,7 +81,7 @@ import java.util.Random;
 public class BiometricService extends SystemService {
 
     static final String TAG = "BiometricService";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private static final int BIOMETRIC_NO_HARDWARE = 0;
     private static final int BIOMETRIC_OK = 1;

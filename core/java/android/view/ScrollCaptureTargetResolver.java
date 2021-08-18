@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UiThread;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -57,7 +58,7 @@ import java.util.function.Consumer;
 @UiThread
 public class ScrollCaptureTargetResolver {
     private static final String TAG = "ScrollCaptureTargetRes";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private final Object mLock = new Object();
 

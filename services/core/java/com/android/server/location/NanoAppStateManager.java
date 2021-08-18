@@ -19,6 +19,7 @@ package com.android.server.location;
 import android.annotation.Nullable;
 import android.hardware.contexthub.V1_0.HubAppInfo;
 import android.hardware.location.NanoAppInstanceInfo;
+import android.os.Build;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -46,7 +47,7 @@ import java.util.function.Consumer;
     /*
      * Enables verbose debug logs for this class.
      */
-    private static final boolean ENABLE_LOG_DEBUG = true;
+    private static final boolean ENABLE_LOG_DEBUG = Build.IS_DEBUGGABLE;
 
     /*
      * Service cache maintaining of handle to nanoapp infos.

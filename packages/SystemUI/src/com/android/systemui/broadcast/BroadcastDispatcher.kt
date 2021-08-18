@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerExecutor
 import android.os.Looper
@@ -50,7 +51,7 @@ private const val MSG_REMOVE_RECEIVER_FOR_USER = 2
 private const val MSG_USER_SWITCH = 3
 private const val MSG_SET_STARTING_USER = 99
 private const val TAG = "BroadcastDispatcher"
-private const val DEBUG = true
+private val DEBUG = Build.IS_DEBUGGABLE
 
 /**
  * SystemUI master Broadcast Dispatcher.

@@ -22,6 +22,7 @@ import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.Build;
 import android.util.Log;
 import android.util.MathUtils;
 import android.util.Range;
@@ -50,7 +51,7 @@ public class Tonal implements ExtractionType {
     private static final float FIT_WEIGHT_S = 1.0f;
     private static final float FIT_WEIGHT_L = 10.0f;
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     public static final int MAIN_COLOR_LIGHT = 0xffdadce0;
     public static final int MAIN_COLOR_DARK = 0xff202124;

@@ -41,6 +41,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -91,7 +92,7 @@ import java.util.Set;
  */
 public class BackupManagerService extends IBackupManager.Stub {
     public static final String TAG = "BackupManagerService";
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = Build.IS_DEBUGGABLE;
     public static final boolean MORE_DEBUG = false;
     public static final boolean DEBUG_SCHEDULING = true;
 

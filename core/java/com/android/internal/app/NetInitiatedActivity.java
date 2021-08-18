@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.LocationManagerInternal;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,7 +39,7 @@ public class NetInitiatedActivity extends AlertActivity implements DialogInterfa
 
     private static final String TAG = "NetInitiatedActivity";
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private static final int POSITIVE_BUTTON = AlertDialog.BUTTON_POSITIVE;
     private static final int NEGATIVE_BUTTON = AlertDialog.BUTTON_NEGATIVE;

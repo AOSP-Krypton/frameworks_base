@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Binder
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.os.RemoteException
@@ -75,7 +76,7 @@ class ControlsProviderLifecycleManager(
         private const val BIND_RETRY_DELAY = 1000L // ms
         private const val LOAD_TIMEOUT_SECONDS = 20L // seconds
         private const val MAX_BIND_RETRIES = 5
-        private const val DEBUG = true
+        private val DEBUG = Build.IS_DEBUGGABLE
         private val BIND_FLAGS = Context.BIND_AUTO_CREATE or Context.BIND_FOREGROUND_SERVICE or
             Context.BIND_NOT_PERCEPTIBLE
     }

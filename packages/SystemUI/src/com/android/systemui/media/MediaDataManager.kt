@@ -34,6 +34,7 @@ import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSession
 import android.net.Uri
+import android.os.Build;
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
 import android.text.TextUtils
@@ -66,7 +67,7 @@ private val ART_URIS = arrayOf(
 )
 
 private const val TAG = "MediaDataManager"
-private const val DEBUG = true
+private val DEBUG = Build.IS_DEBUGGABLE
 private const val DEFAULT_LUMINOSITY = 0.25f
 private const val LUMINOSITY_THRESHOLD = 0.05f
 private const val SATURATION_MULTIPLIER = 0.8f

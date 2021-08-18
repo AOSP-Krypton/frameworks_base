@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.UserHandle;
@@ -48,7 +49,7 @@ class UserSwitchingDialog extends AlertDialog
     private static final int WINDOW_SHOWN_TIMEOUT_MS = 3000;
 
     // User switching doesn't happen that frequently, so it doesn't hurt to have it always on
-    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG = Build.IS_DEBUGGABLE;
 
     private final ActivityManagerService mService;
     private final int mUserId;

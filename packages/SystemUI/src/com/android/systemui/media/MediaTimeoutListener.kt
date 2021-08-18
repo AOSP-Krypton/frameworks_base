@@ -18,6 +18,7 @@ package com.android.systemui.media
 
 import android.media.session.MediaController
 import android.media.session.PlaybackState
+import android.os.Build
 import android.os.SystemProperties
 import android.util.Log
 import com.android.systemui.dagger.qualifiers.Main
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val DEBUG = true
+private val DEBUG = Build.IS_DEBUGGABLE
 private const val TAG = "MediaTimeout"
 private val PAUSED_MEDIA_TIMEOUT = SystemProperties
         .getLong("debug.sysui.media_timeout", TimeUnit.MINUTES.toMillis(10))

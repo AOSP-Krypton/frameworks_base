@@ -18,6 +18,7 @@ package com.android.server.lineage;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -55,7 +56,7 @@ import static com.android.server.display.color.DisplayTransformManager.LEVEL_COL
 /** @hide */
 public class LineageHardwareService extends SystemService {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
     private static final String TAG = LineageHardwareService.class.getSimpleName();
 
     private final Context mContext;
