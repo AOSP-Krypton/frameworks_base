@@ -4941,48 +4941,24 @@ public final class Settings {
         public static final String QS_SHOW_BRIGHTNESS_ABOVE_FOOTER = "qs_show_brightness_above_footer";
 
         /**
+         * IMPORTANT: If you add a new public settings you also have to add it to
+         * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
+         * it to PRIVATE_SETTINGS below. Also add a validator that can validate
+         * the setting value. See an example above.
+         */
+
+
+        /**
          * Whether to show the battery info on the lockscreen while charging
          * @hide
          */
         public static final String LOCKSCREEN_BATTERY_INFO = "lockscreen_battery_info";
 
         /**
-         * Wheter to show network traffic indicator in statusbar
-         * @hide
-         */
-        public static final String NETWORK_TRAFFIC_STATE = "network_traffic_state";
-
-        /**
-    	 * What to show in network traffic indicator in statusbar
-    	 * @hide
-    	 */
-        public static final String NETWORK_TRAFFIC_TYPE = "network_traffic_type";
-
-        /**
-         * Network traffic inactivity threshold (default is 1 kBs)
-         * @hide
-         */
-        public static final String NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD = "network_traffic_autohide_threshold";
-
-        /**
-         * Whether to disable showing arrows in statusbar network traffic indicators
-         * @hide
-         */
-        public static final String NETWORK_TRAFFIC_ARROW = "network_traffic_arrow";
-
-        /**
          * Whether to enable SmartSpace
          * @hide
          */
         public static final String SMART_SPACE = "smart_space";
-
-        /**
-         * Show network traffic indicator
-         * 0 - Statusbar (default)
-         * 1 - QS Header
-         * @hide
-         */
-        public static final String NETWORK_TRAFFIC_VIEW_LOCATION = "network_traffic_view_location";
 
         /**
          * Whether to enable PULSE Edge lights
@@ -5118,12 +5094,6 @@ public final class Settings {
          * @hide
          */
         public static final String SHOW_BATTERY_PERCENT_INSIDE = "status_bar_show_battery_percent_inside";
-
-        /**
-         * What size to show for network traffic indicator in statusbar
-         * @hide
-         */
-        public static final String NETWORK_TRAFFIC_FONT_SIZE = "network_traffic_font_size";
 
         /**
          * Whether volume button music control is enabled
@@ -5380,12 +5350,6 @@ public final class Settings {
             PRIVATE_SETTINGS.add(DOUBLE_TAP_SLEEP_GESTURE);
             PRIVATE_SETTINGS.add(DOUBLE_TAP_SLEEP_LOCKSCREEN);
             PRIVATE_SETTINGS.add(LOCKSCREEN_BATTERY_INFO);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_STATE);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_TYPE);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_ARROW);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_VIEW_LOCATION);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_FONT_SIZE);
             PRIVATE_SETTINGS.add(TORCH_LONG_PRESS_POWER_GESTURE);
             PRIVATE_SETTINGS.add(TORCH_LONG_PRESS_POWER_TIMEOUT);
             PRIVATE_SETTINGS.add(DISPLAY_TEMPERATURE_DAY);
