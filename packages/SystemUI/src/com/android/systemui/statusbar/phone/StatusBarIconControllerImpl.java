@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.WifiIconState;
 import com.android.systemui.statusbar.pipeline.StatusBarPipelineFlags;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
+import com.android.systemui.statusbar.policy.NetworkTrafficState;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
 
@@ -347,6 +348,22 @@ public class StatusBarIconControllerImpl implements Tunable,
                 setIcon(slot, holder);
             }
             setIconVisibility(slot, state.isNoCalling, state.subId);
+        }
+    }
+
+    @Override
+    public void setNetworkTrafficIcon(String slot, NetworkTrafficState state) {
+        if (state == null) {
+            removeIcon(slot, 0);
+            return;
+        }
+        StatusBarIconHolder holder = mStatusBarIconList.getIconHolder(slot, 0);
+        if (holder == null) {
+            holder = StatusBarIconHolder.fromNetworkTrafficState(state);
+            setIcon(slot, holder);
+        } else {
+            holder.setNetworkTrafficState(state);
+            handleSet(slot, holder);
         }
     }
 
