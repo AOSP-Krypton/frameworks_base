@@ -5229,6 +5229,24 @@ public final class Settings {
         public static final String GESTURE_NAVBAR_LENGTH = "gesture_navbar_length";
 
         /**
+         * Whether to enable StatusBar network traffic indicator.
+         * @hide
+         */
+        public static final String NETWORK_TRAFFIC_ENABLED = "network_traffic_enabled";
+
+        /**
+         * Threshold value in KiB/s below which upload speed will be hidden
+         * @hide
+         */
+        public static final String NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX = "network_traffic_auto_hide_threshold_tx";
+
+        /**
+         * Threshold value in KiB/s below which download speed will be hidden
+         * @hide
+         */
+        public static final String NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX = "network_traffic_auto_hide_threshold_rx";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
