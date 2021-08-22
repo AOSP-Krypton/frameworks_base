@@ -39,6 +39,7 @@ import com.android.systemui.statusbar.StatusIconDisplayable;
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.CallIndicatorIconState;
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.MobileIconState;
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy.WifiIconState;
+import com.android.systemui.statusbar.policy.NetworkTrafficMonitor.NetworkTrafficState;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.tuner.TunerService;
@@ -293,6 +294,23 @@ public class StatusBarIconControllerImpl extends StatusBarIconList implements Tu
                 }
             }
             setIconVisibility(slot, state.isNoCalling, state.subId);
+        }
+    }
+
+    @Override
+    public void setNetworkTrafficIcon(String slot, NetworkTrafficState state) {
+        int index = getSlotIndex(slot);
+        if (state == null) {
+            removeIcon(index, 0);
+            return;
+        }
+        StatusBarIconHolder holder = getIcon(index, 0);
+        if (holder == null) {
+            holder = StatusBarIconHolder.fromNetworkTrafficState(state);
+            setIcon(index, holder);
+        } else {
+            holder.setNetworkTrafficState(state);
+            handleSet(index, holder);
         }
     }
 
