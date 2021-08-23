@@ -160,6 +160,9 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
 
     private boolean updateState(NetworkTrafficState state) {
         boolean requestLayout = false;
+        if (mState.size != state.size) {
+            mTrafficRate.setTextSize(state.size);
+        }
         if (!mState.rate.equals(state.rate)) {
             mTrafficRate.setText(state.rate);
         }

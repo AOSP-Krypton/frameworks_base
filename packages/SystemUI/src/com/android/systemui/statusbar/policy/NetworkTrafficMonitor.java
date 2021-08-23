@@ -19,11 +19,12 @@ package com.android.systemui.statusbar.policy;
 import static android.provider.Settings.System.NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX;
 import static android.provider.Settings.System.NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX;
 import static android.provider.Settings.System.NETWORK_TRAFFIC_ENABLED;
-import static android.os.UserHandle.USER_ALL;
-import static android.os.UserHandle.USER_CURRENT;
+import static android.provider.Settings.System.NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR;
+import static android.provider.Settings.System.NETWORK_TRAFFIC_UNIT_TEXT_SIZE;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.NetworkCallback;
@@ -32,12 +33,14 @@ import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
 import android.util.DataUnit;
 import android.util.Log;
+import android.util.TypedValue;
 
 import com.android.systemui.Dependency;
 import com.android.systemui.keyguard.ScreenLifecycle;
@@ -60,7 +63,6 @@ public class NetworkTrafficMonitor {
     private static final boolean DEBUG = false;
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    private static final RelativeSizeSpan mRSP = new RelativeSizeSpan(1.5f);
 
     private static final String[] mUnits = new String[] {"KiB/s", "MiB/s", "GiB/s"};
     private static final DecimalFormat mSingleDecimalFmt = new DecimalFormat("00.0");
@@ -72,6 +74,9 @@ public class NetworkTrafficMonitor {
     private final NetworkTrafficState mState;
     private final SettingsObserver mSettingsObserver;
     private final ArrayList<Callback> mCallbacks;
+
+    private final int mDefaultTextSize;
+    private final float mDefaultScaleFactor;
 
     // Timer for 1 second tick
     private Timer mTimer;
@@ -90,6 +95,12 @@ public class NetworkTrafficMonitor {
 
     // Whether traffic monitor is enabled
     private boolean mEnabled;
+
+    // RelativeSizeSpan for network traffic rate text
+    private RelativeSizeSpan mRSP;
+
+    // Whether external callbacks and observers are registered
+    private boolean mRegistered;
 
     // Whether there is an active network connection
     private boolean mIsConnectionAvailable;
@@ -133,6 +144,12 @@ public class NetworkTrafficMonitor {
         mState = new NetworkTrafficState();
         mState.slot = mContext.getString(com.android.internal.R.string.status_bar_network_traffic);
         mState.rate = new SpannableString("0" + LINE_SEPARATOR + mUnits[0]); // Initialize it so that we can prevent some NPE's
+        final Resources res = mContext.getResources();
+        mDefaultTextSize = (int) res.getDimension(R.dimen.network_traffic_unit_text_default_size);
+        final TypedValue value = new TypedValue();
+        res.getValue(R.dimen.network_traffic_rate_text_default_scale_factor, value, true);
+        mDefaultScaleFactor = value.getFloat();
+        mRSP = new RelativeSizeSpan(mDefaultScaleFactor);
         mWakefulnessLifecycle = Dependency.get(WakefulnessLifecycle.class);
         mSettingsObserver = new SettingsObserver();
         mSettingsObserver.update();
@@ -154,6 +171,24 @@ public class NetworkTrafficMonitor {
     private void notifyCallbacks() {
         logD("notifying callbacks about new state = " + mState);
         mCallbacks.stream().forEach(cb -> mHandler.post(() -> cb.onTrafficUpdate(mState)));
+    }
+
+    private void register() {
+        if (!mRegistered) {
+            mRegistered = true;
+            mContext.getSystemService(ConnectivityManager.class)
+                .registerDefaultNetworkCallback(mNetworkCallback);
+            mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
+        }
+    }
+
+    private void unregister() {
+        if (mRegistered) {
+            mRegistered = false;
+            mContext.getSystemService(ConnectivityManager.class)
+                .unregisterNetworkCallback(mNetworkCallback);
+            mWakefulnessLifecycle.removeObserver(mWakefulnessObserver);
+        }
     }
 
     private void scheduleTask() {
@@ -230,10 +265,10 @@ public class NetworkTrafficMonitor {
         int i = 0;
         while (true) {
             rate /= KiB;
-            if (rate > 0.9d && rate < 1) {
+            if (rate >= 0.9d && rate < 1) {
                 unit = mUnits[i + 1];
                 break;
-            } else if (rate < 0.9d) {
+            } else if (rate < 0.9) {
                 rate *= KiB;
                 unit = mUnits[i];
                 break;
@@ -266,6 +301,7 @@ public class NetworkTrafficMonitor {
     public static class NetworkTrafficState {
         public String slot;
         public Spanned rate;
+        public int size;
         public boolean visible;
 
         private NetworkTrafficState() {}
@@ -274,6 +310,7 @@ public class NetworkTrafficMonitor {
             NetworkTrafficState copy = new NetworkTrafficState();
             copy.slot = slot;
             copy.rate = rate;
+            copy.size = size;
             copy.visible = visible;
             return copy;
         }
@@ -285,18 +322,18 @@ public class NetworkTrafficMonitor {
             }
             NetworkTrafficState state = (NetworkTrafficState) obj;
             return slot.equals(state.slot) && rate.equals(state.rate) &&
-                visible == state.visible;
+                size == state.size && visible == state.visible;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(slot, rate, visible);
+            return Objects.hash(slot, rate, size, visible);
         }
 
         @Override
         public String toString() {
             return "NetworkTrafficState[ slot = " + slot + ", rate = " + rate +
-                ", visible = " + visible + " ]";
+                ", size = " + size + ", visible = " + visible + " ]";
         }
     }
 
@@ -306,13 +343,19 @@ public class NetworkTrafficMonitor {
         }
 
         void observe() {
+            registerSettings(NETWORK_TRAFFIC_ENABLED,
+                NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX,
+                NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX,
+                NETWORK_TRAFFIC_UNIT_TEXT_SIZE,
+                NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR);
+        }
+
+        private void registerSettings(String... keys) {
             final ContentResolver contentResolver = mContext.getContentResolver();
-            contentResolver.registerContentObserver(getUri(NETWORK_TRAFFIC_ENABLED),
-                false, this, USER_ALL);
-            contentResolver.registerContentObserver(getUri(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX),
-                false, this, USER_ALL);
-            contentResolver.registerContentObserver(getUri(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX),
-                false, this, USER_ALL);
+            for (String key: keys) {
+                contentResolver.registerContentObserver(Settings.System.getUriFor(key),
+                    false, this, UserHandle.USER_ALL);
+            }
         }
 
         @Override
@@ -325,6 +368,10 @@ public class NetworkTrafficMonitor {
                 updateTxAutoHideThreshold();
             } else if (isUriFor(uri, NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX)) {
                 updateRxAutoHideThreshold();
+            } else if (isUriFor(uri, NETWORK_TRAFFIC_UNIT_TEXT_SIZE)) {
+                updateUnitTextSize();
+            } else if (isUriFor(uri, NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR)) {
+                updateRateTextScale();
             }
         }
 
@@ -332,45 +379,54 @@ public class NetworkTrafficMonitor {
             updateEnabledState();
             updateTxAutoHideThreshold();
             updateRxAutoHideThreshold();
+            updateUnitTextSize();
+            updateRateTextScale();
         }
 
         private void updateEnabledState() {
             mEnabled = getInt(NETWORK_TRAFFIC_ENABLED, 0) == 1;
             logD("mEnabled = " + mEnabled);
             if (mEnabled) {
-                mContext.getSystemService(ConnectivityManager.class)
-                    .registerDefaultNetworkCallback(mNetworkCallback);
+                register();
                 scheduleTask();
-                mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
             } else {
-                mContext.getSystemService(ConnectivityManager.class)
-                    .unregisterNetworkCallback(mNetworkCallback);
-                mWakefulnessLifecycle.removeObserver(mWakefulnessObserver);
+                unregister();
                 cancelScheduledTask();
             }
         }
 
         private void updateTxAutoHideThreshold() {
-            mTxThreshold = DataUnit.KIBIBYTES.toBytes(getInt(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX, 0));
+            mTxThreshold = DataUnit.KIBIBYTES.toBytes(getInt(
+                NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX, 0));
             logD("mTxThreshold = " + mTxThreshold);
         }
 
         private void updateRxAutoHideThreshold() {
-            mRxThreshold = DataUnit.KIBIBYTES.toBytes(getInt(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX, 0));
+            mRxThreshold = DataUnit.KIBIBYTES.toBytes(getInt(
+                NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX, 0));
             logD("mRxThreshold = " + mRxThreshold);
+        }
+
+        private void updateUnitTextSize() {
+            mState.size = getInt(NETWORK_TRAFFIC_UNIT_TEXT_SIZE, mDefaultTextSize);
+            logD("mDefaultTextSize = " + mDefaultTextSize + ", size = " + mState.size);
+            notifyCallbacks();
+        }
+
+        private void updateRateTextScale() {
+            float scaleFactor = getInt(NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR,
+                (int) (mDefaultScaleFactor * 10)) / 10f;
+            logD("scaleFactor = " + scaleFactor);
+            mRSP = new RelativeSizeSpan(scaleFactor);
         }
 
         private int getInt(String key, int def) {
             return Settings.System.getIntForUser(mContext.getContentResolver(),
-                key, def, USER_CURRENT);
-        }
-
-        private Uri getUri(String key) {
-            return Settings.System.getUriFor(key);
+                key, def, UserHandle.USER_CURRENT);
         }
 
         private boolean isUriFor(Uri uri, String key) {
-            return uri.equals(getUri(key));
+            return uri.equals(Settings.System.getUriFor(key));
         }
     }
 
