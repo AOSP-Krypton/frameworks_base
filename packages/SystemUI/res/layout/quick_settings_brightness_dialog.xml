@@ -34,10 +34,11 @@
     <ImageView
         android:id="@+id/auto_brightness_icon"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginEnd="20dp"
+        android:layout_height="48dp"
+        android:layout_gravity="end"
+        android:layout_marginEnd="15dp"
         android:visibility="gone"
+        android:scaleType="centerInside"
         android:src="@drawable/ic_auto_brightness" />
 
 </LinearLayout>
