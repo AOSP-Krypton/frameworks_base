@@ -175,6 +175,7 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
     }
 
     private void initViewState() {
+        mTrafficRate.setTextSize(mState.size);
         mTrafficRate.setText(String.valueOf(mState.rate));
         setVisibility(mState.visible ? View.VISIBLE : View.GONE);
     }
