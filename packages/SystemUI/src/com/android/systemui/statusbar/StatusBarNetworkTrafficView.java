@@ -17,6 +17,7 @@
 
 package com.android.systemui.statusbar;
 
+import static android.util.TypedValue.COMPLEX_UNIT_PX;
 import static com.android.systemui.statusbar.StatusBarIconView.STATE_DOT;
 import static com.android.systemui.statusbar.StatusBarIconView.STATE_ICON;
 
@@ -161,7 +162,7 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
     private boolean updateState(NetworkTrafficState state) {
         boolean requestLayout = false;
         if (mState.size != state.size) {
-            mTrafficRate.setTextSize(state.size);
+            mTrafficRate.setTextSize(COMPLEX_UNIT_PX, state.size);
         }
         if (!mState.rate.equals(state.rate)) {
             mTrafficRate.setText(state.rate);
@@ -175,7 +176,7 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
     }
 
     private void initViewState() {
-        mTrafficRate.setTextSize(mState.size);
+        mTrafficRate.setTextSize(COMPLEX_UNIT_PX, mState.size);
         mTrafficRate.setText(String.valueOf(mState.rate));
         setVisibility(mState.visible ? View.VISIBLE : View.GONE);
     }
