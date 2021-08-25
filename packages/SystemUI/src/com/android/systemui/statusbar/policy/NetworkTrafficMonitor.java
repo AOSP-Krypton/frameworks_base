@@ -201,6 +201,7 @@ public class NetworkTrafficMonitor {
         mRxUpdatedInternal = false;
         mRxBytesInternal = TrafficStats.getTotalRxBytes();
         mTxBytesInternal = TrafficStats.getTotalTxBytes();
+        mState.visible = true;
         mTimer = new Timer(TIMER_TAG, true);
         mTimer.scheduleAtFixedRate(getNewTimerTask(), 1000, 1000);
     }
@@ -222,36 +223,26 @@ public class NetworkTrafficMonitor {
             public void run() {
                 if (!mRxUpdatedInternal) {
                     mRxUpdatedInternal = true;
-                    long rxBytes = TrafficStats.getTotalRxBytes();
-                    mTxBytesInternal = TrafficStats.getTotalTxBytes(); // We have to update for it to show the correct value in next cycle
-                    long rxTrans = rxBytes - mRxBytesInternal;
-                    logD("rxBytes = " + rxBytes + " , mRxBytesInternal = " + mRxBytesInternal
-                        + ", rxTrans = " + rxTrans + ", mRxThreshold = " + mRxThreshold);
-                    mRxBytesInternal = rxBytes;
-                    if (rxTrans < mRxThreshold) { // Hide / unhide depending on mThreshold
-                        logD("rxTrans < mRxThreshold, hiding");
-                        mState.visible = false;
-                    } else {
-                        logD("rxTrans > mRxThreshold, unhiding");
-                        mState.visible = true;
-                        updateRateFormatted(mState, rxTrans);
-                    }
                 } else {
                     mRxUpdatedInternal = false;
-                    long txBytes = TrafficStats.getTotalTxBytes();
-                    mRxBytesInternal = TrafficStats.getTotalRxBytes(); // We have to update for it to show the correct value in next cycle
-                    long txTrans = txBytes - mTxBytesInternal;
-                    logD("txBytes = " + txBytes + " , mTxBytesInternal = " + mTxBytesInternal
-                        + ", txTrans = " + txTrans + ", mTxThreshold = " + mTxThreshold);
-                    mTxBytesInternal = txBytes;
-                    if (txTrans < mTxThreshold) { // Hide / unhide depending on mThreshold
-                        logD("txTrans < mTxThreshold, hiding");
-                        mState.visible = false;
-                    } else {
-                        logD("txTrans > mTxThreshold, unhiding");
-                        mState.visible = true;
-                        updateRateFormatted(mState, txTrans);
-                    }
+                }
+                long rxBytes = TrafficStats.getTotalRxBytes();
+                long txBytes = TrafficStats.getTotalTxBytes();
+                long rxTrans = rxBytes - mRxBytesInternal;
+                long txTrans = txBytes - mTxBytesInternal;
+                logD("rxBytes = " + rxBytes + " , mRxBytesInternal = " + mRxBytesInternal
+                    + ", rxTrans = " + rxTrans + ", mRxThreshold = " + mRxThreshold);
+                logD("txBytes = " + txBytes + " , mTxBytesInternal = " + mTxBytesInternal
+                    + ", txTrans = " + txTrans + ", mTxThreshold = " + mTxThreshold);
+                mRxBytesInternal = rxBytes;
+                mTxBytesInternal = txBytes;
+                if (rxTrans < mRxThreshold && txTrans < mTxThreshold) { // Hide / unhide depending on mThreshold
+                    logD("threshold is not met, hiding");
+                    mState.rateVisible = false;
+                } else {
+                    logD("threshold is met, unhiding");
+                    mState.rateVisible = true;
+                    updateRateFormatted(mState, mRxUpdatedInternal ? rxTrans : txTrans);
                 }
                 notifyCallbacks();
             }
@@ -303,6 +294,7 @@ public class NetworkTrafficMonitor {
         public Spanned rate;
         public int size;
         public boolean visible;
+        public boolean rateVisible;
 
         private NetworkTrafficState() {}
 
@@ -312,6 +304,7 @@ public class NetworkTrafficMonitor {
             copy.rate = rate;
             copy.size = size;
             copy.visible = visible;
+            copy.rateVisible = rateVisible;
             return copy;
         }
 
@@ -322,18 +315,19 @@ public class NetworkTrafficMonitor {
             }
             NetworkTrafficState state = (NetworkTrafficState) obj;
             return slot.equals(state.slot) && rate.equals(state.rate) &&
-                size == state.size && visible == state.visible;
+                size == state.size && visible == state.visible &&
+                rateVisible == state.rateVisible;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(slot, rate, size, visible);
+            return Objects.hash(slot, rate, size, visible, rateVisible);
         }
 
         @Override
         public String toString() {
             return "NetworkTrafficState[ slot = " + slot + ", rate = " + rate +
-                ", size = " + size + ", visible = " + visible + " ]";
+                ", size = " + size + ", visible = " + visible + ", rateVisible = " + rateVisible + " ]";
         }
     }
 

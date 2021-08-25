@@ -27,7 +27,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.android.systemui.R;
@@ -37,7 +37,7 @@ import com.android.systemui.statusbar.policy.NetworkTrafficMonitor.NetworkTraffi
 /**
  * Layout class for statusbar network traffic indicator
  */
-public class StatusBarNetworkTrafficView extends LinearLayout implements StatusIconDisplayable {
+public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIconDisplayable {
     private static final String TAG = "StatusBarNetworkTrafficView";
     private static final boolean DEBUG = false;
     private StatusBarIconView mDotView;
@@ -96,12 +96,13 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
 
     @Override
     public void setVisibleState(int state, boolean animate) {
+        logD("setVisibleState, state = " + state);
         if (state == mVisibleState) {
             return;
         }
         mVisibleState = state;
+        setVisibility(state == STATE_ICON ? View.VISIBLE : View.GONE);
         mDotView.setVisibility(state == STATE_DOT ? View.VISIBLE : View.GONE);
-        mTrafficRate.setVisibility(state == STATE_ICON ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -145,7 +146,7 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
             mState = state.copy();
             initViewState();
         } else if (!mState.equals(state)) {
-            requestLayout = updateState(state.copy());
+            updateState(state.copy());
         }
 
         logD("applyNetworkTrafficState, requestLayout = " + requestLayout);
@@ -159,26 +160,29 @@ public class StatusBarNetworkTrafficView extends LinearLayout implements StatusI
         mDotView = findViewById(R.id.dot_view);
     }
 
-    private boolean updateState(NetworkTrafficState state) {
-        boolean requestLayout = false;
+    private void updateState(NetworkTrafficState state) {
+        if (mVisibleState == STATE_DOT) {
+            return;
+        }
         if (mState.size != state.size) {
+            logD("setTextSize");
             mTrafficRate.setTextSize(COMPLEX_UNIT_PX, state.size);
         }
         if (!mState.rate.equals(state.rate)) {
+            logD("setText");
             mTrafficRate.setText(state.rate);
         }
-        if (mState.visible != state.visible) {
-            requestLayout = true;
-            setVisibility(state.visible ? View.VISIBLE : View.GONE);
+        if (mState.rateVisible != state.rateVisible) {
+            logD("setVisibility");
+            mTrafficRate.setVisibility(state.rateVisible ? View.VISIBLE : View.GONE);
         }
         mState = state;
-        return requestLayout;
     }
 
     private void initViewState() {
         mTrafficRate.setTextSize(COMPLEX_UNIT_PX, mState.size);
         mTrafficRate.setText(String.valueOf(mState.rate));
-        setVisibility(mState.visible ? View.VISIBLE : View.GONE);
+        mTrafficRate.setVisibility(mState.rateVisible ? View.VISIBLE : View.GONE);
     }
 
     @Override
