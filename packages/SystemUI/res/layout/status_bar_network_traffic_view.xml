@@ -19,8 +19,7 @@
     android:layout_height="match_parent"
     android:paddingStart="@dimen/network_traffic_padding_ends"
     android:paddingEnd="@dimen/network_traffic_padding_ends"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:gravity="center">
 
     <com.android.systemui.statusbar.StatusBarIconView
         android:id="@+id/dot_view"
