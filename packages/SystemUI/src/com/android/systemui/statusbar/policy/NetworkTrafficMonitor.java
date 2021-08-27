@@ -102,8 +102,7 @@ public class NetworkTrafficMonitor {
     // Whether external callbacks and observers are registered
     private boolean mRegistered;
 
-    // Whether there is an active network connection
-    private boolean mIsConnectionAvailable;
+    // To schedule / unschedule task based on connectivity
     private final NetworkCallback mNetworkCallback = new NetworkCallback() {
         @Override
         public void onAvailable(Network network) {
