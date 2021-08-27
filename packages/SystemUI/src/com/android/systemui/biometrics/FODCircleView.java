@@ -153,7 +153,7 @@ public class FODCircleView extends ImageView {
     private final CustomSettingsObserver mObserver;
     private Timer mBurnInProtectionTimer;
 
-    private final FODAnimation mFODAnimation;
+    private FODAnimation mFODAnimation;
     private final KeyguardUpdateMonitor mUpdateMonitor;
     private final LockPatternUtils mLockPatternUtils;
     private final Spline mSpline;
@@ -321,8 +321,6 @@ public class FODCircleView extends ImageView {
             throw new RuntimeException("Failed to retrieve FOD circle position or size");
         }
 
-        mFODAnimation = new FODAnimation(mContext, mPositionY);
-
         final Resources res = mContext.getResources();
         mSpline = Spline.createSpline(getFloatArray(res.getIntArray(R.array.config_FODiconDisplayBrightness)),
             getFloatArray(res.getIntArray(R.array.config_FODiconDimAmount)));
@@ -359,11 +357,11 @@ public class FODCircleView extends ImageView {
         };
         mPressedView.setImageResource(R.drawable.fod_icon_pressed);
         mWindowManager.addView(this, mParams);
+        mObserver.observe();
+
         updatePosition();
         setVisibility(GONE);
         setScaleType(CENTER_CROP);
-
-        mObserver.observe();
 
         mValueAnimator = new ValueAnimator();
         mValueAnimator.addUpdateListener(valueAnimator -> setImageAlpha(
@@ -696,7 +694,8 @@ public class FODCircleView extends ImageView {
             } else if (uri.equals(FOD_RECOGNIZING_ANIM_URI)) {
                 mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                     FOD_RECOGNIZING_ANIMATION, 0) == 1;
-            } else if (uri.equals(FOD_ANIM_URI)) {
+                updateFODAnim();
+            } else if (uri.equals(FOD_ANIM_URI) && mIsRecognizingAnimEnabled) {
                 mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
             } else if (uri.equals(FOD_ANIM_ALWAYS_ON_URI)) {
                 mIsAnimationAlwaysOn = Settings.System.getInt(mResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
@@ -717,7 +716,7 @@ public class FODCircleView extends ImageView {
             updateFODIconTintMode();
             mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
                 FOD_RECOGNIZING_ANIMATION, 0) == 1;
-            mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
+            updateFODAnim();
             mIsAlwaysOn = Settings.Secure.getInt(mResolver, DOZE_ALWAYS_ON, 0) == 1;
             mIsAnimationAlwaysOn = Settings.System.getInt(mResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
             mHasCustomDozeBrightness = Settings.Secure.getIntForUser(mResolver,
@@ -761,6 +760,18 @@ public class FODCircleView extends ImageView {
 
         private void updateFODIconTintColor() {
             setColorFilter(Settings.System.getInt(mResolver, FOD_ICON_TINT_COLOR, -1));
+        }
+
+        private void updateFODAnim() {
+            if (mIsRecognizingAnimEnabled) {
+                if (mFODAnimation == null) {
+                    mFODAnimation = new FODAnimation(mContext, mPositionY);
+                    mFODAnimation.setFODAnim(Settings.System.getInt(
+                        mContext.getContentResolver(), FOD_ANIM, 0));
+                }
+            } else {
+                mFODAnimation = null;
+            }
         }
     }
 
