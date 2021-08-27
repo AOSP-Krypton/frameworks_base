@@ -118,7 +118,6 @@ public class NetworkTrafficMonitor {
     };
 
     // To kill / start the timer thread if device is going to sleep / waking up
-    private final WakefulnessLifecycle mWakefulnessLifecycle;
     private final WakefulnessLifecycle.Observer
             mWakefulnessObserver = new WakefulnessLifecycle.Observer() {
         @Override
@@ -149,7 +148,6 @@ public class NetworkTrafficMonitor {
         res.getValue(R.dimen.network_traffic_rate_text_default_scale_factor, value, true);
         mDefaultScaleFactor = value.getFloat();
         mRSP = new RelativeSizeSpan(mDefaultScaleFactor);
-        mWakefulnessLifecycle = Dependency.get(WakefulnessLifecycle.class);
         mSettingsObserver = new SettingsObserver();
         mSettingsObserver.update();
         mSettingsObserver.observe();
@@ -169,7 +167,7 @@ public class NetworkTrafficMonitor {
 
     private void notifyCallbacks() {
         logD("notifying callbacks about new state = " + mState);
-        mCallbacks.stream().forEach(cb -> mHandler.post(() -> cb.onTrafficUpdate(mState)));
+        mCallbacks.stream().forEach(cb -> cb.onTrafficUpdate(mState));
     }
 
     private void register() {
@@ -177,7 +175,7 @@ public class NetworkTrafficMonitor {
             mRegistered = true;
             mContext.getSystemService(ConnectivityManager.class)
                 .registerDefaultNetworkCallback(mNetworkCallback);
-            mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
+            Dependency.get(WakefulnessLifecycle.class).addObserver(mWakefulnessObserver);
         }
     }
 
@@ -186,7 +184,7 @@ public class NetworkTrafficMonitor {
             mRegistered = false;
             mContext.getSystemService(ConnectivityManager.class)
                 .unregisterNetworkCallback(mNetworkCallback);
-            mWakefulnessLifecycle.removeObserver(mWakefulnessObserver);
+            Dependency.get(WakefulnessLifecycle.class).removeObserver(mWakefulnessObserver);
         }
     }
 
@@ -243,7 +241,7 @@ public class NetworkTrafficMonitor {
                     mState.rateVisible = true;
                     updateRateFormatted(mState, mRxUpdatedInternal ? rxTrans : txTrans);
                 }
-                notifyCallbacks();
+                mHandler.post(() -> notifyCallbacks());
             }
         };
     }
