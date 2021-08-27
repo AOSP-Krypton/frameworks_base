@@ -648,80 +648,80 @@ public class FODCircleView extends ImageView {
     }
 
     private class CustomSettingsObserver extends ContentObserver {
-        final Uri SCREEN_BRIGHTNESS_URI = Settings.System.getUriFor(SCREEN_BRIGHTNESS);
-        final Uri FOD_ICON_URI = Settings.System.getUriFor(FOD_ICON);
-        final Uri FOD_ICON_TINT_MODE_URI = Settings.System.getUriFor(FOD_ICON_TINT_MODE);
-        final Uri FOD_ICON_TINT_COLOR_URI = Settings.System.getUriFor(FOD_ICON_TINT_COLOR);
-        final Uri FOD_RECOGNIZING_ANIM_URI = Settings.System.getUriFor(FOD_RECOGNIZING_ANIMATION);
-        final Uri FOD_ANIM_URI = Settings.System.getUriFor(FOD_ANIM);
-        final Uri FOD_ANIM_ALWAYS_ON_URI = Settings.System.getUriFor(FOD_ANIM_ALWAYS_ON);
-        final Uri DOZE_ALWAYS_ON_URI = Settings.Secure.getUriFor(DOZE_ALWAYS_ON);
-        final Uri DOZE_CUSTOM_MODE_URI = Settings.Secure.getUriFor(DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE);
-        final Uri DOZE_BRIGHTNESS_URI = Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS);
-
-        private final ContentResolver mResolver;
-
         CustomSettingsObserver() {
             super(mHandler);
-            mResolver = mContext.getContentResolver();
         }
 
         void observe() {
-            update();
-            mResolver.registerContentObserver(SCREEN_BRIGHTNESS_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(FOD_ICON_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(FOD_ICON_TINT_MODE_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(FOD_ICON_TINT_COLOR_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(FOD_RECOGNIZING_ANIM_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(FOD_ANIM_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(FOD_ANIM_ALWAYS_ON_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(DOZE_ALWAYS_ON_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(DOZE_CUSTOM_MODE_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(DOZE_BRIGHTNESS_URI, false, this, USER_ALL);
+            final ContentResolver contentResolver = mContext.getContentResolver();
+            update(contentResolver);
+            register(contentResolver, Settings.System.getUriFor(SCREEN_BRIGHTNESS),
+                Settings.System.getUriFor(FOD_ICON),
+                Settings.System.getUriFor(FOD_ICON_TINT_MODE),
+                Settings.System.getUriFor(FOD_ICON_TINT_COLOR),
+                Settings.System.getUriFor(FOD_RECOGNIZING_ANIMATION),
+                Settings.System.getUriFor(FOD_ANIM),
+                Settings.System.getUriFor(FOD_ANIM_ALWAYS_ON),
+                Settings.Secure.getUriFor(DOZE_ALWAYS_ON),
+                Settings.Secure.getUriFor(DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE),
+                Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS));
         }
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            if (uri.equals(SCREEN_BRIGHTNESS_URI)) {
-                mCurrBrightness = Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS, 255);
+            if (uri.equals(Settings.System.getUriFor(SCREEN_BRIGHTNESS))) {
+                mCurrBrightness = Settings.System.getInt(mContext.getContentResolver(),
+                    SCREEN_BRIGHTNESS, 255);
                 updateIconDim(false);
-            } else if (uri.equals(FOD_ICON_URI)) {
-                updateFODIcon(Settings.System.getInt(mResolver, FOD_ICON, 0));
-            } else if (uri.equals(FOD_ICON_TINT_MODE_URI)) {
+            } else if (uri.equals(Settings.System.getUriFor(FOD_ICON))) {
+                updateFODIcon(Settings.System.getInt(mContext.getContentResolver(),
+                    FOD_ICON, 0));
+            } else if (uri.equals(Settings.System.getUriFor(FOD_ICON_TINT_MODE))) {
                 updateFODIconTintMode();
-            } else if (uri.equals(FOD_ICON_TINT_COLOR_URI)) {
+            } else if (uri.equals(Settings.System.getUriFor(FOD_ICON_TINT_COLOR))) {
                 updateFODIconTintColor();
-            } else if (uri.equals(FOD_RECOGNIZING_ANIM_URI)) {
-                mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
+            } else if (uri.equals(Settings.System.getUriFor(FOD_RECOGNIZING_ANIMATION))) {
+                mIsRecognizingAnimEnabled = Settings.System.getInt(mContext.getContentResolver(),
                     FOD_RECOGNIZING_ANIMATION, 0) == 1;
                 updateFODAnim();
-            } else if (uri.equals(FOD_ANIM_URI) && mIsRecognizingAnimEnabled) {
-                mFODAnimation.setFODAnim(Settings.System.getInt(mResolver, FOD_ANIM, 0));
-            } else if (uri.equals(FOD_ANIM_ALWAYS_ON_URI)) {
-                mIsAnimationAlwaysOn = Settings.System.getInt(mResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
-            } else if (uri.equals(DOZE_ALWAYS_ON_URI)) {
-                mIsAlwaysOn = Settings.Secure.getInt(mResolver, DOZE_ALWAYS_ON, 0) == 1;
-            } else if (uri.equals(DOZE_CUSTOM_MODE_URI)) {
-                mHasCustomDozeBrightness = Settings.Secure.getInt(mResolver,
+            } else if (uri.equals(Settings.System.getUriFor(FOD_ANIM))
+                    && mIsRecognizingAnimEnabled) {
+                mFODAnimation.setFODAnim(Settings.System.getInt(mContext.getContentResolver(),
+                    FOD_ANIM, 0));
+            } else if (uri.equals(Settings.System.getUriFor(FOD_ANIM_ALWAYS_ON))) {
+                mIsAnimationAlwaysOn = Settings.System.getInt(mContext.getContentResolver(),
+                    FOD_ANIM_ALWAYS_ON, 0) == 1;
+            } else if (uri.equals(Settings.Secure.getUriFor(DOZE_ALWAYS_ON))) {
+                mIsAlwaysOn = Settings.Secure.getInt(mContext.getContentResolver(),
+                    DOZE_ALWAYS_ON, 0) == 1;
+            } else if (uri.equals(Settings.Secure.getUriFor(DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE))) {
+                mHasCustomDozeBrightness = Settings.Secure.getInt(mContext.getContentResolver(),
                     DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0) == 1;
-            } else if (uri.equals(DOZE_BRIGHTNESS_URI)) {
-                mDozeBrightness = Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
+            } else if (uri.equals(Settings.Secure.getUriFor(DOZE_SCREEN_BRIGHTNESS))) {
+                mDozeBrightness = Settings.Secure.getInt(mContext.getContentResolver(),
+                    DOZE_SCREEN_BRIGHTNESS, 1);
             }
         }
 
-        private void update() {
-            mCurrBrightness = Settings.System.getInt(mResolver, SCREEN_BRIGHTNESS, 255);
+        private void register(ContentResolver contentResolver, Uri... uris) {
+            for (Uri uri: uris) {
+                contentResolver.registerContentObserver(uri, false, this, USER_ALL);
+            }
+        }
+
+        private void update(ContentResolver contentResolver) {
+            mCurrBrightness = Settings.System.getInt(contentResolver, SCREEN_BRIGHTNESS, 255);
             updateIconDim(false);
-            updateFODIcon(Settings.System.getInt(mResolver, FOD_ICON, 0));
+            updateFODIcon(Settings.System.getInt(contentResolver, FOD_ICON, 0));
             updateFODIconTintMode();
-            mIsRecognizingAnimEnabled = Settings.System.getInt(mResolver,
+            mIsRecognizingAnimEnabled = Settings.System.getInt(contentResolver,
                 FOD_RECOGNIZING_ANIMATION, 0) == 1;
             updateFODAnim();
-            mIsAlwaysOn = Settings.Secure.getInt(mResolver, DOZE_ALWAYS_ON, 0) == 1;
-            mIsAnimationAlwaysOn = Settings.System.getInt(mResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
-            mHasCustomDozeBrightness = Settings.Secure.getIntForUser(mResolver,
+            mIsAlwaysOn = Settings.Secure.getInt(contentResolver, DOZE_ALWAYS_ON, 0) == 1;
+            mIsAnimationAlwaysOn = Settings.System.getInt(contentResolver, FOD_ANIM_ALWAYS_ON, 0) == 1;
+            mHasCustomDozeBrightness = Settings.Secure.getIntForUser(contentResolver,
                 DOZE_CUSTOM_SCREEN_BRIGHTNESS_MODE, 0, USER_CURRENT) == 1;
-            mDozeBrightness = Settings.Secure.getInt(mResolver, DOZE_SCREEN_BRIGHTNESS, 1);
+            mDozeBrightness = Settings.Secure.getInt(contentResolver, DOZE_SCREEN_BRIGHTNESS, 1);
         }
 
         private void updateFODIcon(int index) {
@@ -746,7 +746,9 @@ public class FODCircleView extends ImageView {
         }
 
         private void updateFODIconTintMode() {
-            switch (Settings.System.getInt(mResolver, FOD_ICON_TINT_MODE, 0)) {
+            int mode = Settings.System.getInt(mContext.getContentResolver(),
+                FOD_ICON_TINT_MODE, 0);
+            switch (mode) {
                 case 0:
                     clearColorFilter();
                     break;
@@ -759,7 +761,8 @@ public class FODCircleView extends ImageView {
         }
 
         private void updateFODIconTintColor() {
-            setColorFilter(Settings.System.getInt(mResolver, FOD_ICON_TINT_COLOR, -1));
+            setColorFilter(Settings.System.getInt(mContext.getContentResolver(),
+                FOD_ICON_TINT_COLOR, -1));
         }
 
         private void updateFODAnim() {
