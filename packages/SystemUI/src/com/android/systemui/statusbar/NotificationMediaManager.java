@@ -767,7 +767,7 @@ public class NotificationMediaManager implements Dumpable {
         boolean blurEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.KEYGAURD_MEDIA_ART_ENABLE_BLUR, 0, UserHandle.USER_CURRENT) == 1;
         if (!blurEnabled) {
-            return Bitmap.createBitmap(artwork);
+            return artwork.copy(artwork.getConfig(), false);
         }
         int blurRadius = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.KEYGAURD_MEDIA_ART_BLUR_RADIUS, 25, UserHandle.USER_CURRENT);
