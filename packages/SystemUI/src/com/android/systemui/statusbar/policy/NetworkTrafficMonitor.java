@@ -211,7 +211,7 @@ public class NetworkTrafficMonitor {
             mTimer.purge();
         }
         mState.visible = false;
-        notifyCallbacks();
+        mHandler.post(() -> notifyCallbacks());
     }
 
     private TimerTask getNewTimerTask() {
