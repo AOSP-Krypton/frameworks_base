@@ -41,6 +41,7 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
     private static final String TAG = "StatusBarNetworkTrafficView";
     private static final boolean DEBUG = false;
     private StatusBarIconView mDotView;
+    private FrameLayout mTrafficGroup;
     private TextView mTrafficRate;
     private NetworkTrafficState mState;
     private String mSlot;
@@ -101,9 +102,7 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
             return;
         }
         mVisibleState = state;
-        boolean shouldShowText = state == STATE_ICON && (mState == null || mState.rateVisible);
-        logD("mTrafficRate.setVisibility, shouldShowText = " + shouldShowText);
-        mTrafficRate.setVisibility(shouldShowText ? View.VISIBLE : View.INVISIBLE);
+        mTrafficGroup.setVisibility(state == STATE_ICON ? View.VISIBLE : View.INVISIBLE);
         mDotView.setVisibility(state == STATE_DOT ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -158,6 +157,7 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
     }
 
     private void setWidgets() {
+        mTrafficGroup = findViewById(R.id.traffic_group);
         mTrafficRate = findViewById(R.id.traffic_rate);
         mDotView = findViewById(R.id.dot_view);
         mDotView.setVisibleState(STATE_DOT);
@@ -173,9 +173,7 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
             mTrafficRate.setText(state.rate);
         }
         if (mState.rateVisible != state.rateVisible) {
-            boolean shouldShowText = mVisibleState == STATE_ICON && state.rateVisible;
-            logD("mTrafficRate.setVisibility, shouldShowText = " + shouldShowText);
-            mTrafficRate.setVisibility(shouldShowText ? View.VISIBLE : View.INVISIBLE);
+            mTrafficRate.setVisibility(state.rateVisible ? View.VISIBLE : View.GONE);
         }
         if (mState.visible != state.visible) {
             logD("setVisibility");
