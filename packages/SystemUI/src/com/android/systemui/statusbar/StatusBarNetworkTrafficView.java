@@ -103,8 +103,8 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
         mVisibleState = state;
         boolean shouldShowText = state == STATE_ICON && (mState == null || mState.rateVisible);
         logD("mTrafficRate.setVisibility, shouldShowText = " + shouldShowText);
-        mTrafficRate.setVisibility(shouldShowText ? View.VISIBLE : View.GONE);
-        mDotView.setVisibility(state == STATE_DOT ? View.VISIBLE : View.GONE);
+        mTrafficRate.setVisibility(shouldShowText ? View.VISIBLE : View.INVISIBLE);
+        mDotView.setVisibility(state == STATE_DOT ? View.VISIBLE : View.INVISIBLE);
     }
 
     @Override
@@ -175,7 +175,7 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
         if (mState.rateVisible != state.rateVisible) {
             boolean shouldShowText = mVisibleState == STATE_ICON && state.rateVisible;
             logD("mTrafficRate.setVisibility, shouldShowText = " + shouldShowText);
-            mTrafficRate.setVisibility(shouldShowText ? View.VISIBLE : View.GONE);
+            mTrafficRate.setVisibility(shouldShowText ? View.VISIBLE : View.INVISIBLE);
         }
         if (mState.visible != state.visible) {
             logD("setVisibility");
