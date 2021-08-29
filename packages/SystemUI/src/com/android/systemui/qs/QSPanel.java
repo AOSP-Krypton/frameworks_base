@@ -16,8 +16,6 @@
 
 package com.android.systemui.qs;
 
-import static android.os.UserHandle.USER_ALL;
-import static android.os.UserHandle.USER_CURRENT;
 import static android.provider.Settings.System.QS_SHOW_BRIGHTNESS;
 import static android.provider.Settings.System.QS_BRIGHTNESS_POSITION_BOTTOM;
 import static android.provider.Settings.System.QS_SHOW_BRIGHTNESS_ABOVE_FOOTER;
@@ -91,6 +89,7 @@ public class QSPanel extends LinearLayout implements Callback, BrightnessMirrorL
     protected final ArrayList<TileRecord> mRecords = new ArrayList<>();
     private final BroadcastDispatcher mBroadcastDispatcher;
     protected final MediaHost mMediaHost;
+    private final CustomSettingsObserver mCustomSettingsObserver;
 
     /**
      * The index where the content starts that needs to be moved between parents
@@ -186,6 +185,7 @@ public class QSPanel extends LinearLayout implements Callback, BrightnessMirrorL
         mDumpManager = dumpManager;
         mBroadcastDispatcher = broadcastDispatcher;
         mUiEventLogger = uiEventLogger;
+        mCustomSettingsObserver = new CustomSettingsObserver(mHandler);
 
         setOrientation(VERTICAL);
 
@@ -227,46 +227,56 @@ public class QSPanel extends LinearLayout implements Callback, BrightnessMirrorL
     }
 
     private final class CustomSettingsObserver extends ContentObserver {
-        private final Uri QS_SHOW_BRIGHTNESS_URI = Settings.System.getUriFor(QS_SHOW_BRIGHTNESS);
-        private final Uri QS_BRIGHTNESS_POSITION_BOTTOM_URI = Settings.System.getUriFor(QS_BRIGHTNESS_POSITION_BOTTOM);
-        private final Uri QS_SHOW_BRIGHTNESS_ABOVE_FOOTER_URI = Settings.System.getUriFor(QS_SHOW_BRIGHTNESS_ABOVE_FOOTER);
-        private final ContentResolver mResolver;
-
         CustomSettingsObserver(Handler handler) {
             super(handler);
-            mResolver = mContext.getContentResolver();
         }
 
         void observe() {
-            mResolver.registerContentObserver(QS_SHOW_BRIGHTNESS_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(QS_BRIGHTNESS_POSITION_BOTTOM_URI, false, this, USER_ALL);
-            mResolver.registerContentObserver(QS_SHOW_BRIGHTNESS_ABOVE_FOOTER_URI, false, this, USER_ALL);
+            register(QS_SHOW_BRIGHTNESS,
+                QS_BRIGHTNESS_POSITION_BOTTOM,
+                QS_SHOW_BRIGHTNESS_ABOVE_FOOTER);
             update();
         }
 
         void unobserve() {
-            mResolver.unregisterContentObserver(this);;
+            mContext.getContentResolver().unregisterContentObserver(this);
+        }
+
+        private void register(String... keys) {
+            final ContentResolver contentResolver = mContext.getContentResolver();
+            for (String key: keys) {
+                contentResolver.registerContentObserver(getUriFor(key), false,
+                    this, UserHandle.USER_ALL);
+            }
         }
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            if (uri.equals(QS_SHOW_BRIGHTNESS_URI)) {
+            if (isUriFor(uri, QS_SHOW_BRIGHTNESS)) {
                 updateViewVisibilityForTuningValue(Settings.System.getIntForUser(
-                    mResolver, QS_SHOW_BRIGHTNESS, 1, USER_CURRENT) == 1);
-            } else if (uri.equals(QS_BRIGHTNESS_POSITION_BOTTOM_URI) ||
-                    uri.equals(QS_SHOW_BRIGHTNESS_ABOVE_FOOTER_URI)) {
+                    mContext.getContentResolver(), QS_SHOW_BRIGHTNESS, 1,
+                    UserHandle.USER_CURRENT) == 1);
+            } else if (isUriFor(uri, QS_BRIGHTNESS_POSITION_BOTTOM) ||
+                    isUriFor(uri, QS_SHOW_BRIGHTNESS_ABOVE_FOOTER)) {
                 updateBrightnessSliderPosition();
             }
         }
 
+        private boolean isUriFor(Uri uri, String key) {
+            return uri.equals(getUriFor(key));
+        }
+
+        private Uri getUriFor(String key) {
+            return Settings.System.getUriFor(key);
+        }
+
         private void update() {
-            updateViewVisibilityForTuningValue(Settings.System.getIntForUser(mResolver,
-                QS_SHOW_BRIGHTNESS, 1, USER_CURRENT) == 1);
             updateBrightnessSliderPosition();
+            updateViewVisibilityForTuningValue(Settings.System.getIntForUser(
+                mContext.getContentResolver(), QS_SHOW_BRIGHTNESS, 1,
+                UserHandle.USER_CURRENT) == 1);
         }
     }
-
-    private CustomSettingsObserver mCustomSettingsObserver;
 
     protected void onMediaVisibilityChanged(Boolean visible) {
         mQsMediaVisible = visible;
@@ -395,7 +405,6 @@ public class QSPanel extends LinearLayout implements Callback, BrightnessMirrorL
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        mCustomSettingsObserver = new CustomSettingsObserver(mHandler);
         mCustomSettingsObserver.observe();
         if (mHost != null) {
             setTiles(mHost.getTiles());
@@ -435,13 +444,15 @@ public class QSPanel extends LinearLayout implements Callback, BrightnessMirrorL
         setTiles(mHost.getTiles());
     }
 
-    private int getBrightnessViewPositionBottom() {
+    private int getBrightnessViewPosition() {
+        if (!mBrightnessBottom) {
+            return 0;
+        }
         boolean above = Settings.System.getIntForUser(mContext.getContentResolver(),
-            QS_SHOW_BRIGHTNESS_ABOVE_FOOTER, 0, USER_CURRENT) == 1;
+            QS_SHOW_BRIGHTNESS_ABOVE_FOOTER, 0, UserHandle.USER_CURRENT) == 1;
         View seekView = above ? mFooter : mDivider;
         for (int i = 0; i < getChildCount(); i++) {
-            View v = getChildAt(i);
-            if (v == seekView) {
+            if (getChildAt(i) == seekView) {
                 return i;
             }
         }
@@ -452,42 +463,25 @@ public class QSPanel extends LinearLayout implements Callback, BrightnessMirrorL
         if (mBrightnessView == null || mBrightnessPlaceholder == null) {
             return;
         }
-        if (visible) {
-            mBrightnessVisible = true;
-            mBrightnessView.setVisibility(VISIBLE);
-            if (!mBrightnessBottom) {
-                mBrightnessPlaceholder.setVisibility(View.GONE);
-            } else {
-                mBrightnessPlaceholder.setVisibility(View.VISIBLE);
-            }
-        } else {
-            mBrightnessVisible = false;
-            mBrightnessView.setVisibility(GONE);
-            mBrightnessPlaceholder.setVisibility(View.VISIBLE);
-        }
+        mBrightnessVisible = visible;
+        mBrightnessView.setVisibility(visible ? VISIBLE : GONE);
+        mBrightnessPlaceholder.setVisibility((!visible || mBrightnessBottom) ? VISIBLE : GONE);
     }
 
     public boolean isBrightnessBottom() {
-        return Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.QS_BRIGHTNESS_POSITION_BOTTOM, 0,
-                UserHandle.USER_CURRENT) == 1;
+        return mBrightnessBottom;
     }
 
     private void updateBrightnessSliderPosition() {
         if (mBrightnessView == null || mBrightnessPlaceholder == null) {
             return;
         }
-        if (isBrightnessBottom()) {
-            removeView(mBrightnessView);
-            mBrightnessPlaceholder.setVisibility(View.VISIBLE);
-            addView(mBrightnessView, getBrightnessViewPositionBottom());
-            mBrightnessBottom = true;
-        } else {
-            removeView(mBrightnessView);
-            mBrightnessPlaceholder.setVisibility(View.GONE);
-            addView(mBrightnessView, 0);
-            mBrightnessBottom = false;
-        }
+        mBrightnessBottom = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.QS_BRIGHTNESS_POSITION_BOTTOM, 0,
+                UserHandle.USER_CURRENT) == 1;
+        removeView(mBrightnessView);
+        mBrightnessPlaceholder.setVisibility(mBrightnessBottom ? VISIBLE : GONE);
+        addView(mBrightnessView, getBrightnessViewPosition());
     }
 
     public void openDetails(String subPanel) {
