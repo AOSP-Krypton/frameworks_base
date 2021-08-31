@@ -69,4 +69,11 @@
     <java-symbol type="string" name="reboot_to_bootloader_message" />
     <java-symbol type="string" name="reboot_title" />
     <java-symbol type="string" name="reboot_message" />
+
+    <!-- AlertSlider modes -->
+    <java-symbol type="string" name="alert_slider_mode_normal" />
+    <java-symbol type="string" name="alert_slider_mode_priority" />
+    <java-symbol type="string" name="alert_slider_mode_vibrate" />
+    <java-symbol type="string" name="alert_slider_mode_silent" />
+    <java-symbol type="string" name="alert_slider_mode_dnd" />
 </resources>

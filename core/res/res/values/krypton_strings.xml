@@ -49,4 +49,11 @@
     <string name="reboot_to_bootloader_message" translatable="false">Rebooting to bootloader</string>
     <string name="reboot_title">Reboot</string>
     <string name="reboot_message">Rebooting system</string>
+
+    <!-- AlertSlider modes -->
+    <string name="alert_slider_mode_normal" translatable="false">mode_normal</string>
+    <string name="alert_slider_mode_priority" translatable="false">mode_priority</string>
+    <string name="alert_slider_mode_vibrate" translatable="false">mode_vibratr</string>
+    <string name="alert_slider_mode_silent" translatable="false">mode_silent</string>
+    <string name="alert_slider_mode_dnd" translatable="false">mode_dnd</string>
 </resources>

@@ -4700,6 +4700,12 @@ public class Intent implements Parcelable, Cloneable {
             "android.intent.extra.SLIDER_POSITION";
 
     /**
+     * Extra data for the mode corresponding to the position of alertslider
+     */
+    public static final String EXTRA_SLIDER_MODE =
+            "android.intent.extra.SLIDER_MODE";
+
+    /**
      * Broadcast action: alertslider position has changed
      * @hide
      */

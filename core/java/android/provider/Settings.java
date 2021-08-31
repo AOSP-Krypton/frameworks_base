@@ -5262,6 +5262,24 @@ public final class Settings {
         public static final String NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR = "network_traffic_rate_text_scale_factor";
 
         /**
+         * AlertSlider mode when alertslider is at the bottom.
+         * @hide
+         */
+        public static final String ALERTSLIDER_MODE_POSITION_BOTTOM = "alertslider_mode_position_bottom";
+
+        /**
+         * AlertSlider mode when alertslider is at the middle.
+         * @hide
+         */
+        public static final String ALERTSLIDER_MODE_POSITION_MIDDLE = "alertslider_mode_position_middle";
+
+        /**
+         * AlertSlider mode when alertslider is at the top.
+         * @hide
+         */
+        public static final String ALERTSLIDER_MODE_POSITION_TOP = "alertslider_mode_position_top";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *

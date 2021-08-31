@@ -17,6 +17,7 @@
 package com.android.systemui.alertslider;
 
 import static android.content.Intent.ACTION_SLIDER_POSITION_CHANGED;
+import static android.content.Intent.EXTRA_SLIDER_MODE;
 import static android.content.Intent.EXTRA_SLIDER_POSITION;
 import static android.graphics.Color.TRANSPARENT;
 import static android.graphics.PixelFormat.TRANSLUCENT;
@@ -61,6 +62,14 @@ import javax.inject.Singleton;
 @Singleton
 public final class AlertSliderController {
     private static final int TIMEOUT = 1000; // In millis
+
+    // Supported modes for AlertSlider positions.
+    private final String MODE_NORMAL;
+    private final String MODE_PRIORITY;
+    private final String MODE_VIBRATE;
+    private final String MODE_SILENT;
+    private final String MODE_DND;
+
     private final Context mContext;
     private final Handler mHandler;
     private WindowManager mWindowManager;
@@ -76,6 +85,12 @@ public final class AlertSliderController {
     public AlertSliderController(Context context, Handler handler) {
         mContext = context;
         mHandler = handler;
+
+        MODE_NORMAL = mContext.getString(com.android.internal.R.string.alert_slider_mode_normal);
+        MODE_PRIORITY = mContext.getString(com.android.internal.R.string.alert_slider_mode_priority);
+        MODE_VIBRATE = mContext.getString(com.android.internal.R.string.alert_slider_mode_vibrate);
+        MODE_SILENT = mContext.getString(com.android.internal.R.string.alert_slider_mode_silent);
+        MODE_DND = mContext.getString(com.android.internal.R.string.alert_slider_mode_dnd);
     }
 
     protected void register() {
@@ -86,7 +101,8 @@ public final class AlertSliderController {
         mContext.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                notifyController(intent.getIntExtra(EXTRA_SLIDER_POSITION, 0));
+                updateDialog(intent.getStringExtra(EXTRA_SLIDER_MODE));
+                showDialog(intent.getIntExtra(EXTRA_SLIDER_POSITION, 0));
             }
         }, new IntentFilter(ACTION_SLIDER_POSITION_CHANGED));
         initDialog();
@@ -99,21 +115,23 @@ public final class AlertSliderController {
         initDialog();
     }
 
-    private void notifyController(int position) {
-        switch (position) {
-            case 0:
-                mIcon.setImageResource(R.drawable.ic_volume_ringer);
-                mText.setText(R.string.alertslider_down_text);
-                break;
-            case 1:
-                mIcon.setImageResource(R.drawable.ic_volume_ringer_vibrate);
-                mText.setText(R.string.alertslider_middle_text);
-                break;
-            case 2:
-                mIcon.setImageResource(R.drawable.ic_volume_ringer_mute);
-                mText.setText(R.string.alertslider_up_text);
+    private void updateDialog(String mode) {
+        if (mode.equals(MODE_NORMAL)) {
+            mIcon.setImageResource(R.drawable.ic_volume_ringer);
+            mText.setText(R.string.volume_ringer_status_normal);
+        } else if (mode.equals(MODE_PRIORITY)) {
+            mIcon.setImageResource(com.android.internal.R.drawable.ic_qs_dnd);
+            mText.setText(R.string.alert_slider_mode_priority_text);
+        } else if (mode.equals(MODE_VIBRATE)) {
+            mIcon.setImageResource(R.drawable.ic_volume_ringer_vibrate);
+            mText.setText(R.string.volume_ringer_status_vibrate);
+        } else if (mode.equals(MODE_SILENT)) {
+            mIcon.setImageResource(R.drawable.ic_volume_ringer_mute);
+            mText.setText(R.string.volume_ringer_status_normal);
+        } else if (mode.equals(MODE_DND)) {
+            mIcon.setImageResource(com.android.internal.R.drawable.ic_qs_dnd);
+            mText.setText(R.string.alert_slider_mode_dnd_text);
         }
-        showDialog(position);
     }
 
     private void showDialog(int position) {
