@@ -127,7 +127,7 @@ public final class AlertSliderController {
             mText.setText(R.string.volume_ringer_status_vibrate);
         } else if (mode.equals(MODE_SILENT)) {
             mIcon.setImageResource(R.drawable.ic_volume_ringer_mute);
-            mText.setText(R.string.volume_ringer_status_normal);
+            mText.setText(R.string.volume_ringer_status_silent);
         } else if (mode.equals(MODE_DND)) {
             mIcon.setImageResource(com.android.internal.R.drawable.ic_qs_dnd);
             mText.setText(R.string.alert_slider_mode_dnd_text);
