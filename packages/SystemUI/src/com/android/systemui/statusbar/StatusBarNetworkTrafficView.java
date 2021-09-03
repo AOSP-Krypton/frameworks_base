@@ -26,7 +26,6 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -102,8 +101,8 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
             return;
         }
         mVisibleState = state;
-        mTrafficGroup.setVisibility(state == STATE_ICON ? View.VISIBLE : View.INVISIBLE);
-        mDotView.setVisibility(state == STATE_DOT ? View.VISIBLE : View.INVISIBLE);
+        mTrafficGroup.setVisibility(state == STATE_ICON ? VISIBLE : INVISIBLE);
+        mDotView.setVisibility(state == STATE_DOT ? VISIBLE : INVISIBLE);
     }
 
     @Override
@@ -139,8 +138,8 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
         boolean requestLayout = false;
 
         if (state == null) {
-            requestLayout = getVisibility() != View.GONE;
-            setVisibility(View.GONE);
+            requestLayout = getVisibility() != GONE;
+            setVisibility(GONE);
             mState = null;
         } else if (mState == null) {
             requestLayout = true;
@@ -173,11 +172,11 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
             mTrafficRate.setText(state.rate);
         }
         if (mState.rateVisible != state.rateVisible) {
-            mTrafficRate.setVisibility(state.rateVisible ? View.VISIBLE : View.GONE);
+            mTrafficRate.setVisibility(state.rateVisible ? VISIBLE : GONE);
         }
         if (mState.visible != state.visible) {
             logD("setVisibility");
-            setVisibility(state.visible ? View.VISIBLE : View.GONE);
+            setVisibility(state.visible ? VISIBLE : GONE);
         }
         mState = state;
     }
@@ -186,7 +185,8 @@ public class StatusBarNetworkTrafficView extends FrameLayout implements StatusIc
         logD("initViewState");
         mTrafficRate.setTextSize(COMPLEX_UNIT_PX, mState.size);
         mTrafficRate.setText(String.valueOf(mState.rate));
-        setVisibility(mState.visible ? View.VISIBLE : View.GONE);
+        mTrafficRate.setVisibility(mState.rateVisible ? VISIBLE : GONE);
+        setVisibility(mState.visible ? VISIBLE : GONE);
     }
 
     @Override
