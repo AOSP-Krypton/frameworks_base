@@ -49,8 +49,6 @@ import java.util.Arrays;
  */
 public class TypedArray {
 
-    private static final String TAG = "TypedArray";
-
     static TypedArray obtain(Resources res, int len) {
         TypedArray attrs = res.mTypedArrayPool.acquire();
         if (attrs == null) {
@@ -515,21 +513,14 @@ public class TypedArray {
         final int type = data[index + STYLE_TYPE];
 
         try {
-            int resId = data[index + 3];
+            final int resId = data[index + STYLE_RESOURCE_ID];
             if (resId > 0) {
-                String resName = this.mAssets.getResourceName(resId);
-                int newColor = defValue;
-                if (AccentUtils.isResourceDarkAccent(resName))
-                    newColor = AccentUtils.getDarkAccentColor(defValue);
-                else if (AccentUtils.isResourceLightAccent(resName))
-                    newColor = AccentUtils.getLightAccentColor(defValue);
+                final int newColor = AccentUtils.getAccentColor(
+                    mAssets.getResourceName(resId), defValue);
                 if (newColor != defValue)
                     return newColor;
             }
-        } catch (NotFoundException ignored) {
-        } catch (Exception ex) {
-            Log.e(TAG, ex.getMessage());
-        }
+        } catch (NotFoundException ignored) {}
 
         if (type == TypedValue.TYPE_NULL) {
             return defValue;
