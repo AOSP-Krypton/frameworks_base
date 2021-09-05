@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 The Dirty Unicorns Project
+ *               2021 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +19,21 @@ package android.content;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
 
-/** @hide */
+/**
+ * Data class holding necessary information about a font
+ * @hide
+ */
 public class FontInfo implements Parcelable, Comparable<FontInfo> {
-    public static final String DEFAULT_FONT_PACKAGE = "android";
-    public static final String DEFAULT_FONT_NAME = "Roboto";
-    public static final String DEFAULT_FONT_PATH = "/system/fonts/Roboto-Regular.ttf";
+    private static final String DEFAULT_FONT_NAME = "Roboto-Regular";
+    private static final String DEFAULT_FONT_PATH = "/system/fonts/Roboto-Regular.ttf";
+    private static final FontInfo sDefaultFontInfo = new FontInfo(DEFAULT_FONT_NAME, DEFAULT_FONT_PATH);
 
-    private static final FontInfo sDefaultInfo = new FontInfo(DEFAULT_FONT_PACKAGE, DEFAULT_FONT_NAME,
-            DEFAULT_FONT_PATH);
-
-    public String packageName;
     public String fontName;
-    public String previewPath;
+    public String fontPath;
 
     public static FontInfo getDefaultFontInfo() {
-        return new FontInfo(sDefaultInfo);
+        return sDefaultFontInfo;
     }
 
     public static final Parcelable.Creator<FontInfo> CREATOR = new Parcelable.Creator<FontInfo>() {
@@ -48,36 +47,39 @@ public class FontInfo implements Parcelable, Comparable<FontInfo> {
     };
 
     public FontInfo() {
+        // Empty constructor
     }
 
-    public FontInfo(String packageName, String fontName, String previewPath) {
-        this.packageName = packageName;
+    public FontInfo(String fontName, String fontPath) {
         this.fontName = fontName;
-        this.previewPath = previewPath;
+        this.fontPath = fontPath;
     }
 
     public FontInfo(FontInfo from) {
-        this.packageName = from.packageName;
-        this.fontName = from.fontName;
-        this.previewPath = from.previewPath;
+        updateFrom(from);
     }
 
     public FontInfo(Parcel in) {
-        this.packageName = in.readString();
-        this.fontName = in.readString();
-        this.previewPath = in.readString();
+        fontName = in.readString();
+        fontPath = in.readString();
+    }
+
+    public FontInfo clone() {
+        return new FontInfo(this);
+    }
+
+    public void loadDefaults() {
+        fontName = DEFAULT_FONT_NAME;
+        fontPath = DEFAULT_FONT_PATH;
     }
 
     public void updateFrom(FontInfo info) {
-        this.packageName = info.packageName;
-        this.fontName = info.fontName;
-        this.previewPath = info.previewPath;
+        fontName = info.fontName;
+        fontPath = info.fontPath;
     }
 
     public String toDelimitedString() {
-        return this.packageName + "|"
-                + this.fontName + "|"
-                + this.previewPath;
+        return fontName + "|" + fontPath;
     }
 
     @Override
@@ -87,35 +89,40 @@ public class FontInfo implements Parcelable, Comparable<FontInfo> {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.packageName);
-        dest.writeString(this.fontName);
-        dest.writeString(this.previewPath);
+        dest.writeString(fontName);
+        dest.writeString(fontPath);
     }
 
     @Override
     public String toString() {
-        return "FontInfo{" +
-                "packageName='" + packageName + '\'' +
-                ", fontName='" + fontName + '\'' +
-                ", previewPath='" + previewPath + '\'' +
-                '}';
+        return "FontInfo [ fontName = " + fontName +
+                ", fontPath = " + fontPath + " ]";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null || !getClass().equals(obj.getClass())) {
             return false;
-        if (!(obj instanceof FontInfo))
-            return false;
+        }
         FontInfo other = (FontInfo) obj;
-        return TextUtils.equals(this.packageName, other.packageName)
-                && TextUtils.equals(this.fontName, other.fontName)
-                && TextUtils.equals(this.previewPath, other.previewPath);
+        return isEqual(fontName, other.fontName)
+                && isEqual(fontPath, other.fontPath);
     }
 
     @Override
     public int compareTo(FontInfo o) {
-        int result = this.fontName.toString().compareToIgnoreCase(o.fontName.toString());
-        return result;
+        return fontName.compareTo(o.fontName);
+    }
+
+    public boolean isEmpty() {
+        return fontName == null || fontPath == null;
+    }
+
+    private static boolean isEqual(String s1, String s2) {
+        if (s1 == null) {
+            return s2 == null;
+        } else {
+            return s1.equals(s2);
+        }
     }
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 The Dirty Unicorns Project
+ *               2021 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,44 +17,18 @@
 
 package com.android.server;
 
-import static android.content.Intent.ACTION_PACKAGE_ADDED;
-import static android.content.Intent.ACTION_PACKAGE_CHANGED;
-import static android.content.Intent.ACTION_PACKAGE_REMOVED;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
+import static android.os.FileUtils.S_IRGRP;
+import static android.os.FileUtils.S_IROTH;
+import static android.os.FileUtils.S_IRWXU;
+import static android.os.FileUtils.S_IXOTH;
 
 import android.annotation.NonNull;
-import android.content.BroadcastReceiver;
+import android.annotation.Nullable;
+import android.content.ContentResolver;
 import android.content.Context;
-import android.content.IFontService;
 import android.content.FontInfo;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.AssetManager;
-import android.graphics.FontListParser;
-import android.graphics.Typeface;
-import android.net.Uri;
+import android.content.IFontService;
+import android.content.IFontServiceCallback;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.FileUtils;
@@ -61,36 +36,86 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.os.Process;
+import android.os.RemoteException;
 import android.os.SELinux;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.text.FontConfig;
-import android.text.TextUtils;
 import android.util.Log;
-import android.util.Slog;
-import android.util.Xml;
-import android.widget.Toast;
 
-/** @hide */
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+/**
+ * Service that manages user applied fonts.
+ * @hide
+ */
 public class FontService extends IFontService.Stub {
     private static final String TAG = "FontService";
-    private static final File SYSTEM_THEME_DIR = new File(Environment.getDataSystemDirectory(),
-            "theme");
-    private static final File SYSTEM_THEME_FONT_DIR = new File(SYSTEM_THEME_DIR, "fonts");
-    private static final File SYSTEM_THEME_CACHE_DIR = new File(SYSTEM_THEME_DIR, "cache");
-    private static final File SYSTEM_THEME_PREVIEW_CACHE_DIR = new File(SYSTEM_THEME_DIR,
-            "font_previews");
-    private static final String FONTS_XML = "fonts.xml";
-    private static final String FONT_IDENTIFIER = "custom_rom_font_provider";
-    private static final String SUBSTRATUM_INTENT = "projekt.substratum.THEME";
+    private static final boolean DEBUG = false;
 
-    private Context mContext;
-    private FontHandler mFontHandler;
-    private HandlerThread mFontWorker;
-    private final Map<String, List<FontInfo>> mFontMap = new HashMap<>();
-    private final FontInfo mFontInfo = new FontInfo();
+    // /data/system/theme
+    private static final File sThemeDir = new File(Environment.getDataSystemDirectory(), "theme");
+    // Directory to place current font.ttf and fonts.xml file
+    private static final File sCurrentFontDir = new File(sThemeDir, "fonts");
+    // Directory to place all of the selected fonts
+    private static final File sSavedFontsDir = new File(sThemeDir, "saved_fonts");
+
+    // Font configuration file name
+    private static final String FONTS_XML = "fonts.xml";
+    // Template xml file for font configuration
+    private static final File sFontConfigXml = new File(Environment.getRootDirectory(),
+        "etc/custom_font_config.xml");
+
+    // Handler messages
+    private static final int MESSAGE_INITIALIZE_FONT_MAP = 1;
+    private static final int MESSAGE_FONT_CHANGED = 2;
+    private static final int MESSAGE_ADD_FONTS = 3;
+    private static final int MESSAGE_REMOVE_FONTS = 4;
+    private static final int MESSAGE_REFRESH_FONTS = 5;
+    private static final int MESSAGE_ADD_CALLBACK = 6;
+    private static final int MESSAGE_REMOVE_CALLBACK = 7;
+
+    private final Context mContext;
+    private final FontHandler mFontHandler;
+    private final List<WeakReference<IFontServiceCallback>> mCallbacks;
+    private final HashMap<String, FontInfo> mFontMap;
+    private final FontInfo mFontInfo;
+
+    private final XPath mXPath;
+    private DocumentBuilder mDocBuilder;
+    private Transformer mTransformer;
 
     public static class Lifecycle extends SystemService {
         FontService mService;
@@ -108,12 +133,13 @@ public class FontService extends IFontService.Stub {
         @Override
         public void onBootPhase(int phase) {
             if (phase == PHASE_SYSTEM_SERVICES_READY) {
-                String cryptState = SystemProperties.get("vold.decrypt");
+                final String cryptState = SystemProperties.get("vold.decrypt");
                 // wait until decrypted if we use FDE or just go one if not (cryptState will be empty then)
-                if (TextUtils.isEmpty(cryptState) || cryptState.equals("trigger_restart_framework")) {
-                    if (makeDir(SYSTEM_THEME_DIR)) {
-                        makeDir(SYSTEM_THEME_PREVIEW_CACHE_DIR);
+                if (isEmpty(cryptState) || cryptState.equals("trigger_restart_framework")) {
+                    if (sThemeDir.isDirectory()) {
                         restoreconThemeDir();
+                    } else {
+                        Log.e(TAG, "Directory " + sThemeDir.getAbsolutePath() + " does not exist!");
                     }
                     mService.sendInitializeFontMapMessage();
                 }
@@ -125,616 +151,587 @@ public class FontService extends IFontService.Stub {
     }
 
     private class FontHandler extends Handler {
-        private static final int MESSAGE_INITIALIZE_MAP = 1;
-        private static final int MESSAGE_CHANGE_FONT = 2;
-        private static final int MESSAGE_PACKAGE_ADDED_OR_UPDATED = 3;
-        private static final int MESSAGE_PACKAGE_REMOVED = 4;
-        private static final int MESSAGE_REFRESH_FONTS = 5;
-
         public FontHandler(Looper looper) {
             super(looper);
         }
 
         @Override
         public void handleMessage(Message msg) {
-            String packageName;
+            logD("msg.what = " + msg.what);
             switch (msg.what) {
-                case MESSAGE_INITIALIZE_MAP:
+                case MESSAGE_INITIALIZE_FONT_MAP:
                     initializeFontMap();
                     break;
-                case MESSAGE_CHANGE_FONT:
-                    final FontInfo info = (FontInfo) msg.obj;
-                    applyFontsPriv(info);
+                case MESSAGE_FONT_CHANGED:
+                    applyFontInternal((FontInfo) msg.obj);
                     break;
-                case MESSAGE_PACKAGE_ADDED_OR_UPDATED:
-                    packageName = (String) msg.obj;
-                    boolean isFontProvider = isPackageFontProvider(packageName);
-                    if (isFontProvider) {
-                        Log.v(TAG, packageName + " was added or updated. Adding or updating fonts");
-                        synchronized (mFontMap) {
-                            processFontPackage(packageName);
-                        }
-                    }
+                case MESSAGE_ADD_FONTS:
+                    addFontsInternal((Map<String, ParcelFileDescriptor>) msg.obj);
                     break;
-                case MESSAGE_PACKAGE_REMOVED:
-                    packageName = (String) msg.obj;
-                    boolean hadFonts = mFontMap.containsKey(packageName);
-                    if (hadFonts) {
-                        synchronized (mFontMap) {
-                            Log.v(TAG,
-                                    packageName + " was removed. Clearing fonts from provider map");
-                            removeFontPackage(packageName);
-                        }
-                        // if removed package provided current font, reset to system
-                        if (TextUtils.equals(packageName, mFontInfo.packageName)) {
-                            Log.v(TAG, packageName
-                                    + " provided the current font. Restoring to system font");
-                            applyFontsPriv(FontInfo.getDefaultFontInfo());
-                        }
-                    }
+                case MESSAGE_REMOVE_FONTS:
+                    removeFontsInternal((List<String>) msg.obj);
                     break;
                 case MESSAGE_REFRESH_FONTS:
                     refreshFonts();
                     break;
+                case MESSAGE_ADD_CALLBACK:
+                    addCallback((IFontServiceCallback) msg.obj);
+                    break;
+                case MESSAGE_REMOVE_CALLBACK:
+                    removeCallback((IFontServiceCallback) msg.obj);
+                    break;
                 default:
                     Log.w(TAG, "Unknown message " + msg.what);
-                    break;
-            }
-        }
-    }
-
-    private class PackageReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(@NonNull
-        final Context context, @NonNull
-        final Intent intent) {
-            final Uri data = intent.getData();
-            if (data == null) {
-                Slog.e(TAG, "Cannot handle package broadcast with null data");
-                return;
-            }
-            final String packageName = data.getSchemeSpecificPart();
-
-            Message msg;
-            switch (intent.getAction()) {
-                case ACTION_PACKAGE_ADDED:
-                case ACTION_PACKAGE_CHANGED:
-                    msg = mFontHandler.obtainMessage(
-                            FontHandler.MESSAGE_PACKAGE_ADDED_OR_UPDATED);
-                    msg.obj = packageName;
-                    mFontHandler.sendMessage(msg);
-                    break;
-                case ACTION_PACKAGE_REMOVED:
-                    msg = mFontHandler.obtainMessage(
-                            FontHandler.MESSAGE_PACKAGE_REMOVED);
-                    msg.obj = packageName;
-                    mFontHandler.sendMessage(msg);
-                    break;
-                default:
-                    break;
             }
         }
     }
 
     public FontService(Context context) {
         mContext = context;
-        mFontWorker = new HandlerThread("FontServiceWorker", Process.THREAD_PRIORITY_BACKGROUND);
-        mFontWorker.start();
-        mFontHandler = new FontHandler(mFontWorker.getLooper());
-        mFontInfo.updateFrom(getCurrentFontInfoFromProvider());
-        IntentFilter packageFilter = new IntentFilter();
-        packageFilter.addAction(ACTION_PACKAGE_ADDED);
-        packageFilter.addAction(ACTION_PACKAGE_CHANGED);
-        packageFilter.addAction(ACTION_PACKAGE_REMOVED);
-        packageFilter.addDataScheme("package");
-        mContext.registerReceiverAsUser(new PackageReceiver(), UserHandle.ALL,
-                packageFilter, null, null);
+        final HandlerThread thread = new HandlerThread(TAG, Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+        mFontHandler = new FontHandler(thread.getLooper());
+        mCallbacks = new ArrayList<>();
+        mFontMap = new HashMap<>();
+        mFontInfo = new FontInfo();
+
+        try {
+            mDocBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            mTransformer = TransformerFactory.newInstance().newTransformer();
+            mTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            mTransformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            mTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        } catch (ParserConfigurationException|TransformerConfigurationException e) {
+            Log.e(TAG, "Error on instantiation", e);
+        }
+        mXPath = XPathFactory.newInstance().newXPath();
+        updateCurrentInfoFromSettings();
     }
 
     @Override
-    public void applyFont(FontInfo info) {
-        enforceFontService();
-        if (info.packageName == null
-                || info.fontName == null
-                || info.previewPath == null) {
-            info.updateFrom(FontInfo.getDefaultFontInfo());
-        }
-        Log.v(TAG, "applyFonts() packageName = " + info.toString());
-        Message msg = mFontHandler.obtainMessage(
-                FontHandler.MESSAGE_CHANGE_FONT);
-        msg.obj = info;
-        mFontHandler.sendMessage(msg);
+    public void applyFont(@Nullable FontInfo info) {
+        enforcePermissions();
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(
+            MESSAGE_FONT_CHANGED, info));
     }
 
     @Override
     public FontInfo getFontInfo() {
-        enforceFontService();
-        FontInfo info = new FontInfo(mFontInfo);
-        return info;
+        enforcePermissions();
+        return mFontInfo.clone();
     }
 
     @Override
-    public Map<String, List<FontInfo>> getAllFonts() {
-        enforceFontService();
-        return mFontMap;
+    public void addFonts(Map<String, ParcelFileDescriptor> map) {
+        enforcePermissions();
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(
+            MESSAGE_ADD_FONTS, map));
+    }
+
+    @Override
+    public void removeFonts(List<String> list) {
+        enforcePermissions();
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(
+            MESSAGE_REMOVE_FONTS, list));
+    }
+
+    @Override
+    public Map<String, FontInfo> getAllFonts() {
+        enforcePermissions();
+        return new HashMap<String, FontInfo>(mFontMap);
+    }
+
+    @Override
+    public void registerCallback(@NonNull IFontServiceCallback callback) throws IllegalArgumentException {
+        if (callback == null) {
+            throw new IllegalArgumentException("Attempt to register a null callback");
+        }
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(MESSAGE_ADD_CALLBACK, callback));
+    }
+
+    @Override
+    public void unregisterCallback(@NonNull IFontServiceCallback callback) throws IllegalArgumentException {
+        if (callback == null) {
+            throw new IllegalArgumentException("Attempt to unregister a null callback");
+        }
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(MESSAGE_REMOVE_CALLBACK, callback));
     }
 
     private void sendInitializeFontMapMessage() {
-        Message msg = mFontHandler.obtainMessage(
-                FontHandler.MESSAGE_INITIALIZE_MAP);
-        mFontHandler.sendMessage(msg);
-    }
-
-    private void sendRefreshFontsMessage() {
-        Message msg = mFontHandler.obtainMessage(
-                FontHandler.MESSAGE_REFRESH_FONTS);
-        mFontHandler.sendMessage(msg);
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(
+                MESSAGE_INITIALIZE_FONT_MAP));
     }
 
     private void initializeFontMap() {
-        List<String> packageList = getInstalledFontPackagesFromProvider();
-        for (String pkg : packageList) {
-            processFontPackage(pkg);
-        }
-        Log.v(TAG, " Font map initialized- " + mFontMap.toString());
-    }
+        logD("initializeFontMap");
+        final String[] fonts = getAvailableFontsFromSettings();
+        logD("fonts = " + fonts);
 
-    private void processFontPackage(String packageName) {
-        List<FontInfo> infoList = new ArrayList<FontInfo>();
-        Context appContext = getAppContext(packageName);
-        if(appContext == null) {
-            removeFontPackage(packageName);
-            Log.v(TAG, "Removed " + packageName + " from Font list");
-            return;
-        }
-        AssetManager am = appContext.getAssets();
-        List<String> fontZips = getFontsFromPackage(packageName);
-        File packageFontPreviewDir = new File(SYSTEM_THEME_PREVIEW_CACHE_DIR, packageName);
-        if (packageFontPreviewDir.exists() && packageFontPreviewDir.isDirectory()) {
-            FileUtils.deleteContentsAndDir(packageFontPreviewDir);
-        }
-        makeDir(packageFontPreviewDir);
-        // iterate list of fonts package provides
-        for (String fontZip : fontZips) {
-            // create preview directory for this font
-            // for now, just delete and do it again
-            // TODO: clean this up
-            String sanitizedZipName = sanitizeZipName(fontZip);
-            File currentFontPreviewDir = new File(packageFontPreviewDir, sanitizedZipName);
-            makeDir(currentFontPreviewDir);
-
-            Log.v(TAG, "CurrentFontPreviewDir absolute path = "
-                    + currentFontPreviewDir.getAbsolutePath());
-
-            // copy zip to preview cache
-            File fontZipFile = new File(currentFontPreviewDir, fontZip);
-            try (InputStream inputStream = am.open("fonts/" + fontZip)) {
-                FileUtils.copyToFileOrThrow(inputStream, fontZipFile);
-            } catch (IOException e) {
-                Log.e(TAG, "There is an exception when trying to copy themed fonts", e);
-            }
-
-            // get fonts.xml from zip
-            File fontXmlFile = new File(currentFontPreviewDir, FONTS_XML);
-            unzipFile(fontZipFile, fontXmlFile, FONTS_XML);
-            // TODO: find a appropiate method to use a fallback xml and avoid this
-            if (!fontXmlFile.exists()) {
-                 Toast.makeText(mContext,mContext.getResources()
-                    .getString(com.android.internal.R.string.fontservice_incompatible_font),Toast.LENGTH_LONG).show();
-                 return;
-            }
-
-            // parse fonts.xml for name of preview typeface
-            String fontFileName = getPreviewFontNameFromXml(fontXmlFile,
-                    currentFontPreviewDir.getAbsolutePath());
-
-            // extract tff file from zip
-            File fontFile = new File(fontFileName);
-            unzipFile(fontZipFile, fontFile, fontFile.getName());
-
-            // clean up workspace
-            if (fontXmlFile.exists()) {
-                fontXmlFile.delete();
-            }
-            if (fontZipFile.exists()) {
-                fontZipFile.delete();
-            }
-
-            // create FontInfo and add to list
-            FontInfo fontInfo = new FontInfo();
-            fontInfo.fontName = sanitizedZipName;
-            fontInfo.packageName = packageName;
-            fontInfo.previewPath = fontFile.getAbsolutePath();
-            infoList.add(fontInfo);
-        }
-        // add or replace font list
-        if (mFontMap.containsKey(packageName)) {
-            mFontMap.replace(packageName, infoList);
-        } else {
-            mFontMap.put(packageName, infoList);
-        }
-
-        // update package list in provider
-        List<String> packageList = getInstalledFontPackagesFromProvider();
-        if (!packageList.contains(packageName)) {
-            packageList.add(packageName);
-            putFontPackagesIntoProvider(packageList);
-        }
-        Log.v(TAG, "The new FontInfo map: " + mFontMap.toString());
-    }
-
-    private void removeFontPackage(String packageName) {
-        if (!mFontMap.containsKey(packageName)) {
-            return;
-        }
-        File packageFontPreviewDir = new File(SYSTEM_THEME_PREVIEW_CACHE_DIR, packageName);
-        if (packageFontPreviewDir.exists() && packageFontPreviewDir.isDirectory()) {
-            FileUtils.deleteContentsAndDir(packageFontPreviewDir);
-        }
-        mFontMap.remove(packageName, mFontMap.get(packageName));
-
-        // update package list in provider
-        List<String> packageList = getInstalledFontPackagesFromProvider();
-        if (packageList.contains(packageName)) {
-            packageList.remove(packageName);
-            putFontPackagesIntoProvider(packageList);
-        }
-    }
-
-    private static String getPreviewFontNameFromXml(File xmlFile, String path) {
-        FontConfig fontConfig = null;
-        try {
-            fontConfig = FontListParser.parse(xmlFile, path);
-        } catch (Exception e) {
-            Log.e(TAG, "Exception thrown parsing fonts.xml! " + e.toString());
-            return null;
-        }
-        if (fontConfig != null) {
-            List<FontConfig.Family> families = fontConfig.getFamilies();
-            if (families != null) {
-                FontConfig.Family family = families.get(0);
-                if (family != null) {
-                    FontConfig.Font[] fonts = family.getFonts();
-                    if (fonts != null && fonts.length > 0) {
-                        FontConfig.Font font = fonts[0];
-                        if (font != null) {
-                            Log.v(TAG, "Font found from parsing fonts.xml! " + font.getFontName());
-                            return font.getFontName();
-                        }
-                    }
+        if (fonts != null) {
+            for (String font: fonts) {
+                final File fontDir = new File(sSavedFontsDir, font);
+                // Check if the directory exists first.
+                if (!fontDir.isDirectory()) {
+                    removeFontFromSettings(font);
+                    return;
                 }
+
+                // Check if the xml file exists.
+                final File fontXML = new File(fontDir, FONTS_XML);
+                if (!fontXML.isFile()) {
+                    removeFontFromSettings(font);
+                    return;
+                }
+
+                // Check if the ttf file exists.
+                final File fontFile = new File(fontDir, appendExtension(font));
+                if (!fontFile.isFile()) {
+                    removeFontFromSettings(font);
+                    return;
+                }
+
+                // create FontInfo and add to map
+                mFontMap.put(font, new FontInfo(font, fontFile.getAbsolutePath()));
             }
         }
-        return null;
-    }
+        logD("Font list initialized, list = " + mFontMap);
 
-    private boolean isPackageFontProvider(String packageName) {
-        // check if the package res bool is set first
-        Context appContext = getAppContext(packageName);
-        int id = appContext.getResources().getIdentifier(FONT_IDENTIFIER,
-                "bool",
-                appContext.getPackageName());
-        if (id != 0) {
-            return true;
-        }
-
-        // now check for Substratum package
-        // TODO: why resolve for ALL packages? Just analyze this package
-        List<ResolveInfo> subsPackages = new ArrayList<ResolveInfo>();
-        PackageManager pm = mContext.getPackageManager();
-        Intent i = new Intent(SUBSTRATUM_INTENT);
-        i.addCategory(Intent.CATEGORY_DEFAULT);
-        subsPackages.addAll(pm.queryIntentActivities(i,
-                PackageManager.GET_META_DATA));
-        for (ResolveInfo info : subsPackages) {
-            if (TextUtils.equals(info.activityInfo.packageName, packageName)) {
-                return true;
-            }
-        }
-        // bail out
-        return false;
-    }
-
-    private List<String> getFontsFromPackage(String packageName) {
-        Context appContext = getAppContext(packageName);
-        AssetManager am = appContext.getAssets();
-        List<String> list = new ArrayList<String>();
-        try {
-            list.addAll(Arrays.asList(am.list("fonts")));
-        } catch (Exception e) {
-            Log.e(TAG, appContext.getPackageName() + "did not have a fonts folder!");
-        }
-
-        // remove Substratum preview files, only grap zips
-        List<String> previews = new ArrayList<String>();
-        for (String font : list) {
-            if (font.contains("preview") || !font.endsWith(".zip")) {
-                previews.add(font);
-            }
-        }
-        list.removeAll(previews);
-
-        Log.v(TAG, packageName + " has the following fonts - " + list.toString());
-        return list;
-    }
-
-    private void putFontPackagesIntoProvider(List<String> packages) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < packages.size(); i++) {
-            builder.append(packages.get(i));
-            builder.append("|");
-        }
-        Settings.System.putStringForUser(mContext.getContentResolver(),
-                Settings.System.FONT_PACKAGES,
-                builder.toString(), UserHandle.USER_CURRENT);
-    }
-
-    private List<String> getInstalledFontPackagesFromProvider() {
-        String packages = Settings.System.getStringForUser(mContext.getContentResolver(),
-                Settings.System.FONT_PACKAGES, UserHandle.USER_CURRENT);
-        List<String> packageList = new ArrayList<>();
-        if (TextUtils.isEmpty(packages)) {
-            packageList.addAll(Arrays.asList(mContext.getResources()
-                    .getStringArray(com.android.internal.R.array.config_fontPackages)));
-        } else {
-            packageList.addAll(Arrays.asList(packages.split("\\|")));
-        }
-        return packageList;
-    }
-
-    private void putCurrentFontInfoInProvider(FontInfo fontInfo) {
-        Settings.System.putStringForUser(mContext.getContentResolver(), Settings.System.FONT_INFO,
-                fontInfo.toDelimitedString(), UserHandle.USER_CURRENT);
-    }
-
-    // index 0 is package name, index 1 is font name, index 2 is previewPath
-    private FontInfo getCurrentFontInfoFromProvider() {
-        String info = Settings.System.getStringForUser(mContext.getContentResolver(),
-                Settings.System.FONT_INFO, UserHandle.USER_CURRENT);
-        FontInfo fontInfo = new FontInfo();
-        if (TextUtils.isEmpty(info)) {
-            fontInfo.updateFrom(FontInfo.getDefaultFontInfo());
-        } else {
-            List<String> infoList = Arrays.asList(info.split("\\|"));
-            fontInfo.packageName = infoList.get(0);
-            fontInfo.fontName = infoList.get(1);
-            fontInfo.previewPath = infoList.get(2);
-        }
-        return fontInfo;
-    }
-
-    private Context getAppContext(String packageName) {
-        Context ctx = null;
-        try {
-            ctx = mContext.createPackageContext(packageName,
-                    Context.CONTEXT_IGNORE_SECURITY);
-        } catch (NameNotFoundException e) {
-            Log.e(TAG, "Failed to get " + packageName + " context");
-        }
-        return ctx;
-    }
-
-    private void applyFontsPriv(FontInfo info) {
-        Log.v(TAG, "applyFontsPriv() packageName = " + info.toString());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            if (info.equals(FontInfo.getDefaultFontInfo())) {
-                clearFonts();
-            } else {
-                copyFonts(info);
-            }
-            Intent intent = new Intent("com.android.server.ACTION_FONT_CHANGED");
-            intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY
-                        | Intent.FLAG_RECEIVER_FOREGROUND);
-            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
+        // Copy necessary files to fonts dir in case they were deleted
+        if (!mFontInfo.equals(FontInfo.getDefaultFontInfo())) {
+            copyFont(mFontInfo);
         }
     }
 
-    private void copyFonts(FontInfo info) {
-        // Prepare local cache dir for font package assembly
-
-        File cacheDir = new File(SYSTEM_THEME_CACHE_DIR, "FontCache");
-        if (cacheDir.exists()) {
-            FileUtils.deleteContentsAndDir(cacheDir);
-        }
-
-        boolean created = cacheDir.mkdirs();
-        if (!created) {
-            Log.e(TAG, "Could not create cache directory...");
-        }
-
-        // Append zip to filename since it is probably removed
-        // for list presentation
-        String zipFileName = info.fontName;
-        if (!zipFileName.endsWith(".zip")) {
-            zipFileName = zipFileName + ".zip";
-        }
-
-        // Copy target themed fonts zip to our cache dir
-        Context themeContext = getAppContext(info.packageName);
-        AssetManager am = themeContext.getAssets();
-        File fontZip = new File(cacheDir, zipFileName);
-        try (InputStream inputStream = am.open("fonts/" + zipFileName)) {
-            FileUtils.copyToFileOrThrow(inputStream, fontZip);
-        } catch (IOException e) {
-            Log.e(TAG, "There is an exception when trying to copy themed fonts", e);
-        }
-
-        // Unzip new fonts and delete zip file, overwriting any system fonts
-        unzip(fontZip.getAbsolutePath(), cacheDir.getAbsolutePath());
-
-        boolean deleted = fontZip.delete();
-        if (!deleted) {
-            Log.e(TAG, "Could not delete ZIP file");
-        }
-
-        // Prepare system theme fonts folder and copy new fonts folder from our cache
-        FileUtils.deleteContentsAndDir(SYSTEM_THEME_FONT_DIR);
-        makeDir(SYSTEM_THEME_FONT_DIR);
-        copyDir(cacheDir.getAbsolutePath(), SYSTEM_THEME_FONT_DIR.getAbsolutePath());
-
-        // Let system know it's time for a font change
-        FileUtils.deleteContentsAndDir(cacheDir);
-        refreshFonts();
-        mFontInfo.updateFrom(info);
-        putCurrentFontInfoInProvider(mFontInfo);
-    }
-
-    private static String sanitizeZipName(String zipFile) {
-        return zipFile.substring(0, zipFile.length() - 4);
+    private void sendRefreshFontsMessage() {
+        mFontHandler.sendMessage(mFontHandler.obtainMessage(
+                MESSAGE_REFRESH_FONTS));
     }
 
     private void refreshFonts() {
         // Set permissions on font files and config xml
-        if (SYSTEM_THEME_FONT_DIR.exists()) {
-            // Set permissions
-            setPermissionsRecursive(SYSTEM_THEME_FONT_DIR,
-                    FileUtils.S_IRWXU | FileUtils.S_IRGRP | FileUtils.S_IRWXO,
-                    FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IROTH | FileUtils.S_IXOTH);
+        if (sCurrentFontDir.isDirectory()) {
+            setPermissionsRecursive(sCurrentFontDir,
+                S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH,
+                S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH);
             restoreconThemeDir();
+        } else {
+            makeDir(sCurrentFontDir);
         }
-        // Notify zygote that themes need a refresh
+
+        // Notify zygote that typeface need a refresh
         SystemProperties.set("sys.refresh_typeface", "1");
-        float fontSize = Settings.System.getFloatForUser(mContext.getContentResolver(),
+        final float fontSize = Settings.System.getFloatForUser(mContext.getContentResolver(),
                 Settings.System.FONT_SCALE, 1.0f, UserHandle.USER_CURRENT);
         Settings.System.putFloatForUser(mContext.getContentResolver(),
                 Settings.System.FONT_SCALE, (fontSize + 0.0000001f), UserHandle.USER_CURRENT);
     }
 
-    private void clearFonts() {
-        FileUtils.deleteContentsAndDir(SYSTEM_THEME_FONT_DIR);
-        refreshFonts();
-        mFontInfo.updateFrom(FontInfo.getDefaultFontInfo());
-        putCurrentFontInfoInProvider(mFontInfo);
+    private void addCallback(IFontServiceCallback callback) {
+        logD("addCallback, callback = " + callback);
+        boolean containsCallback = false;
+        int size = mCallbacks.size();
+        for (int i = 0; i < size;) {
+            WeakReference<IFontServiceCallback> weakRef = mCallbacks.get(i);
+            IFontServiceCallback cb = weakRef.get();
+            if (cb == null) {
+                // Remove references that were GC'd
+                logD("removing callback " + cb + " from list");
+                mCallbacks.remove(i);
+                size--;
+            } else {
+                if (cb == callback) {
+                    containsCallback = true;
+                }
+                i++;
+            }
+        }
+        if (!containsCallback) {
+            logD("adding new callback");
+            mCallbacks.add(new WeakReference<IFontServiceCallback>(callback));
+        }
     }
 
-    private void enforceFontService() {
+    private void removeCallback(IFontServiceCallback callback) {
+        logD("removeCallback, callback = " + callback);
+        WeakReference<IFontServiceCallback> ref = null;
+        int size = mCallbacks.size();
+        for (int i = 0; i < size;) {
+            WeakReference<IFontServiceCallback> weakRef = mCallbacks.get(i);
+            IFontServiceCallback cb = weakRef.get();
+            // Remove references that were GC'd as well
+            if (cb == null || cb == callback) {
+                logD("removing callback " + cb + " from list");
+                mCallbacks.remove(i);
+                size--;
+            } else {
+                i++;
+            }
+        }
+    }
+
+    private void removeFontFromSettings(String font) {
+        final ContentResolver contentResolver = mContext.getContentResolver();
+        String list = Settings.System.getStringForUser(contentResolver,
+                Settings.System.FONT_LIST, UserHandle.USER_CURRENT);
+        // Remove iff list is not empty and contains the font.
+        if (!isEmpty(list) && list.contains(font)) {
+            list = list.replace(font + "|", "");
+            Settings.System.putStringForUser(contentResolver,
+                Settings.System.FONT_LIST, list, UserHandle.USER_CURRENT);
+        }
+    }
+
+    private String[] getAvailableFontsFromSettings() {
+        String list = Settings.System.getStringForUser(mContext.getContentResolver(),
+                Settings.System.FONT_LIST, UserHandle.USER_CURRENT);
+        if (!isEmpty(list)) {
+            return list.split("\\|");
+        }
+        return null;
+    }
+
+    private void updateCurrentInfoFromSettings() {
+        final String info = Settings.System.getStringForUser(mContext.getContentResolver(),
+                Settings.System.FONT_INFO, UserHandle.USER_CURRENT);
+        // Fallback to defaults
+        if (isEmpty(info)) {
+            mFontInfo.loadDefaults();
+        } else {
+            final String[] infoArray = info.split("\\|");
+            mFontInfo.fontName = infoArray[0];
+            mFontInfo.fontPath = infoArray[1];
+        }
+    }
+
+    private void applyFontInternal(FontInfo info) {
+        final FontInfo defaultFontInfo = FontInfo.getDefaultFontInfo();
+        // Make sure that we don't encounter any NPE's
+        if (info == null) {
+            info = defaultFontInfo;
+        } else if (info.isEmpty()) {
+            info.loadDefaults();
+        }
+        logD("applyFontInternal() fontInfo = " + info);
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (info.equals(defaultFontInfo)) {
+                resetFonts();
+            } else {
+                if (sCurrentFontDir.isDirectory()) {
+                    // Wipe anything inside
+                    if (!FileUtils.deleteContents(sCurrentFontDir)) {
+                        Log.e(TAG, "unable to delete contents in " +
+                            sCurrentFontDir.getAbsolutePath());
+                    }
+                } else {
+                    makeDir(sCurrentFontDir);
+                }
+                copyFont(info);
+                mFontInfo.updateFrom(info);
+                putCurrentFontInfoInSettings(info);
+                refreshFonts();
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    private void copyFont(FontInfo info) {
+        logD("copyFont, info = " + info);
+        // Directory containing the font
+        final String dir = info.fontPath.substring(0,
+            info.fontPath.lastIndexOf("/"));
+        final File fontFile = new File(info.fontPath);
+        final File fontXML = new File(dir, FONTS_XML);
+
+        // Copy only if both ttf and xml exists.
+        if (fontFile.isFile() && fontXML.isFile()) {
+            try {
+                FileUtils.copy(fontFile, new File(sCurrentFontDir,
+                    appendExtension(info.fontName)));
+                FileUtils.copy(fontXML, new File(sCurrentFontDir,
+                    FONTS_XML));
+            } catch (IOException e) {
+                Log.e(TAG, "Error while copying files for " + info, e);
+            }
+        } else {
+            Log.e(TAG, "Font file and / or config xml for " + info + " does not exist!");
+        }
+    }
+
+    private void putCurrentFontInfoInSettings(FontInfo fontInfo) {
+        Settings.System.putStringForUser(mContext.getContentResolver(), Settings.System.FONT_INFO,
+                fontInfo.toDelimitedString(), UserHandle.USER_CURRENT);
+    }
+
+    private void addFontsInternal(final Map<String, ParcelFileDescriptor> map) {
+        logD("addFontsInternal, map = " + map);
+
+        if (map.isEmpty()) {
+            // Even though the map is empty, notifying the callbacks is necessary for cleanup
+            notifyCallbacks(cb -> {
+                try {
+                    logD("notifying callback " + cb);
+                    cb.onFontsAdded(null);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException on notifying callback " + cb, e);
+                }
+            });
+            logD("addFontsInternal, input map is empty");
+            return;
+        }
+
+        if (!sSavedFontsDir.isDirectory()) {
+            makeDir(sSavedFontsDir);
+        }
+        final StringBuilder builder = new StringBuilder();
+        final List<FontInfo> fontsAdded = new ArrayList<>(map.size());
+
+        // Iterate over each element
+        map.forEach((font, pfd) -> {
+            try {
+                logD("adding font " + font);
+                final File fontDir = new File(sSavedFontsDir, font);
+                if (makeDir(fontDir)) {
+                    // Copy the font
+                    final File fontFile = new File(fontDir, appendExtension(font));
+                    final FileInputStream inStream = new FileInputStream(pfd.getFileDescriptor());
+                    final FileOutputStream outStream = new FileOutputStream(fontFile);
+                    FileUtils.copy(inStream, outStream);
+                    inStream.close();
+                    outStream.close();
+                    createXMLConfig(font, fontDir);
+                    if (!mFontMap.containsKey(font)) {
+                        FontInfo fontInfo = new FontInfo(font, fontFile.getAbsolutePath());
+                        mFontMap.put(font, fontInfo);
+                        builder.append(font);
+                        builder.append("|");
+                        fontsAdded.add(fontInfo);
+                    }
+                } else {
+                    Log.w(TAG, "Unable to create directory " + fontDir.getAbsolutePath());
+                }
+                pfd.close();
+            } catch (IOException e) {
+                Log.e(TAG, "IOException when processing ParcelFileDescriptor " + pfd, e);
+            }
+        });
+
+        // If we weren't able to add any then notify callbacks and exit
+        notifyCallbacks(cb -> {
+            try {
+                logD("notifying callback " + cb);
+                cb.onFontsAdded(fontsAdded);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException on notifying callback " + cb, e);
+            }
+        });
+        if (fontsAdded.isEmpty()) {
+            logD("addFontsInternal, no fonts were added");
+            return;
+        }
+        logD("fonts added = " + fontsAdded);
+        updateFontsInSettings(builder.toString());
+    }
+
+    private void createXMLConfig(String font, File dir) throws IOException {
+        // Check if the template xml exists.
+        // If not then there is no point in proceeding.
+        if (sFontConfigXml.isFile()) {
+            final File fontXML = new File(dir, FONTS_XML);
+            try {
+                if (mDocBuilder != null && mTransformer != null) {
+                    final Document doc = mDocBuilder.parse(sFontConfigXml);
+                    mXPath.reset();
+                    final Node fontNode = (Node) mXPath.compile("/familyset/family/font")
+                        .evaluate(doc, XPathConstants.NODE);
+                    fontNode.setTextContent(appendExtension(font));
+                    mTransformer.transform(new DOMSource(doc), new StreamResult(fontXML));
+                } else {
+                    Log.e(TAG, "DocumentBuilder or Transformer is null");
+                }
+            } catch (SAXException|XPathExpressionException|TransformerException e) {
+                Log.e(TAG, "error creating xml config", e);
+            }
+        } else {
+            Log.e(TAG, "Font config source file " + sFontConfigXml.getAbsolutePath()
+                + " does not exist");
+        }
+    }
+
+    private void updateFontsInSettings(String newList) {
+        logD("updateFontsInSettings, newList " + newList);
+        // Append the current list and update in settings
+        final ContentResolver contentResolver = mContext.getContentResolver();
+        String currentList = Settings.System.getStringForUser(contentResolver,
+                Settings.System.FONT_LIST, UserHandle.USER_CURRENT);
+        logD("currentList = " + currentList);
+        if (!isEmpty(currentList)) {
+            currentList += newList;
+        } else {
+            currentList = newList;
+        }
+        Settings.System.putStringForUser(contentResolver,
+                Settings.System.FONT_LIST, currentList, UserHandle.USER_CURRENT);
+        logD("updated list = " + currentList);
+    }
+
+    private void removeFontsInternal(final List<String> list) {
+        logD("removeFontsInternal, list = " + list);
+        if (list.isEmpty()) {
+            // Even though the list is empty, notifying the callbacks is necessary for cleanup
+            notifyCallbacks(cb -> {
+                try {
+                    logD("notifying callback " + cb);
+                    cb.onFontsRemoved(null);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException on notifying callback " + cb, e);
+                }
+            });
+            logD("removeFontsInternal, input list is internal");
+            return;
+        }
+        if (!sSavedFontsDir.isDirectory()) {
+             Log.w(TAG, "Directory " + sSavedFontsDir.getAbsolutePath() + " does not exist");
+             // Since the directory does not exist, notify that all fonts are removed
+             final List<FontInfo> allFonts = new ArrayList<>(mFontMap.values());
+             notifyCallbacks(cb -> {
+                try {
+                    logD("notifying callback " + cb);
+                    cb.onFontsRemoved(allFonts);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException on notifying callback " + cb, e);
+                }
+             });
+             logD("removeFontsInternal, saved_fonts directory does not exist");
+             return;
+        }
+        final List<FontInfo> fontsRemoved = new ArrayList<>(list.size());
+        final ContentResolver contentResolver = mContext.getContentResolver();
+        String currentList = Settings.System.getStringForUser(contentResolver,
+                Settings.System.FONT_LIST, UserHandle.USER_CURRENT);
+
+        // Whether we should reset font to system default
+        boolean needsReset = false;
+
+        // Iterate over each element
+        for (String font: list) {
+            // Skip elements not in our map
+            if (mFontMap.containsKey(font)) {
+                FontInfo fontInfo = mFontMap.get(font);
+                File fontFile = new File(fontInfo.fontPath);
+                if (fontFile.isFile()) {
+                    if (fontFile.delete()) {
+                        fontsRemoved.add(fontInfo);
+                        // Reset font if the deleted font was the selected one
+                        if (mFontInfo.equals(fontInfo)) {
+                            needsReset = true;
+                        }
+                    } else {
+                        Log.e(TAG, "Unable to delete file " + fontFile.getAbsolutePath());
+                    }
+                } else {
+                    logD("File " + fontFile.getAbsolutePath() + " does not exist, skipping");
+                }
+                currentList = currentList.replace(font + "|", "");
+                mFontMap.remove(font);
+            }
+        }
+        logD("fonts removed = " + fontsRemoved);
+
+        // If we weren't able to add any then notify callbacks and exit
+        notifyCallbacks(cb -> {
+            try {
+                logD("notifying callback " + cb);
+                cb.onFontsRemoved(fontsRemoved);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException on notifying callback " + cb, e);
+            }
+        });
+        // Reset if needed
+        if (needsReset) {
+            resetFonts();
+        }
+        if (fontsRemoved.isEmpty()) {
+            logD("removeFontsInternal, no fonts were removed");
+            return;
+        }
+
+        logD("updated list = " + currentList);
+        logD("updated map = " + mFontMap);
+        Settings.System.putStringForUser(contentResolver,
+                Settings.System.FONT_LIST, currentList, UserHandle.USER_CURRENT);
+    }
+
+    private void notifyCallbacks(Consumer<IFontServiceCallback> action) {
+        logD("notifyCallbacks, mCallbacks = " + mCallbacks);
+        mCallbacks.stream()
+            .map(weakRef -> weakRef.get())
+            .filter(cb -> cb != null)
+            .forEach(action);
+    }
+
+    private void resetFonts() {
+        if (!FileUtils.deleteContents(sCurrentFontDir)) {
+            Log.e(TAG, "unable to delete contents in " +
+                sCurrentFontDir.getAbsolutePath());
+        }
+        mFontInfo.loadDefaults();
+        putCurrentFontInfoInSettings(mFontInfo);
+        refreshFonts();
+    }
+
+    private void enforcePermissions() {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.ACCESS_FONT_MANAGER,
                 "FontService");
     }
 
-    private static void setPermissions(File path, int permissions) {
-        FileUtils.setPermissions(path, permissions, -1, -1);
+    private static String appendExtension(String font) {
+        return font.endsWith(".ttf") ? font : font.concat(".ttf");
     }
 
-    private static void setPermissionsRecursive(File dir, int file, int folder) {
-        if (!dir.isDirectory()) {
-            setPermissions(dir, file);
+    private static boolean setPermissions(File path, int perms) {
+        return FileUtils.setPermissions(path, perms, -1, -1) == 0;
+    }
+
+    private static void setPermissionsRecursive(File file, int filePerms, int folderPerms) {
+        if (file.exists() && !file.isDirectory()) {
+            setPermissions(file, filePerms);
             return;
         }
-
-        for (File child : dir.listFiles()) {
-            if (child.isDirectory()) {
-                setPermissionsRecursive(child, file, folder);
-                setPermissions(child, folder);
+        for (File f: file.listFiles()) {
+            if (f.isDirectory()) {
+                setPermissionsRecursive(f, filePerms, folderPerms);
+                setPermissions(f, folderPerms);
             } else {
-                setPermissions(child, file);
+                setPermissions(f, filePerms);
             }
         }
-
-        setPermissions(dir, folder);
+        setPermissions(file, folderPerms);
     }
 
     private static boolean restoreconThemeDir() {
-        return SELinux.restoreconRecursive(SYSTEM_THEME_DIR);
+        return SELinux.restoreconRecursive(sThemeDir);
     }
 
     private static boolean makeDir(File dir) {
-        if (dir.exists()) {
-            return dir.isDirectory();
+        if (dir.isDirectory()) {
+            return true;
         }
-        if (dir.mkdirs()) {
-            int permissions = FileUtils.S_IRWXU | FileUtils.S_IRWXG |
-                    FileUtils.S_IRWXO;
-            SELinux.restorecon(dir);
-            return FileUtils.setPermissions(dir, permissions, -1, -1) == 0;
+        if (dir.mkdirs() && SELinux.restorecon(dir)) {
+            return setPermissions(dir, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH);
         }
         return false;
     }
 
-    private static boolean copyDir(String src, String dst) {
-        File[] files = new File(src).listFiles();
-        boolean success = true;
-
-        if (files != null) {
-            for (File file : files) {
-                File newFile = new File(dst + File.separator +
-                        file.getName());
-                if (file.isDirectory()) {
-                    success &= copyDir(file.getAbsolutePath(),
-                            newFile.getAbsolutePath());
-                } else {
-                    success &= FileUtils.copyFile(file, newFile);
-                }
-            }
-        } else {
-            // not a directory
-            success = false;
-        }
-        return success;
+    private static boolean isEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 
-    private static void unzipFile(File zipFile, File destFile, String fileName) {
-        try {
-            ZipInputStream zis = new ZipInputStream(
-                    new BufferedInputStream(new FileInputStream(zipFile)));
-            ZipEntry ze;
-            int count;
-            byte[] buffer = new byte[8192];
-            boolean isDone = false;
-            while (!isDone && (ze = zis.getNextEntry()) != null) {
-                if (ze.isDirectory() || !ze.getName().equals(fileName)) {
-                    continue;
-                }
-                if (ze.getName().equals(fileName)) {
-                    Log.v(TAG, "iterating " + zipFile.getName() + "Found " + fileName
-                            + ", trying to extract");
-                    FileOutputStream fout = new FileOutputStream(destFile);
-                    try {
-                        while ((count = zis.read(buffer)) != -1)
-                            fout.write(buffer, 0, count);
-                    } finally {
-                        fout.close();
-                    }
-                    isDone = true;
-                }
-            }
-            zis.close();
-        } catch (IOException e) {
-            Log.e(TAG, "There is an exception when trying to unzip", e);
-        }
-    }
-
-    private static void unzip(String source, String destination) {
-        try (ZipInputStream inputStream = new ZipInputStream(
-                new BufferedInputStream(new FileInputStream(source)))) {
-            ZipEntry zipEntry;
-            int count;
-            byte[] buffer = new byte[8192];
-
-            while ((zipEntry = inputStream.getNextEntry()) != null) {
-                File file = new File(destination, zipEntry.getName());
-                File dir = zipEntry.isDirectory() ? file : file.getParentFile();
-
-                if (!dir.isDirectory() && !dir.mkdirs()) {
-                    throw new FileNotFoundException("Failed to ensure directory: " +
-                            dir.getAbsolutePath());
-                }
-
-                if (zipEntry.isDirectory()) {
-                    continue;
-                }
-
-                try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                    while ((count = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, count);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "There is an exception when trying to unzip", e);
+    private static void logD(String msg) {
+        if (DEBUG) {
+            Log.d(TAG, msg);
         }
     }
 }
