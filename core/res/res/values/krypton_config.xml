@@ -82,4 +82,7 @@
 
     <!-- Minimum distance to swipe down with three fingers to trigger screenshot action -->
     <integer name="config_threeFingerSwipeDistance">350</integer>
+
+    <!-- Wheter device supports an gaming mode profiles -->
+    <bool name="config_gamingmode_performance">false</bool>
 </resources>

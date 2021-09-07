@@ -123,4 +123,7 @@
     <java-symbol type="string" name="volume_dialog_ringer_guidance_normal" />
 
     <java-symbol type="integer" name="config_threeFingerSwipeDistance" />
+
+    <!-- Wheter device supports an gaming mode profiles -->
+    <java-symbol type="bool" name="config_gamingmode_performance" />
 </resources>
