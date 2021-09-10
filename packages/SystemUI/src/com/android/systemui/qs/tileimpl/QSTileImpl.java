@@ -32,11 +32,15 @@ import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.metrics.LogMaker;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.UserHandle;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
@@ -70,7 +74,6 @@ import com.android.systemui.qs.QSEvent;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QuickStatusBarHeader;
 import com.android.systemui.qs.logging.QSLogger;
-import com.android.systemui.tuner.TunerService;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -85,12 +88,15 @@ import java.util.ArrayList;
  *
  * @param <TState> see above
  */
-public abstract class QSTileImpl<TState extends State> implements QSTile, LifecycleOwner, Dumpable, TunerService.Tunable {
+public abstract class QSTileImpl<TState extends State> implements QSTile, LifecycleOwner, Dumpable {
     protected final String TAG = "Tile." + getClass().getSimpleName();
     protected static final boolean DEBUG = Log.isLoggable("Tile", Log.DEBUG);
 
     private static final long DEFAULT_STALE_TIMEOUT = 10 * DateUtils.MINUTE_IN_MILLIS;
     protected static final Object ARG_SHOW_TRANSIENT_ENABLING = new Object();
+
+    private static final VibrationEffect sClickEffect = VibrationEffect.createPredefined(
+        VibrationEffect.EFFECT_CLICK);
 
     protected final QSHost mHost;
     protected final Context mContext;
@@ -116,11 +122,9 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     private boolean mShowingDetail;
     private int mIsFullQs;
 
-    protected Vibrator mVibrator;
+    private final SettingsObserver mSettingsObserver;
+    private final Vibrator mVibrator;
     private boolean mVibrationEnabled;
-
-    private static final String QUICK_SETTINGS_VIBRATE =
-            Settings.Secure.QUICK_SETTINGS_VIBRATE;
 
     private final LifecycleRegistry mLifecycle = new LifecycleRegistry(this);
 
@@ -167,22 +171,10 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         mTmpState = newTileState();
         mQSLogger = host.getQSLogger();
         mUiEventLogger = host.getUiEventLogger();
-        mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-
-        Dependency.get(TunerService.class).addTunable(this,
-                QUICK_SETTINGS_VIBRATE);
-    }
-
-    @Override
-    public void onTuningChanged(String key, String newValue) {
-        switch (key) {
-            case QUICK_SETTINGS_VIBRATE:
-                mVibrationEnabled =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                break;
-            default:
-                break;
-        }
+        mVibrator = mContext.getSystemService(Vibrator.class);
+        mSettingsObserver = new SettingsObserver(mHandler);
+        mSettingsObserver.update();
+        mSettingsObserver.observe();
     }
 
     protected final void resetStates() {
@@ -257,9 +249,9 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         return true;
     }
 
-    public void vibrateTile(int duration) {
+    private void hapticFeedback() {
         if (mVibrationEnabled && mVibrator != null && mVibrator.hasVibrator()) {
-            mVibrator.vibrate(duration);
+            mVibrator.vibrate(sClickEffect);
         }
     }
 
@@ -285,7 +277,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
                 getInstanceId());
         mQSLogger.logTileClick(mTileSpec, mStatusBarStateController.getState(), mState.state);
         mHandler.sendEmptyMessage(H.CLICK);
-        vibrateTile(100);
+        hapticFeedback();
     }
 
     public void secondaryClick() {
@@ -297,7 +289,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         mQSLogger.logTileSecondaryClick(mTileSpec, mStatusBarStateController.getState(),
                 mState.state);
         mHandler.sendEmptyMessage(H.SECONDARY_CLICK);
-        vibrateTile(100);
+        hapticFeedback();
     }
 
     public void longClick() {
@@ -308,7 +300,6 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
                 getInstanceId());
         mQSLogger.logTileLongClick(mTileSpec, mStatusBarStateController.getState(), mState.state);
         mHandler.sendEmptyMessage(H.LONG_CLICK);
-        vibrateTile(100);
 
         Prefs.putInt(
                 mContext,
@@ -739,6 +730,35 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         @NonNull
         public String toString() {
             return String.format("AnimationIcon[resId=0x%08x]", mResId);
+        }
+    }
+
+    private class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (uri.equals(Settings.Secure.getUriFor(
+                    Settings.Secure.QUICK_SETTINGS_VIBRATE))) {
+                updateVibrationStatus();
+            }
+        }
+
+        void observe() {
+            mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.QUICK_SETTINGS_VIBRATE), false,
+                    this, UserHandle.USER_ALL);
+        }
+
+        void update() {
+            updateVibrationStatus();
+        }
+
+        private void updateVibrationStatus() {
+            mVibrationEnabled = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                Settings.Secure.QUICK_SETTINGS_VIBRATE, 0, UserHandle.USER_CURRENT) == 1;
         }
     }
 
