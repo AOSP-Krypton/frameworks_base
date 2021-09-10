@@ -156,6 +156,7 @@ public class DataSwitchTile extends QSTileImpl<BooleanState> {
             activeSIMZero = (Boolean) arg;
         }
         updateSimCount();
+        state.value = mSimCount == 2;
         if (mSimCount == 1 || mSimCount == 2) {
             state.icon = ResourceIcon.get(activeSIMZero
                     ? R.drawable.ic_qs_data_switch_1
