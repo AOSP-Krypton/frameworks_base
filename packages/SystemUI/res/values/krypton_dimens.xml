@@ -15,8 +15,8 @@
 -->
 <resources>
     <!-- StatusBar burn-in protection -->
-    <dimen name="horizontal_max_swift">3.0dp</dimen>
-    <dimen name="vertical_max_swift">1.0dp</dimen>
+    <dimen name="horizontal_max_shift">3.0dp</dimen>
+    <dimen name="vertical_max_shift">2.0dp</dimen>
 
     <!-- AlertSlider -->
     <dimen name="alertslider_bg_radius">24dp</dimen>

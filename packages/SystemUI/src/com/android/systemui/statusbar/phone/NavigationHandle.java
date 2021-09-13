@@ -31,9 +31,6 @@ import android.view.View;
 import com.android.settingslib.Utils;
 import com.android.systemui.R;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class NavigationHandle extends View implements ButtonInterface {
     private final Context mContext;
     private final Paint mPaint = new Paint();
@@ -41,26 +38,8 @@ public class NavigationHandle extends View implements ButtonInterface {
     private @ColorInt final int mDarkColor;
     private final int mRadius;
     private final int mBottom;
-    private int mBurnInYOffset = 0;
+    private int mVerticalShift;
     private boolean mRequiresInvalidate;
-
-    private Timer mBurnInProtectionTimer;
-    private class BurnInProtectionTask extends TimerTask {
-        @Override
-        public void run() {
-            int height = mRadius * 2;
-            if (getVisibility() != View.VISIBLE) return;
-            // Only move in Y axis, handle could fit there about 3 times
-            if (mBurnInYOffset == 0) {
-                mBurnInYOffset = height;
-            } else if (mBurnInYOffset == height) {
-                mBurnInYOffset = -height;
-            } else {
-                mBurnInYOffset = 0;
-            }
-            getHandler().post(() -> invalidate());
-        }
-    };
 
     public NavigationHandle(Context context) {
         this(context, null);
@@ -115,7 +94,7 @@ public class NavigationHandle extends View implements ButtonInterface {
                 newWidth = res.getDimensionPixelSize(
                     R.dimen.navigation_home_handle_width_long);
         }
-        int y = (getHeight() - mBottom - height + mBurnInYOffset);
+        int y = (getHeight() - mBottom - height + mVerticalShift);
         canvas.drawRoundRect((defWidth - newWidth) / 2, y,
             (defWidth + newWidth) / 2, y + height, mRadius, mRadius, mPaint);
     }
@@ -150,17 +129,8 @@ public class NavigationHandle extends View implements ButtonInterface {
     public void setDelayTouchFeedback(boolean shouldDelay) {
     }
 
-    @Override
-    public void onAttachedToWindow() {
-        mBurnInProtectionTimer = new Timer();
-        mBurnInProtectionTimer.schedule(new BurnInProtectionTask(), 0, 60 * 1000);
-        super.onAttachedToWindow();
-    }
-
-    @Override
-    public void onDetachedFromWindow() {
-        mBurnInProtectionTimer.cancel();
-        mBurnInProtectionTimer = null;
-        super.onDetachedFromWindow();
+    public void shiftHandle(int verticalShift) {
+        mVerticalShift = verticalShift;
+        invalidate();
     }
 }
