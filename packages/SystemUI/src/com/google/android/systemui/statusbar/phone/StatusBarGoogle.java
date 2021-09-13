@@ -71,6 +71,7 @@ import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.phone.StatusBarNotificationActivityStarter;
 import com.android.systemui.statusbar.phone.StatusBarTouchableRegionManager;
 import com.android.systemui.statusbar.policy.BatteryController;
+import com.android.systemui.statusbar.policy.BurnInProtectionController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.ExtensionController;
@@ -180,7 +181,8 @@ public class StatusBarGoogle extends StatusBar {
             KeyguardIndicationController keyguardIndicationController,
             DismissCallbackRegistry dismissCallbackRegistry,
             Lazy<NotificationShadeDepthController> notificationShadeDepthControllerLazy,
-            StatusBarTouchableRegionManager statusBarTouchableRegionManager) {
+            StatusBarTouchableRegionManager statusBarTouchableRegionManager,
+            BurnInProtectionController burnInProtectionController) {
 
         super(context,
             notificationsController,
@@ -259,7 +261,8 @@ public class StatusBarGoogle extends StatusBar {
             keyguardIndicationController,
             dismissCallbackRegistry,
             notificationShadeDepthControllerLazy,
-            statusBarTouchableRegionManager);
+            statusBarTouchableRegionManager,
+            burnInProtectionController);
         }
 
     @Override

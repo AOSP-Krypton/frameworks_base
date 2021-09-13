@@ -742,7 +742,8 @@ public class StatusBar extends SystemUI implements DemoMode,
             KeyguardIndicationController keyguardIndicationController,
             DismissCallbackRegistry dismissCallbackRegistry,
             Lazy<NotificationShadeDepthController> notificationShadeDepthControllerLazy,
-            StatusBarTouchableRegionManager statusBarTouchableRegionManager) {
+            StatusBarTouchableRegionManager statusBarTouchableRegionManager,
+            BurnInProtectionController burnInProtectionController) {
         super(context);
         mNotificationsController = notificationsController;
         mLightBarController = lightBarController;
@@ -820,6 +821,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         mUserInfoControllerImpl = userInfoControllerImpl;
         mIconPolicy = phoneStatusBarPolicy;
         mDismissCallbackRegistry = dismissCallbackRegistry;
+        mBurnInProtectionController = burnInProtectionController;
 
         mBubbleExpandListener =
                 (isExpanding, key) -> {
@@ -829,8 +831,7 @@ public class StatusBar extends SystemUI implements DemoMode,
 
 
         DateTimeView.setReceiverHandler(timeTickHandler);
-        mBurnInProtectionController = new BurnInProtectionController(context,
-            this, configurationController);
+        mBurnInProtectionController.setStatusBar(this);
     }
 
     @Override
