@@ -6352,6 +6352,9 @@
             </intent-filter>
         </service>
 
+        <service android:name="com.android.server.BinService"
+            android:exported="false" />
+
         <provider
             android:name="com.android.server.textclassifier.IconsContentProvider"
             android:authorities="com.android.textclassifier.icons"
