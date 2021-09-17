@@ -18,6 +18,7 @@
 */
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/aerr_dialog"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -30,6 +31,7 @@
         android:layout_height="wrap_content"
         android:text="@string/aerr_restart"
         android:drawableStart="@drawable/ic_refresh"
+        android:visibility="gone"
         style="@style/aerr_list_item" />
 
     <Button
@@ -54,6 +56,7 @@
         android:layout_height="wrap_content"
         android:text="@string/aerr_report"
         android:drawableStart="@drawable/ic_feedback"
+        android:visibility="gone"
         style="@style/aerr_list_item" />
 
     <Button
@@ -70,6 +73,17 @@
         android:layout_height="wrap_content"
         android:text="@string/aerr_mute"
         android:drawableStart="@drawable/ic_eject_24dp"
+        android:visibility="gone"
         style="@style/aerr_list_item" />
+
+    <ProgressBar
+        android:id="@+id/aerr_upload_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:indeterminateOnly="true"
+        android:visibility="gone"
+        style="?attr/progressBarStyleHorizontal" />
 
 </LinearLayout>
