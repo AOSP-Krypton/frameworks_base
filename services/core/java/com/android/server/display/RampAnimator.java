@@ -156,9 +156,8 @@ final class RampAnimator<T> {
                 }
             }
             final float oldCurrentValue = mCurrentValue;
-            if (!BrightnessSynchronizer.floatEquals(oldCurrentValue, mAnimatedValue)
-                    || BrightnessSynchronizer.floatEquals(mTargetValue, mAnimatedValue)) {
-                mCurrentValue = mAnimatedValue;
+            mCurrentValue = mAnimatedValue;
+            if (!BrightnessSynchronizer.floatEquals(oldCurrentValue, mCurrentValue)) {
                 mProperty.setValue(mObject, mCurrentValue);
             }
             if (!BrightnessSynchronizer.floatEquals(mTargetValue, mCurrentValue)) {
