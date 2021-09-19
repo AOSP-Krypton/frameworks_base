@@ -52,7 +52,6 @@ import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static android.widget.ImageView.ScaleType.CENTER_CROP;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED;
 
 import android.animation.Animator;
@@ -361,7 +360,7 @@ public class FODCircleView extends ImageView {
 
         updatePosition();
         setVisibility(GONE);
-        setScaleType(CENTER_CROP);
+        setScaleType(ScaleType.CENTER_INSIDE);
 
         mValueAnimator = new ValueAnimator();
         mValueAnimator.addUpdateListener(valueAnimator -> setImageAlpha(
