@@ -15,6 +15,10 @@
  */
 package com.android.keyguard.clock;
 
+import static android.view.View.MeasureSpec.EXACTLY;
+import static android.view.View.MeasureSpec.UNSPECIFIED;
+import static android.view.View.MeasureSpec.makeMeasureSpec;
+
 import android.annotation.Nullable;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,7 +29,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -50,25 +53,42 @@ final class ViewPreviewer {
      */
     @Nullable
     Bitmap createPreview(View view, int width, int height) {
+        return createPreview(view, width, height, true);
+    }
+
+    /**
+     * Generate a realistic preview of a clock face.
+     *
+     * @param view view is used to generate preview image.
+     * @param width width of the preview image, should be the same as device width in pixels.
+     * @param height height of the preview image, should be the same as device height in pixels.
+     * @param drawBackground whether to draw a black background for the bitmap.
+     * @return bitmap of view.
+     */
+    @Nullable
+    Bitmap createPreview(View view, int width, int height, boolean drawBackground) {
         if (view == null) {
             return null;
         }
-        FutureTask<Bitmap> task = new FutureTask<>(new Callable<Bitmap>() {
-            @Override
-            public Bitmap call() {
-                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-                // Draw clock view hierarchy to canvas.
-                Canvas canvas = new Canvas(bitmap);
-                canvas.drawColor(Color.BLACK);
-                dispatchVisibilityAggregated(view, true);
-                view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-                        View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY));
-                view.layout(0, 0, width, height);
-                view.draw(canvas);
-
-                return bitmap;
+        final FutureTask<Bitmap> task = new FutureTask<>(() -> {
+            int dstWidth = width;
+            int dstHeight = height;
+            dispatchVisibilityAggregated(view, true);
+            if (width == 0 && height == 0) {
+                view.measure(makeMeasureSpec(0, UNSPECIFIED), makeMeasureSpec(0, UNSPECIFIED));
+                dstWidth = view.getMeasuredWidth();
+                dstHeight = view.getMeasuredHeight();
+            } else {
+                view.measure(makeMeasureSpec(width, EXACTLY), makeMeasureSpec(height, EXACTLY));
             }
+            view.layout(0, 0, dstWidth, dstHeight);
+            final Bitmap bitmap = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ARGB_8888);
+            final Canvas canvas = new Canvas(bitmap);
+            if (drawBackground) {
+                canvas.drawColor(Color.BLACK);
+            }
+            view.draw(canvas);
+            return bitmap;
         });
 
         if (Looper.myLooper() == Looper.getMainLooper()) {

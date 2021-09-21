@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2021 AOSP-Krypton Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<com.android.keyguard.clock.ClockLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:systemui="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rate_clock_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextClock
+            android:id="@+id/date_text_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="60sp"
+            android:textStyle="bold"
+            android:format12Hour="dd"
+            android:format24Hour="dd"
+            systemui:layout_constraintStart_toStartOf="parent"
+            systemui:layout_constraintEnd_toEndOf="parent"
+            systemui:layout_constraintTop_toTopOf="parent"
+            systemui:layout_constraintBottom_toTopOf="@id/day_text_clock" />
+
+        <ImageView
+            android:id="@+id/left_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_pill"
+            systemui:layout_constraintTop_toTopOf="@id/day_text_clock"
+            systemui:layout_constraintBottom_toBottomOf="@id/day_text_clock"
+            systemui:layout_constraintEnd_toStartOf="@id/day_text_clock"/>
+
+        <TextClock
+            android:id="@+id/day_text_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="50sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:format12Hour="EEEE"
+            android:format24Hour="EEEE"
+            systemui:layout_constraintStart_toStartOf="parent"
+            systemui:layout_constraintEnd_toEndOf="parent"
+            systemui:layout_constraintTop_toBottomOf="@id/date_text_clock"
+            systemui:layout_constraintBottom_toTopOf="@id/text_clock" />
+
+        <ImageView
+            android:id="@+id/right_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_pill"
+            systemui:layout_constraintTop_toTopOf="@id/day_text_clock"
+            systemui:layout_constraintBottom_toBottomOf="@id/day_text_clock"
+            systemui:layout_constraintStart_toEndOf="@id/day_text_clock"/>
+
+        <TextClock
+            android:id="@+id/text_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:format12Hour="hh:mm"
+            android:format24Hour="kk:mm"
+            systemui:layout_constraintStart_toStartOf="parent"
+            systemui:layout_constraintEnd_toEndOf="parent"
+            systemui:layout_constraintTop_toBottomOf="@id/day_text_clock"
+            systemui:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.android.keyguard.clock.ClockLayout>
