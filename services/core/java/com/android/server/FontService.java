@@ -17,11 +17,8 @@
 
 package com.android.server;
 
-import static android.os.FileUtils.S_IRGRP;
 import static android.os.FileUtils.S_IROTH;
-import static android.os.FileUtils.S_IRUSR;
 import static android.os.FileUtils.S_IRWXU;
-import static android.os.FileUtils.S_IWUSR;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -98,7 +95,7 @@ public class FontService extends IFontService.Stub {
     private static final File sFontConfigXml = new File(Environment.getRootDirectory(),
         "etc/custom_font_config.xml");
 
-    private static final int sInternalDirPerms = S_IRUSR | S_IWUSR;
+    private static final int sInternalDirPerms = S_IRWXU;
     private static final int sInternalFilePerms = S_IRWXU;
     private static final int sGlobalDirPerms = sInternalDirPerms | S_IROTH;
     private static final int sGlobalFilePerms = sInternalFilePerms | S_IROTH;
