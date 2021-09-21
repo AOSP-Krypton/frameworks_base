@@ -585,19 +585,20 @@ public class FontService extends IFontService.Stub {
             // Skip elements not in our map
             if (mFontMap.containsKey(font)) {
                 FontInfo fontInfo = mFontMap.get(font);
-                File fontFile = new File(fontInfo.fontPath);
-                if (fontFile.isFile()) {
-                    if (fontFile.delete()) {
+                File fontDir = new File(sSavedFontsDir, font);
+                if (fontDir.exists()) {
+                    if (fontDir.delete()) {
                         fontsRemoved.add(fontInfo);
                         // Reset font if the deleted font was the selected one
                         if (mFontInfo.equals(fontInfo)) {
                             needsReset = true;
                         }
                     } else {
-                        Log.e(TAG, "Unable to delete file " + fontFile.getAbsolutePath());
+                        Log.e(TAG, "Unable to delete file " + fontDir.getAbsolutePath());
                     }
                 } else {
-                    logD("File " + fontFile.getAbsolutePath() + " does not exist, skipping");
+                    logD("File " + fontDir.getAbsolutePath() + " does not exist, skipping");
+                    fontsRemoved.add(fontInfo);
                 }
                 currentList = currentList.replace(font + "|", "");
                 mFontMap.remove(font);
