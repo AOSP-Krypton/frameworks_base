@@ -102,8 +102,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import vendor.lineage.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreen;
 import vendor.lineage.biometrics.fingerprint.inscreen.V1_0.IFingerprintInscreenCallback;
@@ -150,7 +148,6 @@ public class FODCircleView extends ImageView {
     private final ValueAnimator mValueAnimator;
 
     private final CustomSettingsObserver mObserver;
-    private Timer mBurnInProtectionTimer;
 
     private FODAnimation mFODAnimation;
     private final KeyguardUpdateMonitor mUpdateMonitor;
@@ -172,15 +169,22 @@ public class FODCircleView extends ImageView {
 
     private final KeyguardUpdateMonitorCallback mMonitorCallback = new KeyguardUpdateMonitorCallback() {
         @Override
+        public void onTimeChanged() {
+            if (!mIsShowing || !mIsDreaming) {
+                return;
+            }
+            final long now = System.currentTimeMillis() / 60000;
+            // Let y to be not synchronized with x, so that we get maximum movement
+            mDreamingOffsetY = (int) ((now + mDreamingMaxOffset / 3) % (mDreamingMaxOffset * 2));
+            mDreamingOffsetY -= mDreamingMaxOffset;
+            updatePosition();
+        }
+
+        @Override
         public void onDreamingStateChanged(boolean dreaming) {
             mIsDreaming = dreaming;
             updateIconDim(false);
-            if (mIsDreaming) {
-                mBurnInProtectionTimer = new Timer();
-                mBurnInProtectionTimer.schedule(new BurnInProtectionTask(), 0, 60000);
-            } else if (mBurnInProtectionTimer != null) {
-                mBurnInProtectionTimer.cancel();
-                mBurnInProtectionTimer = null;
+            if (!mIsDreaming) {
                 updatePosition();
             }
         }
@@ -774,17 +778,6 @@ public class FODCircleView extends ImageView {
             } else {
                 mFODAnimation = null;
             }
-        }
-    }
-
-    private class BurnInProtectionTask extends TimerTask {
-        @Override
-        public void run() {
-            long now = System.currentTimeMillis() / 60000;
-            // Let y to be not synchronized with x, so that we get maximum movement
-            mDreamingOffsetY = (int) ((now + mDreamingMaxOffset / 3) % (mDreamingMaxOffset * 2));
-            mDreamingOffsetY -= mDreamingMaxOffset;
-            mHandler.post(() -> updatePosition());
         }
     }
 }
