@@ -121,6 +121,9 @@ public class KospClockController implements ClockPlugin, ConfigurationListener {
     public void onTimeTick() {
         if (mClockLayout != null) {
             mClockLayout.onTimeChanged();
+            mDateTextClock.refreshTime();
+            mDayTextClock.refreshTime();
+            mTimeTextClock.refreshTime();
         }
     }
 
