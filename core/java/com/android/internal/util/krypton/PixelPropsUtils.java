@@ -28,10 +28,10 @@ public class PixelPropsUtils {
     private static final String TAG = PixelPropsUtils.class.getSimpleName();
     private static final boolean DEBUG = false;
 
-    private static final Map<String, Object> propsToChange;
-    private static final Map<String, Object> propsToChangePixelXL;
-    private static final Map<String, Object> propsToChangePixel2;
-    private static final Map<String, Object> propsToChangePixel3XL;
+    private static final Map<String, String> propsToChange;
+    private static final Map<String, String> propsToChangePixelXL;
+    private static final Map<String, String> propsToChangePixel2;
+    private static final Map<String, String> propsToChangePixel3XL;
 
     // Keep the arrays sorted lexicographically
     private static final String[] packagesToChange = {
