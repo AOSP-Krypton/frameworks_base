@@ -35,7 +35,7 @@ public class TimeoutHandler extends Handler {
     private static final String TAG = "TimeoutHandler";
 
     private static final int MESSAGE_CORNER_TIMEOUT = 2;
-    private static final int DEFAULT_TIMEOUT_MILLIS = 6000;
+    private static final int DEFAULT_TIMEOUT_MILLIS = 2500;
 
     private final Context mContext;
 
