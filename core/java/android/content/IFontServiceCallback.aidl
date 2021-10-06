@@ -27,11 +27,11 @@ interface IFontServiceCallback {
      * Callback fired when fonts are added successfully.
      * @param list a list of FontInfo that were successfully added.
      */
-    void onFontsAdded(in @nullable List<FontInfo> list);
+    oneway void onFontsAdded(in @nullable List<FontInfo> list);
 
     /**
      * Callback fired when fonts are removed successfully.
      * @param list a list of FontInfo that were successfully removed.
      */
-    void onFontsRemoved(in @nullable List<FontInfo> list);
+    oneway void onFontsRemoved(in @nullable List<FontInfo> list);
 }
