@@ -230,6 +230,7 @@ import com.android.systemui.statusbar.phone.dagger.StatusBarPhoneModule;
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BrightnessMirrorController;
+import com.android.systemui.statusbar.policy.BurnInProtectionController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
@@ -674,6 +675,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private final SysUiState mSysUiState;
     private final SettingsObserver mSettingsObserver;
     private final SystemSettings mSystemSettings;
+    private final BurnInProtectionController mBurnInProtectionController;
 
     /**
      * Public constructor for CentralSurfaces.
@@ -774,7 +776,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             Lazy<LightRevealScrimViewModel> lightRevealScrimViewModelLazy,
             SysUiState sysUiState,
             SystemSettings systemSettings,
-            @Background Handler backgroundHandler) {
+            @Background Handler backgroundHandler,
+            BurnInProtectionController burnInProtectionController) {
         mContext = context;
         mNotificationsController = notificationsController;
         mFragmentService = fragmentService;
@@ -864,6 +867,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
         mScreenOffAnimationController = screenOffAnimationController;
         mSystemSettings = systemSettings;
+        mBurnInProtectionController = burnInProtectionController;
 
         mShadeExpansionStateManager.addExpansionListener(this::onPanelExpansionChanged);
         mShadeExpansionStateManager.addFullExpansionListener(this::onShadeExpansionFullyChanged);
@@ -894,6 +898,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         wiredChargingRippleController.registerCallbacks();
 
         mLightRevealScrimViewModelLazy = lightRevealScrimViewModelLazy;
+        mBurnInProtectionController.setCentralSurfaces(this);
     }
 
     @Override
@@ -1229,6 +1234,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     mNotificationPanelViewController.updatePanelExpansionAndVisibility();
                     setBouncerShowingForStatusBarComponents(mBouncerShowing);
                     checkBarModes();
+                    mBurnInProtectionController.setPhoneStatusBarView(mStatusBarView);
                 });
         initializer.initializeStatusBar(mCentralSurfacesComponent);
 
@@ -3490,6 +3496,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
             updateNotificationPanelTouchState();
             mNotificationShadeWindowViewController.cancelCurrentTouch();
+
+            mBurnInProtectionController.stopShiftTimer();
             if (mLaunchCameraOnFinishedGoingToSleep) {
                 mLaunchCameraOnFinishedGoingToSleep = false;
 
@@ -3595,6 +3603,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }
             }
             updateScrimController();
+            mBurnInProtectionController.startShiftTimer();
         }
     };
 
