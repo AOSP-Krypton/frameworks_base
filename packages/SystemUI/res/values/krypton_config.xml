@@ -29,4 +29,8 @@
     <!-- Whether alertslider is on the left edge of the device -->
     <bool name="config_alertSliderOnLeft">false</bool>
 
+    <!-- StatusBar burn-in protection -->
+    <bool name="config_statusBarBurnInProtection">true</bool>
+    <integer name="config_shift_interval">60</integer>
+
 </resources>
