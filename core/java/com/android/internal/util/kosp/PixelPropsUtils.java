@@ -22,6 +22,8 @@ import static java.util.Map.entry;
 import android.os.Build;
 import android.util.Log;
 
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,9 @@ public final class PixelPropsUtils {
 
     private static final String TAG = "PixelPropsUtils";
     private static final boolean DEBUG = false;
+
+    private static volatile boolean sIsGms = false;
+    public static final String PACKAGE_GMS = "com.google.android.gms";
 
     private static final Map<String, Object> commonProps = Map.ofEntries(
         entry("BRAND", "google"),
@@ -116,8 +121,9 @@ public final class PixelPropsUtils {
         if (packagesToChange.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
             ravenProps.forEach((key, value) -> {
-                if (key.equals("MODEL") && packageName.equals("com.google.android.gms")) {
-                    return;
+                if (key.equals("MODEL") && packageName.equals(PACKAGE_GMS)) {
+                     sIsGms = true;
+                     return;
                 } else {
                     setPropValue(key, value);
                 }
@@ -143,6 +149,18 @@ public final class PixelPropsUtils {
             field.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             Log.e(TAG, "Failed to set prop " + key, e);
+        }
+    }
+
+    private static boolean isCallerSafetyNet() {
+        return Arrays.stream(Thread.currentThread().getStackTrace())
+                .anyMatch(elem -> elem.getClassName().contains("DroidGuard"));
+    }
+
+    public static void onEngineGetCertificateChain() {
+        // Check stack for SafetyNet
+        if (sIsGms && isCallerSafetyNet()) {
+            throw new UnsupportedOperationException();
         }
     }
 }
