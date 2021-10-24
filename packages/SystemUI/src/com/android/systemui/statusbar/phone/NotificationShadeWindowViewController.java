@@ -58,6 +58,7 @@ import com.android.systemui.statusbar.notification.stack.NotificationStackScroll
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.util.InjectionInflationController;
+import com.android.systemui.util.settings.SystemSettings;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -109,6 +110,7 @@ public class NotificationShadeWindowViewController {
     private final DockManager mDockManager;
     private final NotificationPanelViewController mNotificationPanelViewController;
     private final SuperStatusBarViewFactory mStatusBarViewFactory;
+    private final SystemSettings mSystemSettings;
 
     // Used for determining view / touch intersection
     private int[] mTempLocation = new int[2];
@@ -141,7 +143,8 @@ public class NotificationShadeWindowViewController {
             SuperStatusBarViewFactory statusBarViewFactory,
             NotificationStackScrollLayoutController notificationStackScrollLayoutController,
             StatusBarKeyguardViewManager statusBarKeyguardViewManager,
-            LockIconViewController lockIconViewController) {
+            LockIconViewController lockIconViewController,
+            SystemSettings systemSettings) {
         mInjectionInflationController = injectionInflationController;
         mCoordinator = coordinator;
         mPulseExpansionHandler = pulseExpansionHandler;
@@ -167,6 +170,7 @@ public class NotificationShadeWindowViewController {
         mNotificationStackScrollLayoutController = notificationStackScrollLayoutController;
         mStatusBarKeyguardViewManager = statusBarKeyguardViewManager;
         mLockIconViewController = lockIconViewController;
+        mSystemSettings = systemSettings;
 
         // This view is not part of the newly inflated expanded status bar.
         mBrightnessMirror = mView.findViewById(R.id.brightness_mirror_container);
@@ -502,5 +506,17 @@ public class NotificationShadeWindowViewController {
         mTempRect.set(mTempLocation[0], mTempLocation[1], mTempLocation[0] + view.getWidth(),
                 mTempLocation[1] + view.getHeight());
         return mTempRect.contains(x, y);
+    }
+
+    public void setDoubleTapToSleepGesture() {
+        boolean isDoubleTapLockscreenEnabled = mSystemSettings.getInt(Settings.System.DOUBLE_TAP_SLEEP_LOCKSCREEN, 0) == 1;
+        boolean isDoubleTapSbEnabled = mSystemSettings.getInt(Settings.System.DOUBLE_TAP_SLEEP_GESTURE, 0) == 1;
+        if (mNotificationPanelViewController != null) {
+            mNotificationPanelViewController.setLockscreenDoubleTapToSleep(isDoubleTapLockscreenEnabled);
+            mNotificationPanelViewController.setSbDoubleTapToSleep(isDoubleTapSbEnabled);
+        }
+        if (mDragDownHelper != null) {
+            mDragDownHelper.updateDoubleTapToSleep(isDoubleTapSbEnabled);
+        }
     }
 }
