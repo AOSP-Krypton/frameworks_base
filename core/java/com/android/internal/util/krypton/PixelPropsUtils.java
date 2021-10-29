@@ -38,11 +38,11 @@ public final class PixelPropsUtils {
         "TYPE", "user"
     );
 
-    private static final Map<String, String> redfinProps = Map.of(
-        "DEVICE", "redfin",
-        "PRODUCT", "redfin",
-        "MODEL", "Pixel 5",
-        "FINGERPRINT", "google/redfin/redfin:12/SP1A.210812.015/7679548:user/release-keys"
+    private static final Map<String, String> ravenProps = Map.of(
+        "DEVICE", "raven",
+        "PRODUCT", "raven",
+        "MODEL", "Pixel 6 Pro",
+        "FINGERPRINT", "google/raven/raven:12/SD1A.210817.019.C2/7738411:user/release-keys"
     );
 
     private static final Map<String, String> marlinProps = Map.of(
@@ -50,20 +50,6 @@ public final class PixelPropsUtils {
         "PRODUCT", "marlin",
         "MODEL", "Pixel XL",
         "FINGERPRINT", "google/marlin/marlin:10/QP1A.191005.007.A3/5972272:user/release-keys"
-    );
-
-    private static final Map<String, String> walleyeProps = Map.of(
-        "DEVICE", "walleye",
-        "PRODUCT", "walleye",
-        "MODEL", "Pixel 2",
-        "FINGERPRINT", "google/walleye/walleye:10/QP1A.190711.019/5790879:user/release-keys"
-    );
-
-    private static final Map<String, String> crosshatchProps = Map.of(
-        "DEVICE", "crosshatch",
-        "PRODUCT", "crosshatch",
-        "MODEL", "Pixel 3 XL",
-        "FINGERPRINT", "google/crosshatch/crosshatch:12/SP1A.210812.015/7679548:user/release-keys"
     );
 
     private static final List<String> packagesToChange = List.of(
@@ -91,6 +77,7 @@ public final class PixelPropsUtils {
         "com.google.android.ext.services",
         "com.google.android.gms",
         "com.google.android.gms.location.history",
+        "com.google.android.googlequicksearchbox",
         "com.google.android.gsf",
         "com.google.android.inputmethod.latin",
         "com.google.android.soundpicker",
@@ -112,10 +99,6 @@ public final class PixelPropsUtils {
         "com.samsung.android.waterplugin"
     );
 
-    private static final List<String> packagesToChangePixel3XL = List.of(
-        "com.google.android.googlequicksearchbox"
-    );
-
     public static void setProps(String packageName) {
         if (packageName == null) {
             return;
@@ -125,7 +108,7 @@ public final class PixelPropsUtils {
         }
         if (packagesToChange.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
-            redfinProps.forEach((key, value) -> {
+            ravenProps.forEach((key, value) -> {
                 if (packageName.equals("com.google.android.gms") && key.equals("MODEL")) {
                     return;
                 } else {
@@ -135,9 +118,6 @@ public final class PixelPropsUtils {
         } else if (packagesToChangePixelXL.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
             marlinProps.forEach(PixelPropsUtils::setPropValue);
-        } else if (packagesToChangePixel3XL.contains(packageName)) {
-            commonProps.forEach(PixelPropsUtils::setPropValue);
-            crosshatchProps.forEach(PixelPropsUtils::setPropValue);
         }
         // Set proper indexing fingerprint
         if (packageName.equals("com.google.android.settings.intelligence")) {
