@@ -78,7 +78,9 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.concurrency.Execution;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -158,6 +160,7 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
     private Runnable mAodInterruptRunnable;
     private boolean mOnFingerDown;
     private boolean mAttemptedToDismissKeyguard;
+    private Set<Callback> mCallbacks = new HashSet<>();
 
     @VisibleForTesting
     public static final AudioAttributes VIBRATION_SONIFICATION_ATTRIBUTES =
@@ -851,6 +854,10 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
             return;
         }
 
+        if (!mKeyguardUpdateMonitor.isFingerprintDetectionRunning()) {
+            return;
+        }
+
         mAodInterruptRunnable = () -> {
             mIsAodInterruptActive = true;
             // Since the sensor that triggers the AOD interrupt doesn't provide
@@ -867,6 +874,20 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
             mAodInterruptRunnable.run();
             mAodInterruptRunnable = null;
         }
+    }
+
+    /**
+     * Add a callback for fingerUp and fingerDown events
+     */
+    public void addCallback(Callback cb) {
+        mCallbacks.add(cb);
+    }
+
+    /**
+     * Remove callback
+     */
+    public void removeCallback(Callback cb) {
+        mCallbacks.remove(cb);
     }
 
     /**
@@ -923,6 +944,10 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
             mFingerprintManager.onUiReady(mSensorProps.sensorId);
             Trace.endAsyncSection("UdfpsController.e2e.startIllumination", 0);
         });
+
+        for (Callback cb : mCallbacks) {
+            cb.onFingerDown();
+        }
     }
 
     private void onFingerUp() {
@@ -935,6 +960,9 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
         }
         if (mOnFingerDown) {
             mFingerprintManager.onPointerUp(mSensorProps.sensorId);
+            for (Callback cb : mCallbacks) {
+                cb.onFingerUp();
+            }
         }
         mOnFingerDown = false;
         if (mView.isIlluminationRequested()) {
@@ -971,5 +999,20 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
         if (onHbmDisabled != null) {
             mMainHandler.post(onHbmDisabled);
         }
+    }
+
+    /**
+     * Callback for fingerUp and fingerDown events.
+     */
+    public interface Callback {
+        /**
+         * Called onFingerUp events. Will only be called if the finger was previously down.
+         */
+        void onFingerUp();
+
+        /**
+         * Called onFingerDown events.
+         */
+        void onFingerDown();
     }
 }
