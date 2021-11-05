@@ -5154,67 +5154,67 @@ public final class Settings {
 
         /**
          * Color temperature of the display during the day
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_TEMPERATURE_DAY = "display_temperature_day";
 
         /**
          * Color temperature of the display at night
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_TEMPERATURE_NIGHT = "display_temperature_night";
 
         /**
          * Display color temperature adjustment mode, one of DAY (default), NIGHT, or AUTO.
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_TEMPERATURE_MODE = "display_temperature_mode";
 
         /**
          * Automatic outdoor mode
          * 0 = 0ff, 1 = on
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_AUTO_OUTDOOR_MODE = "display_auto_outdoor_mode";
 
         /**
          * Reader mode
          * 0 = 0ff, 1 = on
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_READING_MODE = "display_reading_mode";
 
         /**
          * Use display power saving features such as CABC or CABL
          * 0 = 0ff, 1 = on
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_CABC = "display_low_power";
 
         /**
          * Use color enhancement feature of display
          * 0 = 0ff, 1 = on
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_COLOR_ENHANCE = "display_color_enhance";
 
         /**
          * Use auto contrast optimization feature of display
          * 0 = 0ff, 1 = on
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_AUTO_CONTRAST = "display_auto_contrast";
 
         /**
          * Manual display color adjustments (RGB values as floats, separated by spaces)
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_COLOR_ADJUSTMENT = "display_color_adjustment";
 
         /**
          * The current custom picture adjustment values as a delimited string
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_PICTURE_ADJUSTMENT =
                 "display_picture_adjustment";
 
@@ -5222,57 +5222,43 @@ public final class Settings {
          * Did we tell about how they can stop breaking their eyes?
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String LIVE_DISPLAY_HINTED = "live_display_hinted";
 
         /**
          * Anti flicker
          * 0 = 0ff, 1 = on
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String DISPLAY_ANTI_FLICKER = "display_anti_flicker";
 
         /**
          * Whether or not to vibrate when a touchscreen gesture is detected
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String TOUCHSCREEN_GESTURE_HAPTIC_FEEDBACK = "touchscreen_gesture_haptic_feedback";
 
         /**
          * AlertSlider mode when alertslider is at the bottom.
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String ALERTSLIDER_MODE_POSITION_BOTTOM = "alertslider_mode_position_bottom";
 
         /**
          * AlertSlider mode when alertslider is at the middle.
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String ALERTSLIDER_MODE_POSITION_MIDDLE = "alertslider_mode_position_middle";
 
         /**
          * AlertSlider mode when alertslider is at the top.
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String ALERTSLIDER_MODE_POSITION_TOP = "alertslider_mode_position_top";
-
-        /**
-         * IMPORTANT: If you add a new public settings you also have to add it to
-         * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
-         * it to PRIVATE_SETTINGS below. Also add a validator that can validate
-         * the setting value. See an example above.
-         */
-
 
         /**
          * Whether to show the battery info on the lockscreen while charging
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String LOCKSCREEN_BATTERY_INFO = "lockscreen_battery_info";
 
         /**
@@ -5280,21 +5266,18 @@ public final class Settings {
          * 0 means disabled, 1 means enabled.
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String NETWORK_TRAFFIC_ENABLED = "network_traffic_enabled";
 
         /**
          * Threshold value in KiB/s below which upload speed will be hidden.
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX = "network_traffic_auto_hide_threshold_tx";
 
         /**
          * Threshold value in KiB/s below which download speed will be hidden.
          * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX = "network_traffic_auto_hide_threshold_rx";
 
         /**
@@ -5310,6 +5293,13 @@ public final class Settings {
          * @hide
          */
         public static final String NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR = "network_traffic_rate_text_scale_factor";
+
+        /**
+         * IMPORTANT: If you add a new public settings you also have to add it to
+         * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
+         * it to PRIVATE_SETTINGS below. Also add a validator that can validate
+         * the setting value. See an example above.
+         */
 
         /**
          * Keys we no longer back up under the current schema, but want to continue to
@@ -5429,27 +5419,6 @@ public final class Settings {
             PRIVATE_SETTINGS.add(LOCK_TO_APP_ENABLED);
             PRIVATE_SETTINGS.add(EGG_MODE);
             PRIVATE_SETTINGS.add(SHOW_BATTERY_PERCENT);
-            PRIVATE_SETTINGS.add(DISPLAY_COLOR_MODE);
-            PRIVATE_SETTINGS.add(DISPLAY_COLOR_MODE_VENDOR_HINT);
-            PRIVATE_SETTINGS.add(DISPLAY_TEMPERATURE_DAY);
-            PRIVATE_SETTINGS.add(DISPLAY_TEMPERATURE_NIGHT);
-            PRIVATE_SETTINGS.add(DISPLAY_TEMPERATURE_MODE);
-            PRIVATE_SETTINGS.add(DISPLAY_AUTO_OUTDOOR_MODE);
-            PRIVATE_SETTINGS.add(DISPLAY_READING_MODE);
-            PRIVATE_SETTINGS.add(DISPLAY_CABC);
-            PRIVATE_SETTINGS.add(DISPLAY_COLOR_ENHANCE);
-            PRIVATE_SETTINGS.add(DISPLAY_AUTO_CONTRAST);
-            PRIVATE_SETTINGS.add(DISPLAY_COLOR_ADJUSTMENT);
-            PRIVATE_SETTINGS.add(DISPLAY_PICTURE_ADJUSTMENT);
-            PRIVATE_SETTINGS.add(LIVE_DISPLAY_HINTED);
-            PRIVATE_SETTINGS.add(DISPLAY_ANTI_FLICKER);
-            PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_BOTTOM);
-            PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_MIDDLE);
-            PRIVATE_SETTINGS.add(ALERTSLIDER_MODE_POSITION_TOP);
-            PRIVATE_SETTINGS.add(LOCKSCREEN_BATTERY_INFO);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_ENABLED);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX);
-            PRIVATE_SETTINGS.add(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX);
         }
 
         /**
