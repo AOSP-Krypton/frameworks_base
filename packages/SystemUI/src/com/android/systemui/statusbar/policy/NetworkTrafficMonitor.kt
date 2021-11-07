@@ -219,10 +219,10 @@ class NetworkTrafficMonitor @Inject constructor(
             if (rxTrans >= rxThreshold && txTrans >= txThreshold) { // Show iff both thresholds are met
                 logD("threshold is met, showing")
                 state.rateVisible = true
+                updateRateFormatted(state, if (updateRx) rxTrans else txTrans)
             } else {
                 logD("threshold is not met, hiding")
                 state.rateVisible = false
-                updateRateFormatted(state, if (updateRx) rxTrans else txTrans)
             }
             handler.post({ notifyCallbacks() })
         }
