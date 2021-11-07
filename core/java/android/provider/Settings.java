@@ -5739,6 +5739,12 @@ public final class Settings {
         public static final String QS_FOOTER_TEXT_STRING = "qs_footer_text_string";
 
         /**
+         * Whether to enable or disable vibration during calls
+         * @hide
+         */
+        public static final String INCALL_FEEDBACK_VIBRATE = "incall_feeedback_vibrate";
+
+        /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
          * it to PRIVATE_SETTINGS below. Also add a validator that can validate
