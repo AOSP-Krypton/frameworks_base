@@ -54,4 +54,9 @@
     <string name="reboot_to_bootloader_message" translatable="false">Rebooting to bootloader</string>
     <string name="reboot_title">重启</string>
     <string name="reboot_message">重启系统中...</string>
+
+    <!-- Button that copies the url to the log of a crashed application -->
+    <string name="aerr_copy">复制崩溃日志链接</string>
+    <string name="url_copy_success">已成功复制链接</string>
+    <string name="url_copy_failed">向 dogbin 上传日志时发生错误</string>
 </resources>
