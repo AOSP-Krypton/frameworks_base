@@ -81,8 +81,8 @@ class StatusBarNetworkTrafficView(
             return
         }
         visibleState = newVisibleState
-        trafficGroup?.setVisibility(if (newVisibleState == STATE_ICON) VISIBLE else INVISIBLE)
-        dotView?.setVisibility(if (newVisibleState == STATE_DOT) VISIBLE else INVISIBLE)
+        trafficGroup?.setVisibility(if (newVisibleState == STATE_ICON) VISIBLE else GONE)
+        dotView?.setVisibility(if (newVisibleState == STATE_DOT) VISIBLE else GONE)
     }
 
     override fun getVisibleState() = visibleState

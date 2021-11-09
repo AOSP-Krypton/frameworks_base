@@ -16,7 +16,9 @@
 <com.android.systemui.statusbar.StatusBarNetworkTrafficView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingStart="1dp"
+    android:paddingEnd="1dp">
 
     <com.android.systemui.statusbar.StatusBarIconView
         android:id="@+id/dot_view"

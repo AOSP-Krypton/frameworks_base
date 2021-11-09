@@ -56,10 +56,6 @@ class NetworkTrafficMonitor @Inject constructor(
     private val wakefulnessLifecycle: WakefulnessLifecycle,
     private val systemSettings: SystemSettings,
 ) {
-    private val units = arrayOf<String>("KiB/s", "MiB/s", "GiB/s")
-    private val singleDecimalFmt = DecimalFormat("00.0")
-    private val doubleDecimalFmt = DecimalFormat("0.00")
-    private val KiB: Long = DataUnit.KIBIBYTES.toBytes(1)
 
     private val handler = Handler(Looper.getMainLooper())
     private val state = NetworkTrafficState()
@@ -219,7 +215,7 @@ class NetworkTrafficMonitor @Inject constructor(
             if (rxTrans >= rxThreshold && txTrans >= txThreshold) { // Show iff both thresholds are met
                 logD("threshold is met, showing")
                 state.rateVisible = true
-                updateRateFormatted(state, if (updateRx) rxTrans else txTrans)
+                updateRateFormatted(if (updateRx) rxTrans else txTrans)
             } else {
                 logD("threshold is not met, hiding")
                 state.rateVisible = false
@@ -228,14 +224,14 @@ class NetworkTrafficMonitor @Inject constructor(
         }
     }
 
-    private fun updateRateFormatted(state: NetworkTrafficState, bytes: Long) {
+    private fun updateRateFormatted(bytes: Long) {
         var unit: String
         var rateString: String
-        var rate: Double = (bytes / KiB).toDouble()
+        var rate: Float = bytes / KiB.toFloat()
         var i = 0
         while (true) {
             rate /= KiB
-            if (rate >= 0.9 && rate < 1) {
+            if (rate >= 0.9f && rate < 1) {
                 unit = units[i + 1]
                 break
             } else if (rate < 0.9) {
@@ -245,17 +241,10 @@ class NetworkTrafficMonitor @Inject constructor(
             }
             i++
         }
-        if (rate < 10) {
-            rateString = doubleDecimalFmt.format(rate)
-        } else if (rate < 100) {
-            rateString = singleDecimalFmt.format(rate)
-        } else {
-            rateString = rate.toString()
-        }
+        rateString = getFormattedString(rate)
         logD("bytes = $bytes, rate = $rate, rateString = $rateString, unit = $unit")
-        SpannableString(rateString + LINE_SEPARATOR + unit).let {
+        state.rate = SpannableString(rateString + LINE_SEPARATOR + unit).also {
             it.setSpan(rsp, 0, rateString.length, 0)
-            state.rate = it
         }
     }
 
@@ -369,6 +358,19 @@ class NetworkTrafficMonitor @Inject constructor(
         private const val TIMER_TAG = "NetworkTrafficMonitor.Timer"
         private const val LINE_SEPARATOR = "\n"
         private const val DEBUG = false
+
+        private val units = arrayOf<String>("KiB/s", "MiB/s", "GiB/s")
+        private val singleDecimalFmt = DecimalFormat("00.0")
+        private val doubleDecimalFmt = DecimalFormat("0.00")
+        private val KiB: Long = DataUnit.KIBIBYTES.toBytes(1)
+
+        private fun getFormattedString(rate: Float) =
+            when {
+                rate < 10 -> doubleDecimalFmt.format(rate)
+                rate < 100 -> singleDecimalFmt.format(rate)
+                rate < 900 -> rate.toInt().toString()
+                else -> rate.toString()
+            }
 
         private fun logD(msg: String?) {
             if (DEBUG) Log.d(TAG, msg)
