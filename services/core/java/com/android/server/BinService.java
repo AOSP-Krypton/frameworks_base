@@ -42,8 +42,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class BinService extends Service {
     private static final String TAG = "BinService";
     private static final boolean DEBUG = false;
-    private static final String BASE_URL = "https://hastebin.com/";
-    private static final String API_URL = "https://hastebin.com/documents";
+    private static final String BASE_URL = "https://www.toptal.com/developers/hastebin/";
+    private static final String API_URL = BASE_URL + "documents";
     private static final long SELF_DESTRUCTION_TIMEOUT = TimeUnit.MINUTES.toMillis(1);
 
     private final Runnable selfDestruct = this::stopSelf;
