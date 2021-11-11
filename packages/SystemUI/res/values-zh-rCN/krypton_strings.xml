@@ -79,4 +79,18 @@
     <string name="quick_settings_aod_off_label">关闭环境显示</string>
     <string name="quick_settings_aod_off_powersave_label">环境显示 关闭\n省电模式</string>
 
+    <!-- DataSwitch Tile -->
+    <string name="qs_data_switch_label">切换数据卡</string>
+    <string name="qs_data_switch_toast_0">当前未插入 SIM 卡</string>
+    <string name="qs_data_switch_toast_1">当前只插入了一张 SIM 卡</string>
+    <string name="qs_data_switch_changed_1">将数据卡切换到 SIM 1</string>
+    <string name="qs_data_switch_changed_2">将数据卡切换到 SIM 2</string>
+
+    <!-- Name of the nfc status bar icon. -->
+    <string name="status_bar_nfc">NFC</string>
+
+    <!-- Accessibility label for nfc icon (not shown on screen) [CHAR LIMIT=NONE] -->
+    <string name="accessibility_status_bar_nfc">Nfc</string>
+
 </resources>
+
