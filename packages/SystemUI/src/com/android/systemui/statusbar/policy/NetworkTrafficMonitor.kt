@@ -368,7 +368,7 @@ class NetworkTrafficMonitor @Inject constructor(
             when {
                 rate < 10 -> doubleDecimalFmt.format(rate)
                 rate < 100 -> singleDecimalFmt.format(rate)
-                rate < 900 -> rate.toInt().toString()
+                rate < 1000 -> rate.toInt().toString()
                 else -> rate.toString()
             }
 
