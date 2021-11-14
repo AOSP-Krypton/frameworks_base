@@ -10310,6 +10310,13 @@ public final class Settings {
         public static final String MONET_ENGINE_WHITE_LUMINANCE = "monet_engine_white_luminance";
 
         /**
+         * Whether to show privacy indicator for location
+         * Default value is based on it's device config flag
+         * @hide
+         */
+        public static final String ENABLE_LOCATION_PRIVACY_INDICATOR = "enable_location_privacy_indicator";
+
+        /**
          * These entries are considered common between the personal and the managed profile,
          * since the managed profile doesn't get to change them.
          */
