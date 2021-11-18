@@ -10306,32 +10306,32 @@ public final class Settings {
 
         /**
          * Accurate shades (default 1)
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String MONET_ENGINE_ACCURATE_SHADES = "monet_engine_accurate_shades";
 
         /**
          * Color override (default null)
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String MONET_ENGINE_COLOR_OVERRIDE = "monet_engine_color_override";
 
         /**
          * Colorfulness (default 1.0)
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String MONET_ENGINE_CHROMA_FACTOR = "monet_engine_chroma_factor";
 
         /**
          * Custom lightness scale (default 0)
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String MONET_ENGINE_LINEAR_LIGHTNESS = "monet_engine_linear_lightness";
 
         /**
          * Brightness (default 425, range 0-1000; depends on custom lightness)
+         * @hide
          */
-        @SuppressLint("NoSettingsProvider")
         public static final String MONET_ENGINE_WHITE_LUMINANCE = "monet_engine_white_luminance";
 
         /**
