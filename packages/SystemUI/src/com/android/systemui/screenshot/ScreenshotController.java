@@ -264,13 +264,15 @@ public class ScreenshotController {
     private final AudioManager mAudioManager;
     private final Vibrator mVibrator;
     private final CameraManager mCameraManager;
-    private int mCamsInUse = 0;
     private final ScrollCaptureClient mScrollCaptureClient;
     private final PhoneWindow mWindow;
     private final DisplayManager mDisplayManager;
     private final ScrollCaptureController mScrollCaptureController;
     private final LongScreenshotData mLongScreenshotHolder;
     private final boolean mIsLowRamDevice;
+
+    private boolean mCameraSoundForcedConfig;
+    private int mCamsInUse;
 
     private ScreenshotView mScreenshotView;
     private Bitmap mScreenBitmap;
@@ -285,17 +287,13 @@ public class ScreenshotController {
     private final Handler mScreenshotHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MESSAGE_CORNER_TIMEOUT:
-                    if (DEBUG_UI) {
-                        Log.d(TAG, "Corner timeout hit");
-                    }
-                    mUiEventLogger.log(ScreenshotEvent.SCREENSHOT_INTERACTION_TIMEOUT, 0,
-                            mPackageName);
-                    ScreenshotController.this.dismissScreenshot(false);
-                    break;
-                default:
-                    break;
+            if (msg.what == MESSAGE_CORNER_TIMEOUT) {
+                if (DEBUG_UI) {
+                    Log.d(TAG, "Corner timeout hit");
+                }
+                mUiEventLogger.log(ScreenshotEvent.SCREENSHOT_INTERACTION_TIMEOUT, 0,
+                        mPackageName);
+                ScreenshotController.this.dismissScreenshot(false);
             }
         }
     };
@@ -390,6 +388,8 @@ public class ScreenshotController {
         mWindow.setBackgroundDrawableResource(android.R.color.transparent);
 
         mConfigChanges.applyNewConfig(context.getResources());
+        mCameraSoundForcedConfig = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_camera_sound_forced);
         reloadAssets();
 
         // Setup the Camera shutter sound
@@ -398,10 +398,9 @@ public class ScreenshotController {
 
         // Grab system services needed for screenshot sound
         mAudioManager = context.getSystemService(AudioManager.class);
-	mVibrator = context.getSystemService(Vibrator.class);
+        mVibrator = context.getSystemService(Vibrator.class);
         mCameraManager = context.getSystemService(CameraManager.class);
-        mCameraManager.registerAvailabilityCallback(mCamCallback,
-                new Handler(Looper.getMainLooper()));
+        mCameraManager.registerAvailabilityCallback(mCamCallback, mScreenshotHandler);
 
         // Grab PackageManager
         mPm = mContext.getPackageManager();
@@ -1135,24 +1134,17 @@ public class ScreenshotController {
 
 
     private void playShutterSound() {
-       boolean playSound = readCameraSoundForced() && mCamsInUse > 0;
-        switch (mAudioManager.getRingerMode()) {
-            case AudioManager.RINGER_MODE_SILENT:
-                // do nothing
-                break;
-            case AudioManager.RINGER_MODE_VIBRATE:
-                if (mVibrator != null && mVibrator.hasVibrator()) {
-                    mVibrator.vibrate(VibrationEffect.createOneShot(50,
-                            VibrationEffect.DEFAULT_AMPLITUDE));
-                }
-                break;
-            case AudioManager.RINGER_MODE_NORMAL:
-                // in this case we want to play sound even if not forced on
-                playSound = true;
-                break;
+        final int ringerMode = mAudioManager.getRingerMode();
+        if (ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+            if (mVibrator != null && mVibrator.hasVibrator()) {
+                mVibrator.vibrate(VibrationEffect.createPredefined(
+                    VibrationEffect.EFFECT_HEAVY_CLICK));
+            }
         }
         // We want to play the shutter sound when it's either forced or
-        // when we use normal ringer mode
+        // when we use normal ringer mode.
+        boolean playSound = ringerMode == AudioManager.RINGER_MODE_NORMAL ||
+            readCameraSoundForced() && mCamsInUse > 0;
         if (playSound && Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.SCREENSHOT_SHUTTER_SOUND, 1, UserHandle.USER_CURRENT) == 1) {
             mCameraSound.play(MediaActionSound.SHUTTER_CLICK);
@@ -1173,8 +1165,6 @@ public class ScreenshotController {
     };
 
     private boolean readCameraSoundForced() {
-        return SystemProperties.getBoolean("audio.camerasound.force", false) ||
-                mContext.getResources().getBoolean(
-                        com.android.internal.R.bool.config_camera_sound_forced);
+        return SystemProperties.getBoolean("audio.camerasound.force", false) || mCameraSoundForcedConfig;
     }
 }
