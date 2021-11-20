@@ -1135,7 +1135,9 @@ public class ScreenshotController {
 
     private void playShutterSound() {
         final int ringerMode = mAudioManager.getRingerMode();
-        if (ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+        final boolean shouldPlaySound = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.SCREENSHOT_SHUTTER_SOUND, 1, UserHandle.USER_CURRENT) == 1;
+        if (ringerMode == AudioManager.RINGER_MODE_VIBRATE && shouldPlaySound) {
             if (mVibrator != null && mVibrator.hasVibrator()) {
                 mVibrator.vibrate(VibrationEffect.createPredefined(
                     VibrationEffect.EFFECT_HEAVY_CLICK));
@@ -1145,8 +1147,7 @@ public class ScreenshotController {
         // when we use normal ringer mode.
         boolean playSound = ringerMode == AudioManager.RINGER_MODE_NORMAL ||
             readCameraSoundForced() && mCamsInUse > 0;
-        if (playSound && Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.SCREENSHOT_SHUTTER_SOUND, 1, UserHandle.USER_CURRENT) == 1) {
+        if (playSound && shouldPlaySound) {
             mCameraSound.play(MediaActionSound.SHUTTER_CLICK);
         }
     }
