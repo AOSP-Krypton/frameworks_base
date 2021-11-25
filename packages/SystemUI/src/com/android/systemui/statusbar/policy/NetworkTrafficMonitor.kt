@@ -24,7 +24,7 @@ import android.net.Network
 import android.net.TrafficStats
 import android.net.Uri
 import android.os.Handler
-import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
 import android.provider.Settings.System.NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX
 import android.provider.Settings.System.NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX
@@ -38,26 +38,33 @@ import android.util.DataUnit
 import android.util.Log
 import android.util.TypedValue
 
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.R
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.util.settings.SystemSettings
 
 import java.text.DecimalFormat
 import java.util.Objects
-import java.util.Timer
-import java.util.TimerTask
 
 import javax.inject.Inject
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @SysUISingleton
 class NetworkTrafficMonitor @Inject constructor(
     private val context: Context,
+    @Main private val handler: Handler,
     private val wakefulnessLifecycle: WakefulnessLifecycle,
     private val systemSettings: SystemSettings,
 ) {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    private val handler = Handler(Looper.getMainLooper())
     private val state = NetworkTrafficState()
     private val settingsObserver: SettingsObserver
     private val callbacks = mutableListOf<Callback>()
@@ -65,14 +72,14 @@ class NetworkTrafficMonitor @Inject constructor(
     private val defaultTextSize: Int
     private val defaultScaleFactor: Float
 
-    // Timer for 1 second tick
-    private var timer: Timer? = null
+    private var trafficUpdateJob: Job? = null
+    private var timeSinceUpdate = 1L
 
     // To keep track of total number of bytes
     private var rxBytesInternal: Long = 0
     private var txBytesInternal: Long = 0
 
-    // For dynamic mode, transitions between true and false each time the timer ticks
+    // For dynamic mode, transitions between true and false for each tick
     private var updateRx = false
 
     // Threshold value in KiB/S
@@ -92,12 +99,12 @@ class NetworkTrafficMonitor @Inject constructor(
     private val networkCallback = object: NetworkCallback() {
         override fun onAvailable(network: Network) {
             logD("onAvailable")
-            scheduleTask()
+            scheduleJob()
         }
 
         override fun onLost(network: Network) {
             logD("onLost")
-            cancelScheduledTask()
+            cancelScheduledJob()
         }
     }
 
@@ -105,23 +112,23 @@ class NetworkTrafficMonitor @Inject constructor(
     private val wakefulnessObserver = object: WakefulnessLifecycle.Observer {
         override fun onStartedGoingToSleep() {
             logD("onStartedGoingToSleep")
-            cancelScheduledTask()
+            cancelScheduledJob()
         }
 
         override fun onStartedWakingUp() {
             logD("onStartedWakingUp")
-            scheduleTask()
+            scheduleJob()
         }
     }
 
     init {
         state.slot = context.getString(com.android.internal.R.string.status_bar_network_traffic)
         state.rate = SpannableString("0" + LINE_SEPARATOR + units[0])
-        val res = context.getResources()
+        val res = context.resources
         defaultTextSize = res.getDimension(R.dimen.network_traffic_unit_text_default_size).toInt()
         val typedValue = TypedValue()
         res.getValue(R.dimen.network_traffic_rate_text_default_scale_factor, typedValue, true)
-        defaultScaleFactor = typedValue.getFloat()
+        defaultScaleFactor = typedValue.float
         rsp = RelativeSizeSpan(defaultScaleFactor)
         settingsObserver = SettingsObserver().also {
             it.update()
@@ -129,12 +136,35 @@ class NetworkTrafficMonitor @Inject constructor(
         registerSettingsObserver()
     }
 
+    /**
+     * Register a [Callback] to listen to updates on
+     * [NetworkTrafficState]. Does not have any effect if
+     * attempted to register the same callback more than once.
+     *
+     * @param callback the callback to register.
+     */
     fun addCallback(callback: Callback) {
         if (callbacks.contains(callback)) {
             Log.w(TAG, "Ignoring attempt to add duplicate callback")
         } else {
             logD("adding callback")
             callbacks.add(callback)
+        }
+    }
+
+    /**
+     * Unregister an already registered callback. Does not have
+     * any effect if attempted to unregister a callback that was not
+     * previously registered.
+     *
+     * @param callback the callback to unregister.
+     */
+    fun removeCallback(callback: Callback) {
+        if (!callbacks.contains(callback)) {
+            Log.w(TAG, "Ignoring attempt to remove non existent callback")
+        } else {
+            logD("removing callback")
+            callbacks.remove(callback)
         }
     }
 
@@ -171,57 +201,61 @@ class NetworkTrafficMonitor @Inject constructor(
         }
     }
 
-    private fun scheduleTask() {
-        if (timer != null) {
-            logD("task is already scheduled, returning")
+    private fun scheduleJob() {
+        if (trafficUpdateJob != null) {
+            logD("Job is already scheduled, returning")
             return
         }
-        logD("scheduling timer task")
+        logD("scheduling job")
         updateRx = false
-        rxBytesInternal = TrafficStats.getTotalRxBytes()
-        txBytesInternal = TrafficStats.getTotalTxBytes()
         state.visible = true
-        timer = Timer(TIMER_TAG, true).also {
-            it.scheduleAtFixedRate(getNewTimerTask(), 1000, 1000)
+        trafficUpdateJob = coroutineScope.launch {
+            rxBytesInternal = TrafficStats.getTotalRxBytes()
+            txBytesInternal = TrafficStats.getTotalTxBytes()
+            timeSinceUpdate = SystemClock.uptimeMillis()
+            delay(1000)
+            while (isActive) {
+                updateAndDispatchState()
+                delay(1000)
+            }
         }
     }
 
-    private fun cancelScheduledTask() {
-        if (timer == null) {
-            logD("task is already cancelled, returning")
+    private fun cancelScheduledJob() {
+        if (trafficUpdateJob == null) {
+            logD("Job is already cancelled, returning")
             return
         }
-        logD("cancelling timers")
-        timer!!.cancel()
-        timer!!.purge()
+        logD("Cancelling job")
+        trafficUpdateJob?.cancel()
         state.visible = false
-        handler.post({ notifyCallbacks() })
-        timer = null
+        handler.post(this::notifyCallbacks)
+        trafficUpdateJob = null
     }
 
-    private fun getNewTimerTask() = object: TimerTask() {
-        override fun run() {
-            updateRx = !updateRx
-            var rxBytes = TrafficStats.getTotalRxBytes()
-            var txBytes = TrafficStats.getTotalTxBytes()
-            var rxTrans = rxBytes - rxBytesInternal
-            var txTrans = txBytes - txBytesInternal
-            logD("rxBytes = $rxBytes, rxBytesInternal = $rxBytesInternal" +
-                    ", rxTrans = $rxTrans, rxThreshold = $rxThreshold")
-            logD("txBytes = $txBytes, txBytesInternal = $txBytesInternal" +
-                    ", txTrans = $txTrans, txThreshold = $txThreshold")
-            rxBytesInternal = rxBytes
-            txBytesInternal = txBytes
-            if (rxTrans >= rxThreshold && txTrans >= txThreshold) { // Show iff both thresholds are met
-                logD("threshold is met, showing")
-                state.rateVisible = true
-                updateRateFormatted(if (updateRx) rxTrans else txTrans)
-            } else {
-                logD("threshold is not met, hiding")
-                state.rateVisible = false
-            }
-            handler.post({ notifyCallbacks() })
+    private fun updateAndDispatchState() {
+        updateRx = !updateRx
+        val rxBytes = TrafficStats.getTotalRxBytes()
+        val txBytes = TrafficStats.getTotalTxBytes()
+        val duration = SystemClock.uptimeMillis() - timeSinceUpdate
+        val rxTrans = ((rxBytes - rxBytesInternal) * 1000) / duration
+        val txTrans = ((txBytes - txBytesInternal) * 1000) / duration
+        logD("rxBytes = $rxBytes, rxBytesInternal = $rxBytesInternal" +
+                ", rxTrans = $rxTrans, rxThreshold = $rxThreshold")
+        logD("txBytes = $txBytes, txBytesInternal = $txBytesInternal" +
+                ", txTrans = $txTrans, txThreshold = $txThreshold")
+        rxBytesInternal = rxBytes
+        txBytesInternal = txBytes
+        if (rxTrans >= rxThreshold && txTrans >= txThreshold) { // Show iff both thresholds are met
+            logD("threshold is met, showing")
+            state.rateVisible = true
+            updateRateFormatted(if (updateRx) rxTrans else txTrans)
+        } else {
+            logD("threshold is not met, hiding")
+            state.rateVisible = false
         }
+        handler.post(this::notifyCallbacks)
+        timeSinceUpdate = SystemClock.uptimeMillis()
     }
 
     private fun updateRateFormatted(bytes: Long) {
@@ -249,8 +283,9 @@ class NetworkTrafficMonitor @Inject constructor(
     }
 
     /**
-     * Class holding relevant information for the view in StatusBar to
-     * update or instantiate from. Not meant to be instantiated outside the parent class.
+     * Class holding relevant information for the view in
+     * StatusBar to update or instantiate from. Not meant
+     * to be instantiated outside the parent class.
      */
     inner class NetworkTrafficState {
         var slot: String? = null
@@ -287,7 +322,7 @@ class NetworkTrafficMonitor @Inject constructor(
                 "visible = $visible, rateVisible = $rateVisible ]"
     }
 
-    inner class SettingsObserver: ContentObserver(handler) {
+    private inner class SettingsObserver: ContentObserver(handler) {
         override fun onChange(selfChange: Boolean, uri: Uri) {
             logD("settings changed for $uri")
             when (uri.lastPathSegment) {
@@ -317,7 +352,7 @@ class NetworkTrafficMonitor @Inject constructor(
                 register()
             } else {
                 unregister()
-                cancelScheduledTask()
+                cancelScheduledJob()
             }
         }
 
@@ -348,18 +383,27 @@ class NetworkTrafficMonitor @Inject constructor(
         }
     }
 
+    /**
+     * Callback interface that clients can implement
+     * and register with resgisterListener method to
+     * listen to updates on [NetworkTrafficState].
+     */
     interface Callback {
-        // Invoked whenever a state variable is actually changed
+
+        /**
+         * Called to notify clients about possible state changes.
+         *
+         * @param state new updated state.
+         */
         fun onTrafficUpdate(state: NetworkTrafficState)
     }
 
     companion object {
         private const val TAG = "NetworkTrafficMonitor"
-        private const val TIMER_TAG = "NetworkTrafficMonitor.Timer"
         private const val LINE_SEPARATOR = "\n"
         private const val DEBUG = false
 
-        private val units = arrayOf<String>("KiB/s", "MiB/s", "GiB/s")
+        private val units = arrayOf("KiB/s", "MiB/s", "GiB/s")
         private val singleDecimalFmt = DecimalFormat("00.0")
         private val doubleDecimalFmt = DecimalFormat("0.00")
         private val KiB: Long = DataUnit.KIBIBYTES.toBytes(1)
