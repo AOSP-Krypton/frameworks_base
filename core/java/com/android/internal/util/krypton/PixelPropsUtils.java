@@ -108,20 +108,10 @@ public final class PixelPropsUtils {
         }
         if (packagesToChange.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
-            ravenProps.forEach((key, value) -> {
-                if (packageName.equals("com.google.android.gms") && key.equals("MODEL")) {
-                    return;
-                } else {
-                    setPropValue(key, value);
-                }
-            });
+            ravenProps.forEach(PixelPropsUtils::setPropValue);
         } else if (packagesToChangePixelXL.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
             marlinProps.forEach(PixelPropsUtils::setPropValue);
-        }
-        // Set proper indexing fingerprint
-        if (packageName.equals("com.google.android.settings.intelligence")) {
-            setPropValue("FINGERPRINT", Build.DATE);
         }
     }
 
