@@ -63,7 +63,7 @@ class NetworkTrafficMonitor @Inject constructor(
     private val wakefulnessLifecycle: WakefulnessLifecycle,
     private val systemSettings: SystemSettings,
 ) {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     private val state = NetworkTrafficState()
     private val settingsObserver: SettingsObserver
