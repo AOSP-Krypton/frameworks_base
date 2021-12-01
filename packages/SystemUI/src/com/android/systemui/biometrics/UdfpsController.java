@@ -321,14 +321,12 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
         @Override
         public void onAcquired(int sensorId, int acquiredInfo, int vendorCode) {
             mFgExecutor.execute(() -> {
+                final boolean isDozing = mStatusBarStateController.isDozing() || !mScreenOn;
                 if (acquiredInfo == 6 && vendorCode == mUdfpsVendorCode) {
-                    final boolean isDozing = mStatusBarStateController.isDozing() || !mScreenOn;
                     if ((mScreenOffFod && isDozing) /** Screen off and dozing */ ||
                             (mKeyguardUpdateMonitor.isDreaming() && mScreenOn) /** AOD or pulse */) {
-                        if (!mScreenOn) {
-                            mPowerManager.wakeUp(SystemClock.uptimeMillis(),
+                        mPowerManager.wakeUp(SystemClock.uptimeMillis(),
                                 PowerManager.WAKE_REASON_GESTURE, TAG);
-                        }
                         onAodInterrupt(0, 0, 0, 0);
                     }
                 }
