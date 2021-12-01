@@ -95,15 +95,24 @@ class NetworkTrafficMonitor @Inject constructor(
     // Whether external callbacks and observers are registered
     private var registered = false
 
+    // Whether there is an active internet connection
+    private var networkAvailable = false
+
+    // Whether device is dozing, should not run the monitor
+    // in this state
+    private var isDozing = false
+
     // To schedule / unschedule task based on connectivity
     private val networkCallback = object: NetworkCallback() {
         override fun onAvailable(network: Network) {
             logD("onAvailable")
+            networkAvailable = true
             scheduleJob()
         }
 
         override fun onLost(network: Network) {
             logD("onLost")
+            networkAvailable = false
             cancelScheduledJob()
         }
     }
@@ -112,11 +121,13 @@ class NetworkTrafficMonitor @Inject constructor(
     private val wakefulnessObserver = object: WakefulnessLifecycle.Observer {
         override fun onStartedGoingToSleep() {
             logD("onStartedGoingToSleep")
+            isDozing = true
             cancelScheduledJob()
         }
 
         override fun onStartedWakingUp() {
             logD("onStartedWakingUp")
+            isDozing = false
             scheduleJob()
         }
     }
@@ -204,6 +215,14 @@ class NetworkTrafficMonitor @Inject constructor(
     private fun scheduleJob() {
         if (trafficUpdateJob != null) {
             logD("Job is already scheduled, returning")
+            return
+        }
+        if (!networkAvailable) {
+            logD("No active connection, returning")
+            return
+        }
+        if (isDozing) {
+            logD("Device is dozing, returning")
             return
         }
         logD("scheduling job")
