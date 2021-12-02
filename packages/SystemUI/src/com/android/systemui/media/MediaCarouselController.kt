@@ -342,7 +342,7 @@ class MediaCarouselController @Inject constructor(
                         .indexOfFirst { key -> it == key }
                     mediaCarouselScrollHandler
                         .scrollToPlayer(previousVisibleIndex, activeMediaIndex)
-                } ?: {
+                } ?: run {
                     mediaCarouselScrollHandler.scrollToPlayer(destIndex = activeMediaIndex)
                 }
             }

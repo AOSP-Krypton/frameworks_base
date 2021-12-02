@@ -9,6 +9,7 @@ import android.os.Handler
 import android.view.View
 import com.android.systemui.animation.Interpolators
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.statusbar.LightRevealScrim
@@ -46,9 +47,9 @@ class UnlockedScreenOffAnimationController @Inject constructor(
     private val statusBarStateControllerImpl: StatusBarStateControllerImpl,
     private val keyguardViewMediatorLazy: dagger.Lazy<KeyguardViewMediator>,
     private val keyguardStateController: KeyguardStateController,
-    private val dozeParameters: dagger.Lazy<DozeParameters>
+    private val dozeParameters: dagger.Lazy<DozeParameters>,
+    @Main private val handler: Handler,
 ) : WakefulnessLifecycle.Observer {
-    private val handler = Handler()
 
     private lateinit var statusBar: StatusBar
     private lateinit var lightRevealScrim: LightRevealScrim
