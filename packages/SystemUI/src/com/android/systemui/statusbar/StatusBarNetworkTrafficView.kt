@@ -28,9 +28,9 @@ import android.widget.TextView
 
 import com.android.systemui.R
 import com.android.systemui.plugins.DarkIconDispatcher
-import com.android.systemui.statusbar.policy.NetworkTrafficMonitor.NetworkTrafficState
 import com.android.systemui.statusbar.StatusBarIconView.STATE_DOT
 import com.android.systemui.statusbar.StatusBarIconView.STATE_ICON
+import com.android.systemui.statusbar.policy.NetworkTrafficMonitor.NetworkTrafficState
 
 /**
  * Layout class for statusbar network traffic indicator
@@ -73,7 +73,7 @@ class StatusBarNetworkTrafficView(
         dotView?.setDecorColor(color)
     }
 
-    override fun isIconVisible() = state?.let { it.visible } ?: false
+    override fun isIconVisible() = state?.visible == true
 
     override fun setVisibleState(newVisibleState: Int, animate: Boolean) {
         logD("setVisibleState, newVisibleState = $newVisibleState")
@@ -81,20 +81,18 @@ class StatusBarNetworkTrafficView(
             return
         }
         visibleState = newVisibleState
-        trafficGroup?.setVisibility(if (newVisibleState == STATE_ICON) VISIBLE else GONE)
-        dotView?.setVisibility(if (newVisibleState == STATE_DOT) VISIBLE else GONE)
+        trafficGroup?.setVisibility(if (visibleState == STATE_ICON) VISIBLE else GONE)
+        dotView?.setVisibility(if (visibleState == STATE_DOT) VISIBLE else GONE)
     }
 
     override fun getVisibleState() = visibleState
 
     override fun getDrawingRect(outRect: Rect) {
         super.getDrawingRect(outRect)
-        val translationX = getTranslationX().toInt()
-        val translationY = getTranslationY().toInt()
-        outRect.left += translationX
-        outRect.right += translationX
-        outRect.top += translationY
-        outRect.bottom += translationY
+        outRect.left += translationX.toInt()
+        outRect.right += translationX.toInt()
+        outRect.top += translationY.toInt()
+        outRect.bottom += translationY.toInt()
     }
 
     override fun onDarkChanged(area: Rect, darkIntensity: Float, tint: Int) {
@@ -106,31 +104,20 @@ class StatusBarNetworkTrafficView(
 
     fun applyNetworkTrafficState(newState: NetworkTrafficState) {
         logD("applyNetworkTrafficState, state = $state, newState = $newState")
-        var requestLayout = false
-
-        if (newState == null) {
-            requestLayout = getVisibility() != GONE
-            setVisibility(GONE)
-            state = null
-        } else if (state == null) {
-            requestLayout = true
+        if (state == null) {
             state = newState.copy()
             initViewState()
-        } else if (!state!!.equals(newState)) {
-            updateState(newState.copy())
-        }
-
-        logD("applyNetworkTrafficState, requestLayout = $requestLayout")
-        if (requestLayout) {
             requestLayout()
+        } else if (state != newState) {
+            updateState(newState.copy())
         }
     }
 
     private fun setWidgets() {
-        trafficGroup = findViewById(R.id.traffic_group) as FrameLayout?
-        trafficRate = findViewById(R.id.traffic_rate) as TextView?
-        dotView = (findViewById(R.id.dot_view) as StatusBarIconView?)?.also {
-            setVisibleState(STATE_DOT)
+        trafficGroup = findViewById(R.id.traffic_group)
+        trafficRate = findViewById(R.id.traffic_rate)
+        dotView = findViewById<StatusBarIconView>(R.id.dot_view)?.also {
+            it.setVisibleState(STATE_DOT)
         }
     }
 
@@ -140,7 +127,7 @@ class StatusBarNetworkTrafficView(
             logD("setTextSize")
             trafficRate?.setTextSize(COMPLEX_UNIT_PX, newState.size.toFloat())
         }
-        if (!(state?.rate?.equals(newState.rate) ?: false)) {
+        if (state?.rate != newState.rate) {
             logD("setText")
             trafficRate?.setText(newState.rate)
         }
@@ -160,9 +147,9 @@ class StatusBarNetworkTrafficView(
         trafficRate?.let {
             it.setTextSize(COMPLEX_UNIT_PX, state?.size?.toFloat() ?: DEFAULT_TEXT_SIZE)
             it.setText(state?.rate?.toString())
-            it.setVisibility(if (state?.rateVisible ?: false) VISIBLE else GONE)
+            it.setVisibility(if (state?.rateVisible == true) VISIBLE else GONE)
         }
-        setVisibility(if (state?.visible ?: false) VISIBLE else GONE)
+        setVisibility(if (state?.visible == true) VISIBLE else GONE)
     }
 
     override fun toString() = "StatusBarNetworkTrafficView(slot = $slot, state = $state)"
@@ -173,16 +160,13 @@ class StatusBarNetworkTrafficView(
         private const val DEBUG = false
 
         @JvmStatic
-        fun fromContext(context: Context, slot: String): StatusBarNetworkTrafficView {
-            val v = LayoutInflater.from(context).inflate(R.layout.status_bar_network_traffic_view,
-                null) as StatusBarNetworkTrafficView
-            with(v) {
-                setSlot(slot)
-                setWidgets()
-                setVisibleState(STATE_ICON)
+        fun fromContext(context: Context, slot: String): StatusBarNetworkTrafficView =
+            (LayoutInflater.from(context).inflate(R.layout.status_bar_network_traffic_view,
+                    null) as StatusBarNetworkTrafficView).also {
+                it.slot = slot
+                it.setWidgets()
+                it.setVisibleState(STATE_ICON)
             }
-            return v
-        }
 
         private fun logD(msg: String) {
             if (DEBUG) Log.d(TAG, msg)
