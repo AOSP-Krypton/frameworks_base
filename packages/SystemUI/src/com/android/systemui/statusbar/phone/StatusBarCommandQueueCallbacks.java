@@ -613,6 +613,11 @@ public class StatusBarCommandQueueCallbacks implements CommandQueue.Callbacks {
         }
     }
 
+    @Override
+    public void setBlockedGesturalNavigation(boolean blocked) {
+        mStatusBar.setBlockedGesturalNavigation(blocked);
+    }
+
     private boolean isGoingToSleep() {
         return mWakefulnessLifecycle.getWakefulness()
                 == WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP;
