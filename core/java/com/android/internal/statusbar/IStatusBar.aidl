@@ -340,4 +340,9 @@ oneway interface IStatusBar
     void enterStageSplitFromRunningApp(boolean leftOrTop);
 
     void toggleCameraFlash();
+
+    /**
+     * Used to block or unblock usage of gestural navigation
+     */
+    void setBlockedGesturalNavigation(boolean blocked);
 }
