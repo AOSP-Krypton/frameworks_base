@@ -66,6 +66,7 @@ public final class PixelPropsUtils {
         "com.google.android.apps.safetyhub",
         "com.google.android.apps.subscriptions.red",
         "com.google.android.apps.tachyon",
+        "com.google.android.apps.translate",
         "com.google.android.apps.turbo",
         "com.google.android.apps.turboadapter",
         "com.google.android.apps.wallpaper",
