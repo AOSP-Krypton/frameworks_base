@@ -43,6 +43,7 @@
 
     <!-- Caffeine QS Tile -->
     <string name="quick_settings_caffeine_label">保持亮屏</string>
+    <string name="quick_settings_caffeine_label_off">关闭</string>
     <string name="accessibility_quick_settings_caffeine_off">保持亮屏关闭</string>
     <string name="accessibility_quick_settings_caffeine_on">保持亮屏开启</string>
 
@@ -92,5 +93,13 @@
     <!-- Accessibility label for nfc icon (not shown on screen) [CHAR LIMIT=NONE] -->
     <string name="accessibility_status_bar_nfc">Nfc</string>
 
-</resources>
+    <!-- Screen record -->
+    <!-- Label for notification action to delete a screen recording file [CHAR LIMIT=35] -->
+    <string name="screenrecord_delete_label">删除</string>
+    <!-- A toast message shown after successfully deleting a screen recording [CHAR LIMIT=NONE] -->
+    <string name="screenrecord_delete_description">屏幕录制已删除</string>
+    <string name="screenrecord_stopdot_label">显示小白点\n长按来移动它</string>
+    <string name="screenrecord_lowquality_label">降低质量以减少文件大小</string>
+    <string name="screenrecord_longer_timeout_switch_label">超大文件录制\n最大：15GiB</string>
 
+</resources>
