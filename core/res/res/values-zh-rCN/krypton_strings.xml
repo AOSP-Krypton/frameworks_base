@@ -57,6 +57,11 @@
 
     <!-- Button that copies the url to the log of a crashed application -->
     <string name="aerr_copy">复制崩溃日志链接</string>
-    <string name="url_copy_success">已成功复制链接</string>
-    <string name="url_copy_failed">向 dogbin 上传日志时发生错误</string>
+
+    <!-- Title for the dialog shown when uploading logs -->
+    <string name="uploading_log_title">上传日志中</string>
+
+    <!-- Toast messages to show on bin upload success / failure-->
+    <string name="url_copy_success">复制链接成功</string>
+    <string name="url_copy_failed">上传日志时发生错误</string>
 </resources>
