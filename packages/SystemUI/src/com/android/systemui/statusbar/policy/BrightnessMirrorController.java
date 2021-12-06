@@ -163,7 +163,7 @@ public class BrightnessMirrorController
     private void reinflate() {
         int index = mStatusBarWindow.indexOfChild(mBrightnessMirror);
         mStatusBarWindow.removeView(mBrightnessMirror);
-        mBrightnessMirror = (FrameLayout) LayoutInflater.from(mBrightnessMirror.getContext())
+        mBrightnessMirror = (FrameLayout) LayoutInflater.from(mStatusBarWindow.getContext())
                 .inflate(R.layout.brightness_mirror_container, mStatusBarWindow, false);
         mToggleSliderController = setMirrorLayout();
         mIcon = mBrightnessMirror.findViewById(R.id.brightness_icon);
