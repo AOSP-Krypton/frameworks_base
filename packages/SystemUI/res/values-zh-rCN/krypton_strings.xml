@@ -65,7 +65,7 @@
     <string name="quick_settings_sound_label">声音</string>
     <string name="quick_settings_sound_ring">响铃</string>
     <string name="quick_settings_sound_vibrate">震动</string>
-    <string name="quick_settings_sound_dnd">免打扰</string>
+    <string name="quick_settings_sound_dnd">勿扰</string>
 
     <!-- Indication on the keyguard that is shown when the device is charging with a dash charger. Should match keyguard_plugged_in_dash_charging [CHAR LIMIT=40]-->
     <string name="keyguard_indication_dash_charging_time" formatted="false"><xliff:g id="percentage">%2$s</xliff:g> • Warp 闪充中 (还需 <xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> 充满)</string>
