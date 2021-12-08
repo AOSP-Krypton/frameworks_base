@@ -52,7 +52,7 @@
     <string name="reboot_to_recovery_message" translatable="false">Rebooting to recovery</string>
     <string name="reboot_to_bootloader_title" translatable="false">Bootloader</string>
     <string name="reboot_to_bootloader_message" translatable="false">Rebooting to bootloader</string>
-    <string name="reboot_title">重启</string>
+    <string name="reboot_title">重新启动</string>
     <string name="reboot_message">重启系统中...</string>
 
     <!-- Button that copies the url to the log of a crashed application -->
