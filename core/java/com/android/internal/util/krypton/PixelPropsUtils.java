@@ -38,6 +38,13 @@ public final class PixelPropsUtils {
         "TYPE", "user"
     );
 
+     private static final Map<String, String> ravenProps = Map.of(
+        "DEVICE", "raven",
+        "PRODUCT", "raven",
+        "MODEL", "Pixel 6 Pro",
+        "FINGERPRINT", "google/raven/raven:12/SD1A.210817.036/7805805:user/release-keys"
+     );
+
     private static final Map<String, String> redfinProps = Map.of(
         "DEVICE", "redfin",
         "PRODUCT", "redfin",
@@ -53,7 +60,6 @@ public final class PixelPropsUtils {
     );
 
     private static final List<String> packagesToChange = List.of(
-        "com.android.vending",
         "com.breel.wallpapers20",
         "com.google.android.apps.customization.pixel",
         "com.google.android.apps.fitness",
@@ -76,8 +82,6 @@ public final class PixelPropsUtils {
         "com.google.android.configupdater",
         "com.google.android.dialer",
         "com.google.android.ext.services",
-        "com.google.android.gms",
-        "com.google.android.gms.location.history",
         "com.google.android.googlequicksearchbox",
         "com.google.android.gsf",
         "com.google.android.inputmethod.latin",
@@ -85,6 +89,12 @@ public final class PixelPropsUtils {
         "com.google.intelligence.sense",
         "com.google.pixel.dynamicwallpapers",
         "com.google.pixel.livewallpaper"
+    );
+
+    private static final List<String> packagesToChangePixel5 = List.of(
+        "com.android.vending",
+        "com.google.android.gms",
+        "com.google.android.gms.location.history"
     );
 
     private static final List<String> packagesToChangePixelXL = List.of(
@@ -109,7 +119,7 @@ public final class PixelPropsUtils {
         }
         if (packagesToChange.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
-            redfinProps.forEach((key, value) -> {
+            ravenProps.forEach((key, value) -> {
                 if (packageName.equals("com.google.android.gms") && key.equals("MODEL")) {
                     return;
                 } else {
@@ -119,6 +129,9 @@ public final class PixelPropsUtils {
         } else if (packagesToChangePixelXL.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
             marlinProps.forEach(PixelPropsUtils::setPropValue);
+        } else if (packagesToChangePixel5.contains(packageName)) {
+            commonProps.forEach(PixelPropsUtils::setPropValue);
+            redfin.forEach(PixelPropsUtils::setPropValue);
         }
         // Set proper indexing fingerprint
         if (packageName.equals("com.google.android.settings.intelligence")) {
