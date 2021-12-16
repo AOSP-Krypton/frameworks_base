@@ -21,8 +21,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.UserHandle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.ViewConfiguration;
@@ -57,10 +55,6 @@ public final class SingleKeyGestureDetector {
     private volatile boolean mHandledByLongPress = false;
     private final Handler mHandler;
     private static final long MULTI_PRESS_TIMEOUT = ViewConfiguration.getMultiPressTimeout();
-
-    private static final int TORCH_DOUBLE_TAP_DELAY = 170;
-
-    private final Context mContext;
 
     /** Supported gesture flags */
     public static final int KEY_LONGPRESS = 1 << 1;
@@ -180,7 +174,6 @@ public final class SingleKeyGestureDetector {
     }
 
     public SingleKeyGestureDetector(Context context) {
-        mContext = context;
         mHandler = new KeyHandler();
     }
 
@@ -310,11 +303,7 @@ public final class SingleKeyGestureDetector {
             Message msg = mHandler.obtainMessage(MSG_KEY_DELAYED_PRESS, mActiveRule.mKeyCode,
                     mKeyPressCounter, downTime);
             msg.setAsynchronous(true);
-            mHandler.sendMessageDelayed(msg, Settings.System.getIntForUser(
-                    mContext.getContentResolver(),
-                    Settings.System.TORCH_POWER_BUTTON_GESTURE,
-                    0, UserHandle.USER_CURRENT) == 1 ? TORCH_DOUBLE_TAP_DELAY
-                    : MULTI_PRESS_TIMEOUT);
+            mHandler.sendMessageDelayed(msg, MULTI_PRESS_TIMEOUT);
             return true;
         }
         reset();

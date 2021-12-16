@@ -5352,16 +5352,6 @@ public final class Settings {
          * @hide
          */
         public static final String NOTIFICATION_SOUND_VIB_SCREEN_ON = "notification_sound_vib_screen_on";
- 
-        /**
-         * Whether the torch launch gesture to double tap or long press the power button when the
-         * screen is off should be enabled. *
-         * 0: disabled
-         * 1: double tap power for torch
-         * 2: long tap power for torch
-         * @hide
-         */
-        public static final String TORCH_POWER_BUTTON_GESTURE = "torch_power_button_gesture";
 
         /**
          * Whether to hide navbar pill and keyboard space.
