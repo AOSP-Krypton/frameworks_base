@@ -1778,9 +1778,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                         ((ContentProviderRecord) msg.obj).onProviderPublishStatusLocked(false);
                     }
                 } break;
-            case GamingModeHelper.MSG_SEND_GAMING_MODE_BROADCAST: {
-                mContext.sendBroadcastAsUser((Intent) msg.obj, UserHandle.CURRENT_OR_SELF);
-            } break;
             }
         }
     }
@@ -7525,7 +7522,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             mLocalDeviceIdleController =
                     LocalServices.getService(DeviceIdleInternal.class);
             mActivityTaskManager.onSystemReady();
-            mActivityTaskManager.mGamingModeHelper = new GamingModeHelper(mContext, mHandler);
+            mActivityTaskManager.mGamingModeHelper = new GamingModeHelper(mContext);
             // Make sure we have the current profile info, since it is needed for security checks.
             mUserController.onSystemReady();
             mAppOpsService.systemReady();

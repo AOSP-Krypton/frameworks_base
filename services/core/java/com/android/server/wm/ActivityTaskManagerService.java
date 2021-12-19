@@ -838,11 +838,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         registerTaskStackListener(new TaskStackListener() {
             @Override
             public void onTaskFocusChanged(int taskId, boolean focused)  {
-                if (mGamingModeHelper == null || mRootWindowContainer == null || !focused) return;
-                final Task task = mRootWindowContainer.anyTaskForId(taskId).getRootTask();
-                if (!task.inPinnedWindowingMode() &&
-                        !task.inFreeformWindowingMode() && task.realActivity != null) {
-                    mGamingModeHelper.onTopAppChanged(task.realActivity.getPackageName());
+                if (mGamingModeHelper == null || mRootWindowContainer == null) return;
+                final Task task = mRootWindowContainer.anyTaskForId(taskId);
+                if (task == null) return;
+                final Task rootTask = task.getRootTask();
+                if (rootTask != null && !rootTask.inPinnedWindowingMode() &&
+                        !rootTask.inFreeformWindowingMode() && rootTask.realActivity != null) {
+                    mGamingModeHelper.onTopAppChanged(rootTask.realActivity.getPackageName(), focused);
                 }
             }
         });
