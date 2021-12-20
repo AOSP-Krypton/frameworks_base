@@ -393,17 +393,14 @@ public class BatteryMeterView extends LinearLayout implements
         final ContentResolver resolver = mContext.getContentResolver();
 
         final boolean showing = mBatteryPercentView != null;
-        final int showBatteryPercent = Settings.System.getIntForUser(
-                resolver, SHOW_BATTERY_PERCENT, 0, mUser);
+        final boolean showBatteryPercent = Settings.System.getIntForUser(
+                resolver, SHOW_BATTERY_PERCENT, 0, mUser) == 1;
         final boolean userDrawPercentInside = Settings.System.getIntForUser(
                 resolver, SHOW_BATTERY_PERCENT_INSIDE, 0, mUser) == 1;
-        final boolean drawPercent = mShowPercentMode == MODE_DEFAULT &&
-                showBatteryPercent == 1;
-        final boolean drawPercentOnly = mShowPercentMode == MODE_ESTIMATE ||
-                showBatteryPercent == 2;
+	final boolean drawPercent = showBatteryPercent && (mShowPercentMode != MODE_OFF);
         final boolean isText = mBatteryStyle == BATTERY_STYLE_TEXT;
 
-        if (drawPercentOnly || isText || (drawPercent && (!userDrawPercentInside || mCharging))) {
+        if (isText || (drawPercent && (!userDrawPercentInside || mCharging))) {
             // draw next to the icon
             mCircleDrawable.setShowPercent(false);
             mThemedDrawable.setShowPercent(false);
