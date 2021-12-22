@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2021 AOSP-Krypton Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- AlertSlider -->
+    <string name="alert_slider_mode_priority_text">僅優先</string>
+    <string name="alert_slider_mode_dnd_text">勿擾</string>
+
+    <!-- Reader mode QS tile -->
+    <string name="quick_settings_reading_mode">閱讀模式</string>
+    <string name="accessibility_quick_settings_reading_mode_on">閱讀模式開啟</string>
+    <string name="accessibility_quick_settings_reading_mode_off">閱讀模式關閉</string>
+    <string name="accessibility_quick_settings_reading_mode_changed_on">閱讀模式已開啟</string>
+    <string name="accessibility_quick_settings_reading_mode_changed_off">閱讀模式已關閉</string>
+
+    <!-- Refresh Rate Tile -->
+    <string name="refresh_rate_tile_label">重新整理率</string>
+    <string name="auto_mode_label">自動</string>
+
+    <!-- Advanced Reboot -->
+    <string name="global_action_restart_advanced">高階選項</string>
+    <string name="global_action_restart_recovery">恢復模式</string>
+    <string name="global_action_restart_bootloader">引導模式</string>
+    <string name="global_action_restart_ui">系統介面</string>
+
+    <!-- Label for UI element which allows deleting the screenshot [CHAR LIMIT=30] -->
+    <string name="screenshot_delete_label">刪除</string>
+    <!-- Content description indicating that tapping the element will allow deleting the screenshot [CHAR LIMIT=NONE] -->
+    <string name="screenshot_delete_description">刪除截圖</string>
+
+    <!-- Caffeine QS Tile -->
+    <string name="quick_settings_caffeine_label">保持亮屏</string>
+    <string name="quick_settings_caffeine_label_off">關閉</string>
+    <string name="accessibility_quick_settings_caffeine_off">保持亮屏關閉</string>
+    <string name="accessibility_quick_settings_caffeine_on">保持亮屏開啟</string>
+
+    <!-- Ambient display QS tile -->
+    <string name="quick_settings_ambient_display_label">環境顯示</string>
+    <string name="accessibility_quick_settings_ambient_display_off">環境顯示開啟</string>
+    <string name="accessibility_quick_settings_ambient_display_on">環境顯示關閉</string>
+    <string name="accessibility_quick_settings_ambient_display_changed_off">環境顯示已關閉</string>
+    <string name="accessibility_quick_settings_ambient_display_changed_on">環境顯示已開啟</string>
+
+    <!-- Sync QS Tile -->
+    <string name="quick_settings_sync_label">同步</string>
+    <string name="accessibility_quick_settings_sync_off">同步關閉</string>
+    <string name="accessibility_quick_settings_sync_on">同步開啟</string>
+    <string name="accessibility_quick_settings_sync_changed_off">同步已關閉</string>
+    <string name="accessibility_quick_settings_sync_changed_on">同步已開啟</string>
+
+    <!-- Sound QS Tile -->
+    <string name="quick_settings_sound_label">聲音</string>
+    <string name="quick_settings_sound_ring">響鈴</string>
+    <string name="quick_settings_sound_vibrate">震動</string>
+    <string name="quick_settings_sound_dnd">勿擾</string>
+
+    <!-- Indication on the keyguard that is shown when the device is charging with a dash charger. Should match keyguard_plugged_in_dash_charging [CHAR LIMIT=40]-->
+    <string name="keyguard_indication_dash_charging_time" formatted="false"><xliff:g id="percentage">%2$s</xliff:g> • Warp 閃充中 (還需 <xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> 充滿)</string>
+    <string name="keyguard_plugged_in_dash_charging">Warp 閃充中</string>
+
+    <!-- Anti flicker QS tile -->
+    <string name="quick_settings_anti_flicker">防閃爍</string>
+
+    <!-- AOD QS tile -->
+    <string name="quick_settings_aod_label">環境顯示</string>
+    <string name="quick_settings_aod_on_charge_label">充電顯示環境顯示</string>
+    <string name="quick_settings_aod_off_label">關閉環境顯示</string>
+    <string name="quick_settings_aod_off_powersave_label">環境顯示 關閉\n省電模式</string>
+
+    <!-- DataSwitch Tile -->
+    <string name="qs_data_switch_label">切換資料卡</string>
+    <string name="qs_data_switch_toast_0">當前未插入 SIM 卡</string>
+    <string name="qs_data_switch_toast_1">當前只插入了一張 SIM 卡</string>
+    <string name="qs_data_switch_changed_1">將資料卡切換到 SIM 1</string>
+    <string name="qs_data_switch_changed_2">將資料卡切換到 SIM 2</string>
+
+    <!-- Name of the nfc status bar icon. -->
+    <string name="status_bar_nfc">NFC</string>
+
+    <!-- Accessibility label for nfc icon (not shown on screen) [CHAR LIMIT=NONE] -->
+    <string name="accessibility_status_bar_nfc">Nfc</string>
+
+    <!-- Screen record -->
+    <!-- Label for notification action to delete a screen recording file [CHAR LIMIT=35] -->
+    <string name="screenrecord_delete_label">刪除</string>
+    <!-- A toast message shown after successfully deleting a screen recording [CHAR LIMIT=NONE] -->
+    <string name="screenrecord_delete_description">螢幕錄製已刪除</string>
+    <string name="screenrecord_stopdot_label">顯示小白點\n長按來移動它</string>
+    <string name="screenrecord_lowquality_label">降低質量以減少檔案大小</string>
+    <string name="screenrecord_longer_timeout_switch_label">超大檔案錄製\n最大：15GiB</string>
+
+</resources>
