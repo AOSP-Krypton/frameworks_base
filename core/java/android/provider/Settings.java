@@ -5542,13 +5542,13 @@ public final class Settings {
          * Whether to enable blur for media album art on keyguard
          * @hide
          */
-        public static final String KEYGUARD_MEDIA_ART_ENABLE_BLUR = "KEYGUARD_MEDIA_ART_enable_blur";
+        public static final String KEYGUARD_MEDIA_ART_ENABLE_BLUR = "keyguard_media_art_enable_blur";
 
         /**
          * Adjust blur radius for media album art on keyguard
          * @hide
          */
-        public static final String KEYGUARD_MEDIA_ART_BLUR_RADIUS = "KEYGUARD_MEDIA_ART_blur_radius";
+        public static final String KEYGUARD_MEDIA_ART_BLUR_RADIUS = "keyguard_media_art_blur_radius";
 
         /**
          * IMPORTANT: If you add a new public settings you also have to add it to
