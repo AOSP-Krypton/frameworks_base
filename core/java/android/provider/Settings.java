@@ -5551,138 +5551,158 @@ public final class Settings {
         public static final String KEYGUARD_MEDIA_ART_BLUR_RADIUS = "keyguard_media_art_blur_radius";
 
         /**
-         * Setting to enable/disable gaming mode
+         * Whether or not gaming mode is enabled.
+         * Default 0
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_ENABLED = "gaming_mode_enabled";
 
         /**
-         * 0 - user is not in gaming mode
-         * 1 - user is in gaming mode
+         * Whether or not gaming mode is active.
+         * Default 0
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_ACTIVE = "gaming_mode_active";
 
         /**
-         * Dynamically identify the top application and add it to the list
+         * Whether to dynamically identify the launched application and
+         * add it to {@link GAMING_MODE_APP_LIST}.
+         * Default 1
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_DYNAMIC_ADD = "gaming_mode_dynamic_add";
 
         /**
+         * List of application package names separated by a semi-colon, for which gaming
+         * mode should be enabled on launch.
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_APP_LIST = "gaming_mode_app_list";
 
         /**
-         * Opacity adjustment for the GamingMode's menu
+         * Whether to enable a floating view for quick controls.
+         * Default 1
+         *
+         * @hide
+         */
+        public static final String GAMING_MODE_USE_OVERLAY_MENU = "gaming_mode_use_overlay_menu";
+
+        /**
+         * Opacity level of the floating menu as a percentage.
+         * Default 75
+         *
          * @hide
          */
         public static final String GAMING_MODE_MENU_OPACITY = "gaming_mode_menu_opacity";
 
         /**
-         * Auto answer call in gaming mode
+         * Whether to auto answer call in gaming mode.
+         * Default 0
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_AUTO_ANSWER_CALL = "gaming_mode_auto_answer_call";
 
         /**
+         * Whether to disable auto brightness in gaming mode.
+         * Default 1
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_DISABLE_AUTO_BRIGHTNESS = "gaming_mode_disable_auto_brightness";
 
         /**
+         * Whether to disable notification heads-up or bubble in gaming mode.
+         * Default 1
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_DISABLE_NOTIFICATION_ALERT = "gaming_mode_disable_notification_alert";
 
         /**
+         * Whether to disable ringtone for incoming calls in gaming mode.
+         * Default 0
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_DISABLE_RINGTONE = "gaming_mode_disable_ringtone";
 
         /**
+         * Whether to disable swipe gestures in gaming mode.
+         * Default 0
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_DISABLE_GESTURE = "gaming_mode_disable_gesture";
 
         /**
-         * Change performance level in gaming mode
+         * Whether to enable performance level control in gaming mode (for devices that supports it).
+         * Default 1
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_CHANGE_PERFORMANCE_LEVEL = "gaming_mode_change_performance_level";
 
         /**
-         * Prefermance level
+         * Prefermance level.
          * 0 - 6 : Powersave - Performance
+         * Default 5
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_PERFORMANCE_LEVEL = "gaming_mode_performance_level";
 
         /**
+         * List of application package names separated by a semi-colon, to be displayed on
+         * overlay view that can be launched in a free-form window.
+         *
          * @hide
          */
-        @Readable
         public static final String GAMING_MODE_QS_APP_LIST = "gaming_mode_qs_app_list";
 
         /**
+         * Whether to show incoming notifications as an animated disappearing 
+         * transparent overlay in gaming mode
+         *
          * @hide
          */
-        @Readable
-        public static final String GAMING_MODE_SHOW_DANMAKU = "gaming_mode_show_danmaku";
+        public static final String GAMING_MODE_SHOW_NOTIFICATION_OVERLAY = "gaming_mode_show_notification_overlay";
 
         /**
+         * Size of notification overlay text when device is in portrait mode (in px units).
+         * Default 60
+         *
          * @hide
          */
-        @Readable
-        public static final String GAMING_MODE_DANMAKU_SPEED_HORIZONTAL = "gaming_mode_danmaku_speed_horizontal";
+        public static final String GAMING_MODE_NOTIFICATION_SIZE_PORTRAIT = "gaming_mode_notification_size_portrait";
 
         /**
+         * Size of notification overlay text when device is in landscape mode (in px units).
+         * Default 60
+         *
          * @hide
          */
-        @Readable
-        public static final String GAMING_MODE_DANMAKU_SPEED_VERTICAL = "gaming_mode_danmaku_speed_vertical";
+        public static final String GAMING_MODE_NOTIFICATION_SIZE_LANDSCAPE = "gaming_mode_notification_size_landscape";
 
         /**
+         * Whether to dynamically filter notifications for overlay view.
+         * Default 1
+         *
          * @hide
          */
-        @Readable
-        public static final String GAMING_MODE_DANMAKU_SIZE_HORIZONTAL = "gaming_mode_danmaku_size_horizontal";
+        public static final String GAMING_MODE_DYNAMIC_NOTIFICATION_FILTER = "gaming_mode_dynamic_notification_filter";
 
         /**
+         * List of application package names separated by a semi-colon to be excluded
+         * from their notifications being shown as an overlay.
+         * 
          * @hide
          */
-        @Readable
-        public static final String GAMING_MODE_DANMAKU_SIZE_VERTICAL = "gaming_mode_danmaku_size_vertical";
-
-        /**
-         * @hide
-         */
-        @Readable
-        public static final String GAMING_MODE_DANMAKU_DYNAMIC_NOTIFICATION_FILTER = "gaming_mode_danmaku_dynamic_notification_filter";
-
-        /**
-         * @hide
-         */
-        @Readable
-        public static final String GAMING_MODE_DANMAKU_APP_BLACKLIST = "gaming_mode_danmaku_app_blacklist";
-
-        /**
-         * @hide
-         */
-        @Readable
-        public static final String GAMING_MODE_USE_OVERLAY_MENU = "gaming_mode_use_overlay_menu";
+        public static final String GAMING_MODE_NOTIFICATION_APP_BLACKLIST = "gaming_mode_notification_app_blacklist";
 
         /**
          * IMPORTANT: If you add a new public settings you also have to add it to

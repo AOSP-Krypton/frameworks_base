@@ -20,6 +20,7 @@ import static android.provider.settings.validators.SettingsValidators.ANY_INTEGE
 import static android.provider.settings.validators.SettingsValidators.ANY_STRING_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.BOOLEAN_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.COMPONENT_NAME_VALIDATOR;
+import static android.provider.settings.validators.SettingsValidators.GAMING_MODE_PACKAGE_LIST_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.LENIENT_IP_ADDRESS_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.NON_NEGATIVE_INTEGER_VALIDATOR;
 import static android.provider.settings.validators.SettingsValidators.URI_VALIDATOR;
@@ -300,5 +301,23 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.KEYGUARD_MEDIA_ART, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.KEYGUARD_MEDIA_ART_ENABLE_BLUR, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.KEYGUARD_MEDIA_ART_BLUR_RADIUS, new InclusiveFloatRangeValidator(1f, 25f));
+        VALIDATORS.put(System.GAMING_MODE_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DYNAMIC_ADD, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_APP_LIST, GAMING_MODE_PACKAGE_LIST_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_USE_OVERLAY_MENU, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_MENU_OPACITY, new InclusiveIntegerRangeValidator(0, 100));
+        VALIDATORS.put(System.GAMING_MODE_AUTO_ANSWER_CALL, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DISABLE_AUTO_BRIGHTNESS, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DISABLE_NOTIFICATION_ALERT, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DISABLE_RINGTONE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DISABLE_GESTURE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_CHANGE_PERFORMANCE_LEVEL, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_PERFORMANCE_LEVEL, new InclusiveIntegerRangeValidator(0, 6));
+        VALIDATORS.put(System.GAMING_MODE_QS_APP_LIST, GAMING_MODE_PACKAGE_LIST_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_SHOW_NOTIFICATION_OVERLAY, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_NOTIFICATION_SIZE_PORTRAIT, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_NOTIFICATION_SIZE_LANDSCAPE, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_DYNAMIC_NOTIFICATION_FILTER, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(System.GAMING_MODE_NOTIFICATION_APP_BLACKLIST, GAMING_MODE_PACKAGE_LIST_VALIDATOR);
     }
 }
