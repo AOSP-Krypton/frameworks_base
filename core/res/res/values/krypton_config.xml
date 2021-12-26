@@ -85,4 +85,7 @@
 
     <!-- Wheter device supports an gaming mode profiles -->
     <bool name="config_gamingmode_performance">false</bool>
+
+    <!-- Whether device has hardware alertslider -->
+    <bool name="config_hasAlertSlider">false</bool>
 </resources>

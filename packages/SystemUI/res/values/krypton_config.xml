@@ -21,9 +21,6 @@
     -->
     <integer name="config_udfps_hbm_type">1</integer>
 
-    <!-- Whether device has hardware alertslider -->
-    <bool name="config_hasAlertSlider">false</bool>
-
     <!-- Whether alertslider is on the left edge of the device -->
     <bool name="config_alertSliderOnLeft">false</bool>
 

@@ -126,4 +126,7 @@
 
     <!-- Wheter device supports an gaming mode profiles -->
     <java-symbol type="bool" name="config_gamingmode_performance" />
+
+    <!-- Whether device has hardware alertslider -->
+    <java-symbol type="bool" name="config_hasAlertSlider" />
 </resources>
