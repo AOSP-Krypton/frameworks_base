@@ -57,3 +57,7 @@
 
 # Custom rules
 -keep class com.krypton.** { *; }
+
+# Google rules
+-keep class com.google.** { *; }
+-keep class vendor.** { *; }
