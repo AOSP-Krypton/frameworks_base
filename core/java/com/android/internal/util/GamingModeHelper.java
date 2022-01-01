@@ -28,9 +28,10 @@ import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.util.Log;
+import android.util.Slog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,9 @@ public final class GamingModeHelper {
             Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
     }
 
+    /** Must not clash with constants in ActivityManagerService */
+    public static final int MSG_SEND_GAMING_MODE_BROADCAST = 1001;
+
     private final Context mContext;
     private final PackageManager mPackageManager;
 
@@ -63,8 +67,12 @@ public final class GamingModeHelper {
     @Nullable
     private String mCurrentGamePackage;
 
-    public GamingModeHelper(Context context) {
+    @Nullable
+    private Handler mHandler;
+
+    public GamingModeHelper(Context context, Handler handler) {
         mContext = context;
+        mHandler = handler;
         mPackageManager = context.getPackageManager();
 
         final SettingsObserver observer = new SettingsObserver(new Handler(Looper.getMainLooper()));
@@ -85,7 +93,7 @@ public final class GamingModeHelper {
     }
 
     public void onTopAppChanged(@NonNull String packageName, boolean focused) {
-        if (DEBUG) Log.d(TAG, "onTopAppChanged: " + packageName + ", focused = " + focused);
+        if (DEBUG) Slog.d(TAG, "onTopAppChanged: " + packageName + ", focused = " + focused);
 
         // Gaming mode turned off, disabled if it's already enabled
         if (!mGamingModeEnabled) {
@@ -122,23 +130,30 @@ public final class GamingModeHelper {
     }
 
     private void startGamingMode(String packageName) {
-        if (DEBUG) Log.d(TAG, "startGamingMode called!");
+        if (DEBUG) Slog.d(TAG, "startGamingMode called!");
         mCurrentGamePackage = packageName;
         sendBroadcast(sGamingModeOn);
     }
 
     private void stopGamingMode() {
-        if (DEBUG) Log.d(TAG, "stopGamingMode called!");
+        if (DEBUG) Slog.d(TAG, "stopGamingMode called!");
         mCurrentGamePackage = null;
         sendBroadcast(sGamingModeOff);
     }
 
     private void sendBroadcast(Intent intent) {
-        mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
+        if (mHandler == null) {
+            Slog.w(TAG, "AMS handler is null, unable to send broadcast");
+            return;
+        }
+        final Message message = new Message();
+        message.what = MSG_SEND_GAMING_MODE_BROADCAST;
+        message.obj = new Intent(intent);
+        mHandler.sendMessage(message);
     }
 
     private void parseGameList() {
-        if (DEBUG) Log.d(TAG, "parseGameList called!");
+        if (DEBUG) Slog.d(TAG, "parseGameList called!");
         mGamingPackages.clear();
         final String gameListData = Settings.System.getString(
             mContext.getContentResolver(), Settings.System.GAMING_MODE_APP_LIST);
@@ -151,7 +166,7 @@ public final class GamingModeHelper {
         try {
             return mPackageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Package " + packageName + " doesn't exist");
+            Slog.e(TAG, "Package " + packageName + " doesn't exist");
             return null;
         }
     }
