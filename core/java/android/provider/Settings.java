@@ -5533,24 +5533,6 @@ public final class Settings {
         public static final String THREE_FINGER_GESTURE = "three_finger_gesture";
 
         /**
-         * Whether to show media album art on keyguard
-         * @hide
-         */
-        public static final String KEYGUARD_MEDIA_ART = "keyguard_media_art";
-
-        /**
-         * Whether to enable blur for media album art on keyguard
-         * @hide
-         */
-        public static final String KEYGUARD_MEDIA_ART_ENABLE_BLUR = "keyguard_media_art_enable_blur";
-
-        /**
-         * Adjust blur radius for media album art on keyguard
-         * @hide
-         */
-        public static final String KEYGUARD_MEDIA_ART_BLUR_RADIUS = "keyguard_media_art_blur_radius";
-
-        /**
          * Whether or not gaming mode is enabled.
          * Default 0
          *
