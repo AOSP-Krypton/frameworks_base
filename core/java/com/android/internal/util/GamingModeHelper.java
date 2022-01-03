@@ -70,6 +70,9 @@ public final class GamingModeHelper {
     @Nullable
     private Handler mHandler;
 
+    private boolean mDisableADB = false;
+    private boolean mADBStateChanged = false;
+
     public GamingModeHelper(Context context, Handler handler) {
         mContext = context;
         mHandler = handler;
@@ -132,12 +135,24 @@ public final class GamingModeHelper {
     private void startGamingMode(String packageName) {
         if (DEBUG) Slog.d(TAG, "startGamingMode called!");
         mCurrentGamePackage = packageName;
+        if (mDisableADB) {
+            final boolean isADBEnabled = Settings.Global.getInt(
+                mContext.getContentResolver(), Settings.Global.ADB_ENABLED, 0) == 1;
+            if (isADBEnabled) {
+                mADBStateChanged = Settings.Global.putInt(mContext.getContentResolver(),
+                    Settings.Global.ADB_ENABLED, 0);
+            }
+        }
         sendBroadcast(sGamingModeOn);
     }
 
     private void stopGamingMode() {
         if (DEBUG) Slog.d(TAG, "stopGamingMode called!");
         mCurrentGamePackage = null;
+        if (mDisableADB && mADBStateChanged) {
+            Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.ADB_ENABLED, 1);
+            mADBStateChanged = false;
+        }
         sendBroadcast(sGamingModeOff);
     }
 
@@ -195,6 +210,7 @@ public final class GamingModeHelper {
             register(resolver, Settings.System.GAMING_MODE_ACTIVE);
             register(resolver, Settings.System.GAMING_MODE_APP_LIST);
             register(resolver, Settings.System.GAMING_MODE_DYNAMIC_ADD);
+            register(resolver, Settings.System.GAMING_MODE_DISABLE_ADB);
         }
 
         void update() {
@@ -206,6 +222,8 @@ public final class GamingModeHelper {
             mIsGaming = false;
             Settings.System.putIntForUser(resolver, Settings.System.GAMING_MODE_ACTIVE,
                 0, UserHandle.USER_CURRENT);
+            mDisableADB = Settings.System.getIntForUser(resolver, Settings.System.GAMING_MODE_DISABLE_ADB,
+                0, UserHandle.USER_CURRENT) == 1;
         }
 
         @Override
@@ -228,6 +246,10 @@ public final class GamingModeHelper {
                 case Settings.System.GAMING_MODE_ACTIVE:
                     mIsGaming = Settings.System.getIntForUser(mContext.getContentResolver(),
                         Settings.System.GAMING_MODE_ACTIVE, 0, UserHandle.USER_CURRENT) == 1;
+                    break;
+                case Settings.System.GAMING_MODE_DISABLE_ADB:
+                    mDisableADB = Settings.System.getIntForUser(mContext.getContentResolver(),
+                        Settings.System.GAMING_MODE_DISABLE_ADB, 0, UserHandle.USER_CURRENT) == 1;
                     break;
             }
         }

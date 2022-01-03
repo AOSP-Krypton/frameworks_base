@@ -5687,6 +5687,14 @@ public final class Settings {
         public static final String GAMING_MODE_NOTIFICATION_APP_BLACKLIST = "gaming_mode_notification_app_blacklist";
 
         /**
+         * Whether to disable adb while in gaming mode.
+         * Default 0
+         *
+         * @hide
+         */
+        public static final String GAMING_MODE_DISABLE_ADB = "gaming_mode_disable_adb";
+
+        /**
          * Show the pending notification counts as overlays on the status bar
          * Default 0
          * @hide
