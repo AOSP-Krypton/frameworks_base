@@ -5566,125 +5566,12 @@ public final class Settings {
         public static final String GAMING_MODE_APP_LIST = "gaming_mode_app_list";
 
         /**
-         * Whether to enable a floating view for quick controls.
-         * Default 1
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_USE_OVERLAY_MENU = "gaming_mode_use_overlay_menu";
-
-        /**
-         * Opacity level of the floating menu as a percentage.
-         * Default 75
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_MENU_OPACITY = "gaming_mode_menu_opacity";
-
-        /**
-         * Whether to auto answer call in gaming mode.
-         * Default 0
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_AUTO_ANSWER_CALL = "gaming_mode_auto_answer_call";
-
-        /**
-         * Whether to disable auto brightness in gaming mode.
-         * Default 1
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_DISABLE_AUTO_BRIGHTNESS = "gaming_mode_disable_auto_brightness";
-
-        /**
          * Whether to disable notification heads-up or bubble in gaming mode.
          * Default 1
          *
          * @hide
          */
         public static final String GAMING_MODE_DISABLE_NOTIFICATION_ALERT = "gaming_mode_disable_notification_alert";
-
-        /**
-         * Whether to disable ringtone for incoming calls in gaming mode.
-         * Default 0
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_DISABLE_RINGTONE = "gaming_mode_disable_ringtone";
-
-        /**
-         * Whether to disable swipe gestures in gaming mode.
-         * Default 0
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_DISABLE_GESTURE = "gaming_mode_disable_gesture";
-
-        /**
-         * Whether to enable performance level control in gaming mode (for devices that supports it).
-         * Default 1
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_CHANGE_PERFORMANCE_LEVEL = "gaming_mode_change_performance_level";
-
-        /**
-         * Prefermance level.
-         * 0 - 6 : Powersave - Performance
-         * Default 5
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_PERFORMANCE_LEVEL = "gaming_mode_performance_level";
-
-        /**
-         * List of application package names separated by a semi-colon, to be displayed on
-         * overlay view that can be launched in a free-form window.
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_QS_APP_LIST = "gaming_mode_qs_app_list";
-
-        /**
-         * Whether to show incoming notifications as an animated disappearing 
-         * transparent overlay in gaming mode
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_SHOW_NOTIFICATION_OVERLAY = "gaming_mode_show_notification_overlay";
-
-        /**
-         * Size of notification overlay text when device is in portrait mode (in px units).
-         * Default 60
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_NOTIFICATION_SIZE_PORTRAIT = "gaming_mode_notification_size_portrait";
-
-        /**
-         * Size of notification overlay text when device is in landscape mode (in px units).
-         * Default 60
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_NOTIFICATION_SIZE_LANDSCAPE = "gaming_mode_notification_size_landscape";
-
-        /**
-         * Whether to dynamically filter notifications for overlay view.
-         * Default 1
-         *
-         * @hide
-         */
-        public static final String GAMING_MODE_DYNAMIC_NOTIFICATION_FILTER = "gaming_mode_dynamic_notification_filter";
-
-        /**
-         * List of application package names separated by a semi-colon to be excluded
-         * from their notifications being shown as an overlay.
-         * 
-         * @hide
-         */
-        public static final String GAMING_MODE_NOTIFICATION_APP_BLACKLIST = "gaming_mode_notification_app_blacklist";
 
         /**
          * Whether to disable adb while in gaming mode.
