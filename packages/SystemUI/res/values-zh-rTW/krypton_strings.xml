@@ -102,4 +102,9 @@
     <string name="screenrecord_lowquality_label">降低質量以減少檔案大小</string>
     <string name="screenrecord_longer_timeout_switch_label">超大檔案錄製\n最大：15GiB</string>
 
+    <!-- FPS Info tile -->
+    <string name="quick_settings_fpsinfo_label">FPS 資訊</string>
+    <string name="accessibility_quick_settings_fpsinfo_off">FPS 資訊關閉</string>
+    <string name="accessibility_quick_settings_fpsinfo_on">FPS 資訊開啟</string>
+
 </resources>
