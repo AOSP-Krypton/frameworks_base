@@ -17,6 +17,7 @@ package com.android.systemui;
 
 import static android.provider.Settings.System.SHOW_BATTERY_PERCENT;
 import static android.provider.Settings.System.SHOW_BATTERY_PERCENT_INSIDE;
+import static android.provider.Settings.System.QS_SHOW_BATTERY_ESTIMATE;
 
 import static com.android.systemui.DejankUtils.whitelistIpcs;
 import static com.android.systemui.util.SysuiLifecycle.viewAttachLifecycle;
@@ -171,6 +172,9 @@ public class BatteryMeterView extends LinearLayout implements
                         Settings.System.getUriFor(STATUS_BAR_BATTERY_STYLE),
                         false, mSettingObserver, newUserId);
                 getContext().getContentResolver().registerContentObserver(
+                        Settings.System.getUriFor(QS_SHOW_BATTERY_ESTIMATE),
+                        false, mSettingObserver, newUserId);
+                getContext().getContentResolver().registerContentObserver(
                         Settings.Global.getUriFor(Settings.Global.BATTERY_ESTIMATES_LAST_UPDATE_TIME),
                         false, mSettingObserver);
                 updateBatteryStyle();
@@ -290,6 +294,9 @@ public class BatteryMeterView extends LinearLayout implements
                 Settings.System.getUriFor(STATUS_BAR_BATTERY_STYLE),
                 false, mSettingObserver, mUser);
         getContext().getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(QS_SHOW_BATTERY_ESTIMATE),
+                false, mSettingObserver, mUser);
+        getContext().getContentResolver().registerContentObserver(
                 Settings.Global.getUriFor(Settings.Global.BATTERY_ESTIMATES_LAST_UPDATE_TIME),
                 false, mSettingObserver);
         updateBatteryStyle();
@@ -350,8 +357,11 @@ public class BatteryMeterView extends LinearLayout implements
             return;
         }
 
+        final boolean userShowEstimate = Settings.System.getIntForUser(
+                mContext.getContentResolver(), QS_SHOW_BATTERY_ESTIMATE, 0, mUser) == 1;
+
         if (mBatteryPercentView != null) {
-            if (mShowPercentMode == MODE_ESTIMATE && !mCharging) {
+            if (mShowPercentMode == MODE_ESTIMATE && !mCharging && userShowEstimate) {
                 mBatteryController.getEstimatedTimeRemainingString((String estimate) -> {
                     if (mBatteryPercentView == null) {
                         return;
@@ -590,6 +600,9 @@ public class BatteryMeterView extends LinearLayout implements
                 case SHOW_BATTERY_PERCENT:
                 case SHOW_BATTERY_PERCENT_INSIDE:
                     updateShowPercent();
+                    break;
+                case QS_SHOW_BATTERY_ESTIMATE:
+                    updatePercentView();
                     break;
                 case Settings.Global.BATTERY_ESTIMATES_LAST_UPDATE_TIME:
                     // update the text for sure if the estimate in the cache was updated
