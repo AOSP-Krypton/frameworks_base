@@ -26,7 +26,6 @@ import android.content.res.Configuration;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.provider.Settings;
 import android.text.format.Formatter;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
@@ -560,9 +559,6 @@ public class DozeTriggers implements DozeMachine.Part {
                     mDozeHost.isPulsingBlocked());
             return;
         }
-        Settings.System.putIntForUser(mContext.getContentResolver(),
-                Settings.System.PULSE_TRIGGER_REASON, reason,
-                UserHandle.USER_CURRENT);
         mMachine.requestPulse(reason);
     }
 
