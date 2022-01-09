@@ -354,6 +354,7 @@ public class NotificationPanelViewController extends PanelViewController {
     private boolean mAnimateNextPositionUpdate;
     private float mQuickQsOffsetHeight;
     private UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
+    private final EdgeLightViewController mEdgeLightViewController;
 
     private int mTrackingPointer;
     private VelocityTracker mQsVelocityTracker;
@@ -739,7 +740,8 @@ public class NotificationPanelViewController extends PanelViewController {
             SecureSettings secureSettings,
             UnlockedScreenOffAnimationController unlockedScreenOffAnimationController,
             NotificationRemoteInputManager remoteInputManager,
-            ControlsComponent controlsComponent) {
+            ControlsComponent controlsComponent,
+            EdgeLightViewController edgeLightViewController) {
         super(view, falsingManager, dozeLog, keyguardStateController,
                 (SysuiStatusBarStateController) statusBarStateController, vibratorHelper,
                 statusBarKeyguardViewManager, latencyTracker, flingAnimationUtilsBuilder.get(),
@@ -835,6 +837,7 @@ public class NotificationPanelViewController extends PanelViewController {
         mLockIconViewController = lockIconViewController;
         mUnlockedScreenOffAnimationController = unlockedScreenOffAnimationController;
         mRemoteInputManager = remoteInputManager;
+        mEdgeLightViewController = edgeLightViewController;
 
         int currentMode = navigationModeController.addListener(
                 mode -> mIsGestureNavigation = QuickStepContract.isGesturalMode(mode));
@@ -892,6 +895,7 @@ public class NotificationPanelViewController extends PanelViewController {
                 mKeyguardStatusBar,
                 keyguardUserSwitcherView);
         mNotificationContainerParent = mView.findViewById(R.id.notification_container_parent);
+        mEdgeLightViewController.setEdgeLightView(mView.findViewById(R.id.edge_light_container));
         NotificationStackScrollLayout stackScrollLayout = mView.findViewById(
                 R.id.notification_stack_scroller);
         mNotificationStackScrollLayoutController.attach(stackScrollLayout);
