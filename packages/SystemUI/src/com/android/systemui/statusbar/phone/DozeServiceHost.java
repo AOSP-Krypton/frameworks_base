@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.phone.EdgeLightViewController;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.OnHeadsUpChangedListener;
@@ -89,6 +90,7 @@ public final class DozeServiceHost implements DozeHost {
     private NotificationShadeWindowViewController mNotificationShadeWindowViewController;
     private final AuthController mAuthController;
     private final NotificationIconAreaController mNotificationIconAreaController;
+    private final EdgeLightViewController mEdgeLightViewController;
     private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
     private NotificationPanelViewController mNotificationPanel;
     private View mAmbientIndicationContainer;
@@ -110,7 +112,8 @@ public final class DozeServiceHost implements DozeHost {
             NotificationShadeWindowController notificationShadeWindowController,
             NotificationWakeUpCoordinator notificationWakeUpCoordinator,
             AuthController authController,
-            NotificationIconAreaController notificationIconAreaController) {
+            NotificationIconAreaController notificationIconAreaController,
+            EdgeLightViewController edgeLightViewController) {
         super();
         mDozeLog = dozeLog;
         mPowerManager = powerManager;
@@ -130,6 +133,7 @@ public final class DozeServiceHost implements DozeHost {
         mAuthController = authController;
         mNotificationIconAreaController = notificationIconAreaController;
         mHeadsUpManagerPhone.addListener(mOnHeadsUpChangedListener);
+        mEdgeLightViewController = edgeLightViewController;
     }
 
     // TODO: we should try to not pass status bar in here if we can avoid it.
@@ -270,6 +274,7 @@ public final class DozeServiceHost implements DozeHost {
                 mCentralSurfaces.updateScrimController();
                 mPulseExpansionHandler.setPulsing(pulsing);
                 mNotificationWakeUpCoordinator.setPulsing(pulsing);
+                mEdgeLightViewController.setPulsing(pulsing, reason);
             }
         }, reason);
         // DozeScrimController is in pulse state, now let's ask ScrimController to start

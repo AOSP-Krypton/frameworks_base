@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.notification.logging.NotificationMemoryMon
 import com.android.systemui.statusbar.notification.row.NotifBindPipelineInitializer
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.statusbar.phone.CentralSurfaces
+import com.android.systemui.statusbar.phone.EdgeLightViewController
 import com.android.wm.shell.bubbles.Bubbles
 import dagger.Lazy
 import java.util.Optional
@@ -75,7 +76,8 @@ class NotificationsControllerImpl @Inject constructor(
     private val bubblesOptional: Optional<Bubbles>,
     private val fgsNotifListener: ForegroundServiceNotificationListener,
     private val memoryMonitor: Lazy<NotificationMemoryMonitor>,
-    private val featureFlags: FeatureFlags
+    private val featureFlags: FeatureFlags,
+    private val edgeLightViewController: EdgeLightViewController,
 ) : NotificationsController {
 
     override fun initialize(
@@ -120,6 +122,7 @@ class NotificationsControllerImpl @Inject constructor(
         if (featureFlags.isEnabled(Flags.NOTIFICATION_MEMORY_MONITOR_ENABLED)) {
             memoryMonitor.get().init()
         }
+        edgeLightViewController.attach(notificationListener)
     }
 
     // TODO: Convert all functions below this line into listeners instead of public methods
