@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.notification.interruption.HeadsUpControlle
 import com.android.systemui.statusbar.notification.interruption.HeadsUpViewBinder
 import com.android.systemui.statusbar.notification.row.NotifBindPipelineInitializer
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
+import com.android.systemui.statusbar.phone.EdgeLightViewController
 import com.android.systemui.statusbar.phone.NotificationGroupAlertTransferHelper
 import com.android.systemui.statusbar.phone.StatusBar
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
@@ -77,7 +78,8 @@ class NotificationsControllerImpl @Inject constructor(
     private val headsUpViewBinder: HeadsUpViewBinder,
     private val clickerBuilder: NotificationClicker.Builder,
     private val animatedImageNotificationManager: AnimatedImageNotificationManager,
-    private val peopleSpaceWidgetManager: PeopleSpaceWidgetManager
+    private val peopleSpaceWidgetManager: PeopleSpaceWidgetManager,
+    private val edgeLightViewController: EdgeLightViewController,
 ) : NotificationsController {
 
     override fun initialize(
@@ -132,6 +134,7 @@ class NotificationsControllerImpl @Inject constructor(
         }
 
         peopleSpaceWidgetManager.attach(notificationListener)
+        edgeLightViewController.attach(notificationListener)
     }
 
     override fun dump(

@@ -101,5 +101,10 @@ public class SystemSettings {
         Settings.System.GAMING_MODE_DISABLE_NOTIFICATION_ALERT,
         Settings.System.GAMING_MODE_DISABLE_ADB,
         Settings.System.STATUS_BAR_NOTIF_COUNT,
+        Settings.System.EDGE_LIGHT_ENABLED,
+        Settings.System.EDGE_LIGHT_ALWAYS_TRIGGER_ON_PULSE,
+        Settings.System.EDGE_LIGHT_REPEAT_ANIMATION,
+        Settings.System.EDGE_LIGHT_COLOR_MODE,
+        Settings.System.EDGE_LIGHT_CUSTOM_COLOR,
     };
 }
