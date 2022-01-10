@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar
 
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
@@ -38,6 +39,8 @@ class EdgeLightView @JvmOverloads constructor(
     // Incremented during each animation cycle
     // Reset when hidden or exceeds [repeatCount]
     private var counter = 0
+
+    private var color: Int = Color.WHITE
 
     // Vertical expansion animation
     private val expandAnimation = ScaleAnimation(
@@ -104,6 +107,7 @@ class EdgeLightView @JvmOverloads constructor(
         super.onAttachedToWindow()
         leftView = findViewById(R.id.edge_light_start)
         rightView = findViewById(R.id.edge_light_end)
+        setColor(color)
     }
 
     /**
@@ -151,6 +155,9 @@ class EdgeLightView @JvmOverloads constructor(
     }
 
     fun setColor(color: Int) {
+        // If this method is called before the view is attached then it'll have
+        // no effect, so we store this color and call it from [onAttachedToWindow]
+        this.color = color
         leftView?.setColorFilter(color)
         rightView?.setColorFilter(color)
     }
