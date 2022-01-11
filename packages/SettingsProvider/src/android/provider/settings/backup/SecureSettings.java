@@ -226,5 +226,6 @@ public class SecureSettings {
         Settings.Secure.GESTURE_NAVBAR_LENGTH_MODE,
         Settings.Secure.DISABLE_SECURE_TILES_ON_LOCKSCREEN,
         Settings.Secure.NAVIGATION_BAR_INVERSE,
+        Settings.Secure.SECURE_LOCKSCREEN_QS_DISABLED,
     };
 }
