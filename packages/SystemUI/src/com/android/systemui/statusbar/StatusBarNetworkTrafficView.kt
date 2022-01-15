@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2018 The Android Open Source Project
- *               2021 AOSP-Krypton Project
+ * Copyright (C) 2021 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ import com.android.systemui.statusbar.policy.NetworkTrafficMonitor.NetworkTraffi
 /**
  * Layout class for statusbar network traffic indicator
  */
-class StatusBarNetworkTrafficView(
+class StatusBarNetworkTrafficView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet?,
-    defStyleAttr: Int,
-    defStyleRes: Int,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+    defStyleRes: Int = 0,
 ): FrameLayout(
     context,
     attrs,
@@ -53,10 +53,6 @@ class StatusBarNetworkTrafficView(
     private var state: NetworkTrafficState? = null
     private var slot: String? = null
     private var visibleState = -1
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int): this(context, attrs, defStyleAttr, 0)
-    constructor(context: Context, attrs: AttributeSet?): this(context, attrs, 0)
-    constructor(context: Context): this(context, null)
 
     override fun getSlot() = slot
 
@@ -81,8 +77,8 @@ class StatusBarNetworkTrafficView(
             return
         }
         visibleState = newVisibleState
-        trafficGroup?.setVisibility(if (visibleState == STATE_ICON) VISIBLE else GONE)
-        dotView?.setVisibility(if (visibleState == STATE_DOT) VISIBLE else GONE)
+        trafficGroup?.visibility = if (visibleState == STATE_ICON) VISIBLE else GONE
+        dotView?.visibility = if (visibleState == STATE_DOT) VISIBLE else GONE
     }
 
     override fun getVisibleState() = visibleState
@@ -117,7 +113,7 @@ class StatusBarNetworkTrafficView(
         trafficGroup = findViewById(R.id.traffic_group)
         trafficRate = findViewById(R.id.traffic_rate)
         dotView = findViewById<StatusBarIconView>(R.id.dot_view)?.also {
-            it.setVisibleState(STATE_DOT)
+            it.visibleState = STATE_DOT
         }
     }
 
@@ -133,11 +129,11 @@ class StatusBarNetworkTrafficView(
         }
         if (state?.rateVisible != newState.rateVisible) {
             logD("setRateVisibility")
-            trafficRate?.setVisibility(if (newState.rateVisible) VISIBLE else GONE)
+            trafficRate?.visibility = if (newState.rateVisible) VISIBLE else GONE
         }
         if (state?.visible != newState.visible) {
             logD("setVisibility")
-            setVisibility(if (newState.visible) VISIBLE else GONE)
+            visibility = if (newState.visible) VISIBLE else GONE
         }
         state = newState
     }
@@ -146,10 +142,10 @@ class StatusBarNetworkTrafficView(
         logD("initViewState")
         trafficRate?.let {
             it.setTextSize(COMPLEX_UNIT_PX, state?.size?.toFloat() ?: DEFAULT_TEXT_SIZE)
-            it.setText(state?.rate?.toString())
-            it.setVisibility(if (state?.rateVisible == true) VISIBLE else GONE)
+            it.text = state?.rate?.toString()
+            it.visibility = if (state?.rateVisible == true) VISIBLE else GONE
         }
-        setVisibility(if (state?.visible == true) VISIBLE else GONE)
+        visibility = if (state?.visible == true) VISIBLE else GONE
     }
 
     override fun toString() = "StatusBarNetworkTrafficView(slot = $slot, state = $state)"
@@ -165,7 +161,7 @@ class StatusBarNetworkTrafficView(
                     null) as StatusBarNetworkTrafficView).also {
                 it.slot = slot
                 it.setWidgets()
-                it.setVisibleState(STATE_ICON)
+                it.visibleState = STATE_ICON
             }
 
         private fun logD(msg: String) {

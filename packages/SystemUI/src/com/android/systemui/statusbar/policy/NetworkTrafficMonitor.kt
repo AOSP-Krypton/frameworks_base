@@ -45,7 +45,6 @@ import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.util.settings.SystemSettings
 
 import java.text.DecimalFormat
-import java.util.Objects
 
 import javax.inject.Inject
 
@@ -65,9 +64,12 @@ class NetworkTrafficMonitor @Inject constructor(
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
-    private val state = NetworkTrafficState()
+    private val state = NetworkTrafficState(
+        context.getString(com.android.internal.R.string.status_bar_network_traffic),
+        SpannableString("0" + LINE_SEPARATOR + units[0]),
+    )
     private val settingsObserver: SettingsObserver
-    private val callbacks = mutableListOf<Callback>()
+    private val callbacks = mutableSetOf<Callback>()
 
     private val defaultTextSize: Int
     private val defaultScaleFactor: Float
@@ -133,8 +135,6 @@ class NetworkTrafficMonitor @Inject constructor(
     }
 
     init {
-        state.slot = context.getString(com.android.internal.R.string.status_bar_network_traffic)
-        state.rate = SpannableString("0" + LINE_SEPARATOR + units[0])
         val res = context.resources
         defaultTextSize = res.getDimension(R.dimen.network_traffic_unit_text_default_size).toInt()
         val typedValue = TypedValue()
@@ -144,54 +144,45 @@ class NetworkTrafficMonitor @Inject constructor(
         settingsObserver = SettingsObserver().also {
             it.update()
         }
-        registerSettingsObserver()
+        register(
+            NETWORK_TRAFFIC_ENABLED,
+            NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX,
+            NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX,
+            NETWORK_TRAFFIC_UNIT_TEXT_SIZE,
+            NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR
+        )
+    }
+
+    private fun register(vararg keys: String) {
+        keys.forEach {
+            systemSettings.registerContentObserver(it, settingsObserver)
+        }
     }
 
     /**
      * Register a [Callback] to listen to updates on
-     * [NetworkTrafficState]. Does not have any effect if
-     * attempted to register the same callback more than once.
+     * [NetworkTrafficState].
      *
      * @param callback the callback to register.
      */
     fun addCallback(callback: Callback) {
-        if (callbacks.contains(callback)) {
-            Log.w(TAG, "Ignoring attempt to add duplicate callback")
-        } else {
-            logD("adding callback")
-            callbacks.add(callback)
-        }
+        logD("adding callback")
+        callbacks.add(callback)
     }
 
     /**
-     * Unregister an already registered callback. Does not have
-     * any effect if attempted to unregister a callback that was not
-     * previously registered.
+     * Unregister an already registered callback.
      *
      * @param callback the callback to unregister.
      */
     fun removeCallback(callback: Callback) {
-        if (!callbacks.contains(callback)) {
-            Log.w(TAG, "Ignoring attempt to remove non existent callback")
-        } else {
-            logD("removing callback")
-            callbacks.remove(callback)
-        }
-    }
-
-    private fun registerSettingsObserver() {
-        with(systemSettings) {
-            registerContentObserver(NETWORK_TRAFFIC_ENABLED, settingsObserver)
-            registerContentObserver(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_TX, settingsObserver)
-            registerContentObserver(NETWORK_TRAFFIC_AUTO_HIDE_THRESHOLD_RX, settingsObserver)
-            registerContentObserver(NETWORK_TRAFFIC_UNIT_TEXT_SIZE, settingsObserver)
-            registerContentObserver(NETWORK_TRAFFIC_RATE_TEXT_SCALE_FACTOR, settingsObserver)
-        }
+        logD("removing callback")
+        callbacks.remove(callback)
     }
 
     private fun notifyCallbacks() {
         logD("notifying callbacks about new state = $state")
-        callbacks.forEach({ it.onTrafficUpdate(state) })
+        callbacks.forEach { it.onTrafficUpdate(state) }
     }
 
     private fun register() {
@@ -303,42 +294,16 @@ class NetworkTrafficMonitor @Inject constructor(
 
     /**
      * Class holding relevant information for the view in
-     * StatusBar to update or instantiate from. Not meant
-     * to be instantiated outside the parent class.
+     * StatusBar to update or instantiate from.
      */
-    inner class NetworkTrafficState {
-        var slot: String? = null
-        var rate: Spanned? = null
-        var size: Int = 0
-        @JvmField
-        var visible: Boolean = false
-        var rateVisible: Boolean = true
-
-        fun copy() = NetworkTrafficState().also {
-            it.slot = this.slot
-            it.rate = this.rate
-            it.size = this.size
-            it.visible = this.visible
-            it.rateVisible = this.rateVisible
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (other == null || other !is NetworkTrafficState) {
-                return false
-            }
-            var isEqual = slot.equals(other.slot)
-            isEqual = isEqual && rate?.let { (other.rate != null) && it.equals(other.rate) } ?: other.rate == null
-            isEqual = isEqual && size == other.size
-            isEqual = isEqual && visible == other.visible
-            isEqual = isEqual && rateVisible == other.rateVisible
-            return isEqual
-        }
-
-        override fun hashCode(): Int = Objects.hash(slot, rate, size, visible, rateVisible)
-
-        override fun toString() =
-            "NetworkTrafficState[ slot = $slot, rate = $rate, size = $size, " +
-                "visible = $visible, rateVisible = $rateVisible ]"
+    data class NetworkTrafficState(
+        var slot: String? = null,
+        var rate: Spanned? = null,
+        var size: Int = 0,
+        @JvmField var visible: Boolean = false,
+        var rateVisible: Boolean = true,
+    ) {
+        fun copy() = NetworkTrafficState(slot, rate, size, visible, rateVisible)
     }
 
     private inner class SettingsObserver: ContentObserver(handler) {
@@ -408,7 +373,6 @@ class NetworkTrafficMonitor @Inject constructor(
      * listen to updates on [NetworkTrafficState].
      */
     interface Callback {
-
         /**
          * Called to notify clients about possible state changes.
          *
