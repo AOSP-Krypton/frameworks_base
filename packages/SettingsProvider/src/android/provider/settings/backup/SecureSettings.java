@@ -231,5 +231,6 @@ public class SecureSettings {
         Settings.Secure.TORCH_DOUBLE_TAP_POWER_GESTURE_ENABLED,
         Settings.Secure.TORCH_LONG_PRESS_POWER,
         Settings.Secure.SCREEN_OFF_UDFPS_ENABLED,
+        Settings.Secure.FORCE_FULLSCREEN_CUTOUT_APPS,
     };
 }

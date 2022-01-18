@@ -765,4 +765,9 @@ interface IActivityManager {
      *  Should disable touch if three fingers to screen shot is active?
      */
     boolean isSwipeToScreenshotGestureActive();
+
+    /**
+     *  Force full screen for devices with cutout for a package
+     */
+    boolean shouldForceCutoutFullscreen(in String packageName);
 }

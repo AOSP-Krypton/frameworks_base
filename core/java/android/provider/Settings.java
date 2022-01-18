@@ -11457,6 +11457,12 @@ public final class Settings {
         public static final String LOCATION_PRIVACY_INDICATOR_ENABLED = "location_privacy_indicator_enabled";
 
         /**
+         * Force full screen for devices with cutout on a per app basis.
+         * @hide
+         */
+        public static final String FORCE_FULLSCREEN_CUTOUT_APPS = "force_full_screen_cutout_apps";
+
+        /**
          * These entries are considered common between the personal and the managed profile,
          * since the managed profile doesn't get to change them.
          */

@@ -31,6 +31,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATIO
 import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION;
 
@@ -2545,6 +2546,17 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
                         + a.getString(R.styleable.Window_windowLayoutInDisplayCutoutMode));
             }
             params.layoutInDisplayCutoutMode = mode;
+        }
+
+        if (ActivityManager.isSystemReady()) {
+            final String packageName = context.getBasePackageName();
+            try {
+                if (ActivityManager.getService().shouldForceCutoutFullscreen(packageName)) {
+                    params.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                }
+            } catch (RemoteException ex) {
+                Log.e(TAG, "Couldn't check whether shouldForceCutoutFullscreen was set for " + packageName, ex);
+            }
         }
 
         if (mAlwaysReadCloseOnTouchAttr || getContext().getApplicationInfo().targetSdkVersion
