@@ -4380,6 +4380,8 @@ public class AudioService extends IAudioService.Stub
             case AudioManager.RINGER_MODE_NORMAL:
                 toastText = R.string.volume_dialog_ringer_guidance_normal;
                 break;
+            default:
+                return;
         }
 
         maybeVibrate(effect, reason);
