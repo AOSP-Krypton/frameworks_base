@@ -999,6 +999,29 @@ public class AudioManager {
         }
     }
 
+    /** @hide */
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
+    public int setAppVolume(String packageName, float volume) {
+        return AudioSystem.setAppVolume(packageName, volume);
+    }
+
+    /** @hide */
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
+    public int setAppMute(String packageName, boolean mute) {
+        return AudioSystem.setAppMute(packageName, mute);
+    }
+
+    /** @hide */
+    @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
+    public ArrayList<AppVolume> listAppVolumes() {
+        final ArrayList<AppVolume> volumes = new ArrayList<AppVolume>();
+        final int status = AudioSystem.listAppVolumes(volumes);
+        if (status != AudioManager.SUCCESS) {
+            return new ArrayList<AppVolume>();
+        }
+        return volumes;
+    }
+
     /**
      * Returns the current ringtone mode.
      *
