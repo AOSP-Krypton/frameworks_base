@@ -42,7 +42,7 @@ public final class PixelPropsUtils {
         "DEVICE", "raven",
         "PRODUCT", "raven",
         "MODEL", "Pixel 6 Pro",
-        "FINGERPRINT", "google/raven/raven:12/SQ1D.220105.007/8030436:user/release-keys"
+        "FINGERPRINT", "google/raven/raven:12/SQ1D.220205.003/8069835:user/release-keys"
     );
 
     private static final Map<String, String> marlinProps = Map.of(
