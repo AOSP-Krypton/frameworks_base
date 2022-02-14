@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright (C) Copyright (C) 2021 AOSP-Krypton Project
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<resources>
+
+    <!-- LiveDisplay strings -->
+    <string name="live_display_title" translatable="false">LiveDisplay</string>
+    <string name="live_display_auto">Автоматический</string>
+    <string name="live_display_auto_summary">Автоматически регулировать цветовую температуру экрана после заката и восхода солнца</string>
+    <string name="live_display_off">Выключен</string>
+    <string name="live_display_off_summary">Отключить все настройки</string>
+    <string name="live_display_day">День</string>
+    <string name="live_display_day_summary">Use day settings only</string>
+    <string name="live_display_night">Ночь</string>
+    <string name="live_display_night_summary">Использовать только дневные настройки</string>
+    <string name="live_display_outdoor">На улице (яркое солнце)</string>
+    <string name="live_display_outdoor_summary">Используйте настройки только для улицы</string>
+    <string name="live_display_hint">LiveDisplay может помочь уменьшить напряжение глаз и помочь вам спать по ночам. Нажмите здесь, чтобы попробовать!</string>
+    <string name="accessibility_quick_settings_live_display_off">LiveDisplay выкл.</string>
+    <string name="accessibility_quick_settings_live_display_auto">LiveDisplay: авторежим.</string>
+    <string name="accessibility_quick_settings_live_display_day">LiveDisplay: дневной режим.</string>
+    <string name="accessibility_quick_settings_live_display_night">LiveDisplay: ночной режим.</string>
+    <string name="accessibility_quick_settings_live_display_outdoor">LiveDisplay: режим На улице.</string>
+    <string name="accessibility_quick_settings_live_display_changed_off">LiveDisplay выключен.</string>
+    <string name="accessibility_quick_settings_live_display_changed_auto">LiveDisplay переведен в автоматический режим.</string>
+    <string name="accessibility_quick_settings_live_display_changed_day">LiveDisplay переведен в дневной режим.</string>
+    <string name="accessibility_quick_settings_live_display_changed_night">LiveDisplay переведен в ночной режим.</string>
+    <string name="accessibility_quick_settings_live_display_changed_outdoor">LiveDisplay переведен в режим На улице..</string>
+
+    <!-- AlertSlider modes -->
+    <string name="alert_slider_mode_normal" translatable="false">режим_нормальный</string>
+    <string name="alert_slider_mode_priority" translatable="false">режим_приоритет</string>
+    <string name="alert_slider_mode_vibrate" translatable="false">режим_вибрация</string>
+    <string name="alert_slider_mode_silent" translatable="false">режим_тишина</string>
+    <string name="alert_slider_mode_dnd" translatable="false">режим_не беспокоить</string>
+
+    <!-- Advanced reboot -->
+    <string name="reboot_to_recovery_title" translatable="false">Рекавери</string>
+    <string name="reboot_to_recovery_message" translatable="false">Перезагрузка в рекавери</string>
+    <string name="reboot_to_bootloader_title" translatable="false">Загрузчик</string>
+    <string name="reboot_to_bootloader_message" translatable="false">Перезагрузка в загрузчик</string>
+    <string name="reboot_title">Перезагрузка</string>
+    <string name="reboot_message">Перезагрузка системы</string>
+
+    <!-- Button that copies the url to the log of a crashed application -->
+    <string name="aerr_copy">Скопировать URL-адрес журнала сбоев</string>
+
+    <!-- Title for the dialog shown when uploading logs -->
+    <string name="uploading_log_title">Выгрузка журнала</string>
+
+    <!-- Toast messages to show on bin upload success / failure-->
+    <string name="url_copy_success">URL успешно скопирован</string>
+    <string name="url_copy_failed">Произошла ошибка при загрузке журнала в корзину</string>
+
+    <!-- Cycle through ringer modes -->
+    <string name="volume_dialog_ringer_guidance_normal">Звонки и уведомления будут слышны</string>
+</resources>
