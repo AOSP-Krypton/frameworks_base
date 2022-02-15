@@ -33,7 +33,7 @@
     <!-- Advanced Reboot -->
     <string name="global_action_restart_advanced">Расширенная</string>
     <string name="global_action_restart_recovery">Рекавери</string>
-    <string name="global_action_restart_bootloader">Бутлоадер</string>
+    <string name="global_action_restart_bootloader">Загрузчик</string>
     <string name="global_action_restart_ui">SystemUI</string>
 
     <!-- Label for UI element which allows deleting the screenshot [CHAR LIMIT=30] -->
@@ -76,14 +76,14 @@
 
     <!-- AOD QS tile -->
     <string name="quick_settings_aod_label">AOD</string>
-    <string name="quick_settings_aod_on_charge_label">АОД на зарядке</string>
+    <string name="quick_settings_aod_on_charge_label">АОD на зарядке</string>
     <string name="quick_settings_aod_off_label">AOD выкл</string>
     <string name="quick_settings_aod_off_powersave_label">AOD выкл\nЭкономия заряда батареи</string>
 
     <!-- DataSwitch Tile -->
     <string name="qs_data_switch_label">Смена SIM карты</string>
     <string name="qs_data_switch_toast_0">В настоящее время SIM-карта не вставлена</string>
-    <string name="qs_data_switch_toast_1">В настоящее время вставлена ​​только одна SIM-карта</string>
+    <string name="qs_data_switch_toast_1">В настоящее время вставлена только одна SIM-карта</string>
     <string name="qs_data_switch_changed_1">Переключить карту на SIM 1.</string>
     <string name="qs_data_switch_changed_2">Переключить карту на SIM 2.</string>
 
