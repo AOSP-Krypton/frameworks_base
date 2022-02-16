@@ -104,4 +104,9 @@
     <!-- FPS view text placeholder -->
     <string name="fps_text_placeholder">FPS: <xliff:g id="fps" example="90">%1$d</xliff:g></string>
 
+    <!-- HeadsUp Tile -->
+    <string name="quick_settings_headsup_label">Heads up</string>
+    <string name="accessibility_quick_settings_headsup_enabled">Heads up notifications enabled</string>
+    <string name="accessibility_quick_settings_headsup_disabled">Heads up notifications disabled</string>
+
 </resources>
