@@ -313,13 +313,15 @@ public class QuickStatusBarHeader extends FrameLayout implements
 
         int textColor = Utils.getColorAttrDefaultColor(mContext, android.R.attr.textColorPrimary);
         if (textColor != mTextColorPrimary) {
-            int textColorSecondary = Utils.getColorAttrDefaultColor(mContext,
-                    android.R.attr.textColorSecondary);
             mTextColorPrimary = textColor;
             mClockView.setTextColor(textColor);
             if (mTintedIconManager != null) {
                 mTintedIconManager.setTint(textColor);
             }
+            final int textColorSecondary = Utils.getColorAttrDefaultColor(mContext,
+                mBatteryRemainingIcon.isCircleBatteryStyle()
+                    ? android.R.attr.textColorHint
+                    : android.R.attr.textColorSecondary);
             mBatteryRemainingIcon.updateColors(mTextColorPrimary, textColorSecondary,
                     mTextColorPrimary);
         }
