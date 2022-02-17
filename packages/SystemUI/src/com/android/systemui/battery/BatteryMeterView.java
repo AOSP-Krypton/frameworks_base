@@ -526,6 +526,10 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
         }
     }
 
+    public boolean isCircleBatteryStyle() {
+        return mBatteryStyle == BATTERY_STYLE_CIRCLE;
+    }
+
     public void dump(PrintWriter pw, String[] args) {
         String powerSave = mAccessorizedDrawable == null ?
                 null : mAccessorizedDrawable.getPowerSaveEnabled() + "";
