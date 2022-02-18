@@ -79,9 +79,9 @@ public class BatteryMeterView extends LinearLayout implements
     private static final String STATUS_BAR_BATTERY_STYLE =
             Settings.System.STATUS_BAR_BATTERY_STYLE;
 
-    public static final int BATTERY_STYLE_PORTRAIT = 0;
-    public static final int BATTERY_STYLE_CIRCLE = 1;
-    public static final int BATTERY_STYLE_TEXT = 2;
+    private static final int BATTERY_STYLE_PORTRAIT = 0;
+    private static final int BATTERY_STYLE_CIRCLE = 1;
+    private static final int BATTERY_STYLE_TEXT = 2;
 
     @Retention(SOURCE)
     @IntDef({MODE_DEFAULT, MODE_ON, MODE_OFF, MODE_ESTIMATE})
@@ -571,8 +571,8 @@ public class BatteryMeterView extends LinearLayout implements
         }
     }
 
-    public int getBatteryStyle() {
-        return mBatteryStyle;
+    public boolean isBatteryStyleCirle() {
+        return mBatteryStyle == BATTERY_STYLE_CIRCLE;
     }
 
     public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
