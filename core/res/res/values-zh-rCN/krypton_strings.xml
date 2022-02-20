@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-   Copyright (C) Copyright (C) 2021 AOSP-Krypton Project
+   Copyright (C) 2021-2022 AOSP-Krypton Project
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <!-- LiveDisplay strings -->
     <string name="live_display_title" translatable="false">增强显示</string>
@@ -64,4 +64,10 @@
     <!-- Toast messages to show on bin upload success / failure-->
     <string name="url_copy_success">复制链接成功</string>
     <string name="url_copy_failed">上传日志时发生错误</string>
+
+    <!-- Cycle through ringer modes -->
+    <string name="volume_dialog_ringer_guidance_normal">收到来电或通知时将响铃</string>
+
+    <!-- App lock -->
+    <string name="unlock_application">解锁 <xliff:g id="label" example="Telegram">%1$s</xliff:g></string>
 </resources>
