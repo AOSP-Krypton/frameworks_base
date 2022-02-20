@@ -28,7 +28,10 @@
 
     <!-- Refresh Rate Tile -->
     <string name="refresh_rate_tile_label">刷新率</string>
-    <string name="auto_mode_label">自动</string>
+    <string name="refresh_rate_auto_mode_placeholder">
+        自动 (<xliff:g id="min_refresh_rate" example="60">%1$d</xliff:g> - <xliff:g id="max_refresh_rate" example="60">%2$d</xliff:g> Hz)
+    </string>
+    <string name="refresh_rate_forced_mode_placeholder"><xliff:g id="refresh_rate" example="60">%1$d</xliff:g> Hz</string>
 
     <!-- Advanced Reboot -->
     <string name="global_action_restart_advanced">高级选项</string>
@@ -101,5 +104,18 @@
     <string name="screenrecord_stopdot_label">显示小白点\n长按来移动它</string>
     <string name="screenrecord_lowquality_label">降低质量以减少文件大小</string>
     <string name="screenrecord_longer_timeout_switch_label">超大文件录制\n最大：15GiB</string>
+
+    <!-- FPS Info tile -->
+    <string name="quick_settings_fpsinfo_label">FPS 信息</string>
+    <string name="accessibility_quick_settings_fpsinfo_off">FPS 信息关闭</string>
+    <string name="accessibility_quick_settings_fpsinfo_on">FPS 信息开启</string>
+
+    <!-- FPS view text placeholder -->
+    <string name="fps_text_placeholder">FPS: <xliff:g id="fps" example="90">%1$d</xliff:g></string>
+
+    <!-- HeadsUp Tile -->
+    <string name="quick_settings_headsup_label">浮动通知</string>
+    <string name="accessibility_quick_settings_headsup_enabled">浮动通知已开启</string>
+    <string name="accessibility_quick_settings_headsup_disabled">浮动通知已关闭</string>
 
 </resources>
