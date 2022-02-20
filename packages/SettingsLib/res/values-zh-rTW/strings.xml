@@ -85,6 +85,7 @@
     <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"媒體音訊"</string>
     <string name="bluetooth_profile_headset" msgid="5395952236133499331">"通話"</string>
     <string name="bluetooth_profile_opp" msgid="6692618568149493430">"檔案傳輸"</string>
+    <string name="bluetooth_profile_broadcast">"廣播"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"輸入裝置"</string>
     <string name="bluetooth_profile_pan" msgid="1006235139308318188">"網際網路連線"</string>
     <string name="bluetooth_profile_pbap" msgid="7064307749579335765">"聯絡人共用"</string>
@@ -92,6 +93,7 @@
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"網際網路連線分享"</string>
     <string name="bluetooth_profile_map" msgid="8907204701162107271">"簡訊"</string>
     <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIM 卡存取權"</string>
+    <string name="bluetooth_profile_vcp">"音量控制"</string>
     <string name="bluetooth_profile_a2dp_high_quality" msgid="4739440941324792775">"HD 高解析音訊：<xliff:g id="CODEC_NAME">%1$s</xliff:g>"</string>
     <string name="bluetooth_profile_a2dp_high_quality_unknown_codec" msgid="2477639096903834374">"HD 高解析音訊"</string>
     <string name="bluetooth_profile_hearing_aid" msgid="58154575573984914">"助聽器"</string>
