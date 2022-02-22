@@ -34,7 +34,7 @@
     <string name="global_action_restart_advanced">Расширенная</string>
     <string name="global_action_restart_recovery">Рекавери</string>
     <string name="global_action_restart_bootloader">Загрузчик</string>
-    <string name="global_action_restart_ui">SystemUI</string>
+    <string name="global_action_restart_ui">Интерфейс</string>
 
     <!-- Label for UI element which allows deleting the screenshot [CHAR LIMIT=30] -->
     <string name="screenshot_delete_label">Удалить</string>
@@ -84,8 +84,8 @@
     <string name="qs_data_switch_label">Смена SIM карты</string>
     <string name="qs_data_switch_toast_0">В настоящее время SIM-карта не вставлена</string>
     <string name="qs_data_switch_toast_1">В настоящее время вставлена только одна SIM-карта</string>
-    <string name="qs_data_switch_changed_1">Переключить карту на SIM 1.</string>
-    <string name="qs_data_switch_changed_2">Переключить карту на SIM 2.</string>
+    <string name="qs_data_switch_changed_1">Переключить карту на SIM 1</string>
+    <string name="qs_data_switch_changed_2">Переключить карту на SIM 2</string>
 
     <!-- Name of the nfc status bar icon. -->
     <string name="status_bar_nfc">NFC</string>
@@ -98,9 +98,9 @@
     <string name="screenrecord_delete_label">Удалить</string>
     <!-- A toast message shown after successfully deleting a screen recording [CHAR LIMIT=NONE] -->
     <string name="screenrecord_delete_description">Запись экрана удалена</string>
-    <string name="screenrecord_stopdot_label">Показать стоп-точку\nНажмите и удерживайте, чтобы переместить ее</string>
+    <string name="screenrecord_stopdot_label">Показать стоп-точку\nДлинный тап, чтобы переместить ее</string>
     <string name="screenrecord_lowquality_label">Более низкое качество для меньшего размера файла</string>
-    <string name="screenrecord_longer_timeout_switch_label">Ограничение на большой размер файла\nОграничение размера записи до 15 ГБ</string>
+    <string name="screenrecord_longer_timeout_switch_label">Лимит на большой размер файла\nЛимит размера записи до 15 ГБ</string>
 
     <!-- FPS Info tile -->
     <string name="quick_settings_fpsinfo_label">FPS Инфо</string>
