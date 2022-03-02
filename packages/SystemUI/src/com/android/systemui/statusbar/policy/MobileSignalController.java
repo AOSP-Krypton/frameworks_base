@@ -27,10 +27,8 @@ import android.database.ContentObserver;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.UserHandle;
 import android.os.Looper;
 import android.provider.Settings;
-import android.provider.Settings.Global;
 import android.telephony.AccessNetworkConstants;
 import android.telephony.CellSignalStrength;
 import android.telephony.CellSignalStrengthCdma;
@@ -89,7 +87,7 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
     private final SubscriptionDefaults mDefaults;
     private final String mNetworkNameDefault;
     private final String mNetworkNameSeparator;
-    private final ContentObserver mObserver;
+    private final SettingsObserver mSettingsObserver;
     private final boolean mProviderModelBehavior;
     private final boolean mProviderModelSetting;
     private final Handler mReceiverHandler;
@@ -154,6 +152,7 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
         mNetworkNameDefault = getTextIfExists(
                 com.android.internal.R.string.lockscreen_carrier_default).toString();
         mReceiverHandler = new Handler(receiverLooper);
+        mSettingsObserver = new SettingsObserver(mReceiverHandler);
 
         mNetworkToIconLookup = mapIconSets(mConfig);
         mDefaultIcons = getDefaultIcons(mConfig);
@@ -164,12 +163,6 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
         mLastState.networkNameData = mCurrentState.networkNameData = networkName;
         mLastState.enabled = mCurrentState.enabled = hasMobileData;
         mLastState.iconGroup = mCurrentState.iconGroup = mDefaultIcons;
-        mObserver = new ContentObserver(new Handler(receiverLooper)) {
-            @Override
-            public void onChange(boolean selfChange) {
-                updateTelephony();
-            }
-        };
         mCallback = new MobileStatusTracker.Callback() {
             private String mLastStatus;
 
@@ -249,38 +242,11 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
                 info, mDefaults, mCallback);
         mProviderModelBehavior = featureFlags.isCombinedStatusBarSignalIconsEnabled();
         mProviderModelSetting = featureFlags.isProviderModelSettingEnabled();
-
-	Handler mHandler = new Handler();
-        SettingsObserver settingsObserver = new SettingsObserver(mHandler);
-        settingsObserver.observe();
-    }
-
-    class SettingsObserver extends ContentObserver {
-        SettingsObserver(Handler handler) {
-            super(handler);
-        }
-        void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.SHOW_FOURG_ICON), false,
-                    this, UserHandle.USER_ALL);
-            updateSettings();
-        }
-
-        /*
-         *  @hide
-         */
-        @Override
-        public void onChange(boolean selfChange) {
-            updateSettings();
-        }
     }
 
     private void updateSettings() {
-        ContentResolver resolver = mContext.getContentResolver();
-        mConfig = Config.readConfig(mContext);
-        setConfiguration(mConfig);
-        notifyListeners();
+        setConfiguration(Config.readConfig(mContext));
+        notifyListenersIfNecessary();
     }
 
     public void setConfiguration(Config config) {
@@ -320,11 +286,24 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
      */
     public void registerListener() {
         mMobileStatusTracker.setListening(true);
-        mContext.getContentResolver().registerContentObserver(Global.getUriFor(Global.MOBILE_DATA),
-                true, mObserver);
-        mContext.getContentResolver().registerContentObserver(Global.getUriFor(
-                Global.MOBILE_DATA + mSubscriptionInfo.getSubscriptionId()),
-                true, mObserver);
+        final ContentResolver resolver = mContext.getContentResolver();
+        resolver.registerContentObserver(
+            Settings.Global.getUriFor(Settings.Global.MOBILE_DATA),
+            true,
+            mSettingsObserver
+        );
+        resolver.registerContentObserver(
+            Settings.Global.getUriFor(
+                Settings.Global.MOBILE_DATA + mSubscriptionInfo.getSubscriptionId()
+            ),
+            true,
+            mSettingsObserver
+        );
+        resolver.registerContentObserver(
+            Settings.System.getUriFor(Settings.System.SHOW_FOURG_ICON),
+            false,
+            mSettingsObserver
+        );
         if (mProviderModelBehavior) {
             mReceiverHandler.post(mTryRegisterIms);
         }
@@ -358,7 +337,7 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
      */
     public void unregisterListener() {
         mMobileStatusTracker.setListening(false);
-        mContext.getContentResolver().unregisterContentObserver(mObserver);
+        mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
         mImsMmTelManager.unregisterImsRegistrationCallback(mRegistrationCallback);
     }
 
@@ -885,6 +864,21 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
             pw.println("  Previous MobileStatus("
                     + (mMobileStatusHistoryIndex + STATUS_HISTORY_SIZE - i) + "): "
                     + mMobileStatusHistory[i & (STATUS_HISTORY_SIZE - 1)]);
+        }
+    }
+
+    private class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (Settings.System.SHOW_FOURG_ICON.equals(uri.getLastPathSegment())) {
+                updateSettings();
+            } else {
+                updateTelephony();
+            }
         }
     }
 }
