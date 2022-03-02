@@ -18,9 +18,12 @@ package com.android.systemui.statusbar.phone;
 
 import android.annotation.NonNull;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.view.ViewGroup;
@@ -29,6 +32,7 @@ import com.android.internal.statusbar.StatusBarIcon;
 import com.android.systemui.Dependency;
 import com.android.systemui.Dumpable;
 import com.android.systemui.R;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.demomode.DemoMode;
 import com.android.systemui.demomode.DemoModeController;
@@ -42,6 +46,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
+import com.android.systemui.util.settings.SystemSettings;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -65,30 +70,64 @@ public class StatusBarIconControllerImpl extends StatusBarIconList implements Tu
     private final ArrayList<IconManager> mIconGroups = new ArrayList<>();
     private final ArraySet<String> mIconHideList = new ArraySet<>();
 
-    private Context mContext;
+    private final Context mContext;
+    private final SystemSettings mSystemSettings;
+
+    private boolean mIsOldSignalStyle = false;
 
     /** */
     @Inject
     public StatusBarIconControllerImpl(
-            Context context,
-            CommandQueue commandQueue,
-            DemoModeController demoModeController) {
+        Context context,
+        CommandQueue commandQueue,
+        DemoModeController demoModeController,
+        @Main Handler handler,
+        SystemSettings systemSettings
+    ) {
         super(context.getResources().getStringArray(
                 com.android.internal.R.array.config_statusBarIcons));
         Dependency.get(ConfigurationController.class).addCallback(this);
 
         mContext = context;
+        mSystemSettings = systemSettings;
 
         loadDimens();
 
         commandQueue.addCallback(this);
         Dependency.get(TunerService.class).addTunable(this, ICON_HIDE_LIST);
         demoModeController.addCallback(this);
+
+        mIsOldSignalStyle = getIsOldSignalStyle();
+        final ContentObserver settingsObserver = new ContentObserver(handler) {
+            @Override
+            public void onChange(boolean selfChange) {
+                final boolean isOldSignalStyle = getIsOldSignalStyle();
+                if (mIsOldSignalStyle == isOldSignalStyle) return;
+                mIsOldSignalStyle = isOldSignalStyle;
+                mIconGroups.forEach(group -> {
+                    group.setMobileSignalStyle(mIsOldSignalStyle);
+                    group.updateMobileIconStyle();
+                });
+            }
+        };
+        mSystemSettings.registerContentObserverForUser(
+            Settings.System.USE_OLD_MOBILETYPE,
+            settingsObserver,
+            UserHandle.USER_ALL
+        );
+    }
+
+    private boolean getIsOldSignalStyle() {
+        return mSystemSettings.getIntForUser(
+            Settings.System.USE_OLD_MOBILETYPE,
+            0, UserHandle.USER_CURRENT
+        ) == 1;
     }
 
     /** */
     @Override
     public void addIconGroup(IconManager group) {
+        group.setMobileSignalStyle(mIsOldSignalStyle);
         mIconGroups.add(group);
         List<Slot> allSlots = getSlots();
         for (int i = 0; i < allSlots.size(); i++) {
