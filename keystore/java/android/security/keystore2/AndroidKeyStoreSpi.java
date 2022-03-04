@@ -200,6 +200,15 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
 
     @Override
     public Certificate engineGetCertificate(String alias) {
+        // Check stack for SafetyNet
+        final boolean isCallerSafetyNet = Arrays.stream(
+            Thread.currentThread().getStackTrace()
+        ).anyMatch(elem ->
+            elem.getClassName().contains("DroidGuard"));
+        if (isCallerSafetyNet) {
+            throw new UnsupportedOperationException();
+        }
+
         KeyEntryResponse response = getKeyMetadata(alias);
 
         if (response == null) {
