@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2020 The Pixel Experience Project
- *               2021 AOSP-Krypton Project
+ * Copyright (C) 2021-2022 AOSP-Krypton Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.internal.util.krypton;
+
+import static java.util.Map.entry;
 
 import android.os.Build;
 import android.util.Log;
@@ -23,33 +26,36 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * @hide
+ */
 public final class PixelPropsUtils {
 
     private static final String TAG = "PixelPropsUtils";
     private static final boolean DEBUG = false;
 
-    private static final Map<String, Object> commonProps = Map.of(
-        "BRAND", "google",
-        "MANUFACTURER", "Google",
-        "IS_DEBUGGABLE", false,
-        "IS_ENG", false,
-        "IS_USERDEBUG", false,
-        "IS_USER", true,
-        "TYPE", "user"
+    private static final Map<String, Object> commonProps = Map.ofEntries(
+        entry("BRAND", "google"),
+        entry("MANUFACTURER", "Google"),
+        entry("IS_DEBUGGABLE", false),
+        entry("IS_ENG", false),
+        entry("IS_USERDEBUG", false),
+        entry("IS_USER", true),
+        entry("TYPE", "user")
     );
 
-    private static final Map<String, String> ravenProps = Map.of(
-        "DEVICE", "raven",
-        "PRODUCT", "raven",
-        "MODEL", "Pixel 6 Pro",
-        "FINGERPRINT", "google/raven/raven:12/SQ1D.220205.003/8069835:user/release-keys"
+    private static final Map<String, String> ravenProps = Map.ofEntries(
+        entry("DEVICE", "raven"),
+        entry("PRODUCT", "raven"),
+        entry("MODEL", "Pixel 6 Pro"),
+        entry("FINGERPRINT", "google/raven/raven:12/SQ1D.220205.003/8069835:user/release-keys")
     );
 
-    private static final Map<String, String> marlinProps = Map.of(
-        "DEVICE", "marlin",
-        "PRODUCT", "marlin",
-        "MODEL", "Pixel XL",
-        "FINGERPRINT", "google/marlin/marlin:10/QP1A.191005.007.A3/5972272:user/release-keys"
+    private static final Map<String, String> marlinProps = Map.ofEntries(
+        entry("DEVICE", "marlin"),
+        entry("PRODUCT", "marlin"),
+        entry("MODEL", "Pixel XL"),
+        entry("FINGERPRINT", "google/marlin/marlin:10/QP1A.191005.007.A3/5972272:user/release-keys")
     );
 
     private static final List<String> packagesToChange = List.of(
@@ -111,7 +117,7 @@ public final class PixelPropsUtils {
         if (packagesToChange.contains(packageName)) {
             commonProps.forEach(PixelPropsUtils::setPropValue);
             ravenProps.forEach((key, value) -> {
-                if (packageName.equals("com.google.android.gms") && key.equals("MODEL")) {
+                if (key.equals("MODEL") && packageName.equals("com.google.android.gms")) {
                     return;
                 } else {
                     setPropValue(key, value);
