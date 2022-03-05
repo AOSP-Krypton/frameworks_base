@@ -2,7 +2,6 @@ package com.krypton.systemui;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.os.Handler;
 
 import com.krypton.systemui.dagger.KryptonGlobalRootComponent;
 import com.krypton.systemui.dagger.KryptonSysUIComponent;
