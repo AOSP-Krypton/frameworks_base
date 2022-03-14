@@ -48,10 +48,10 @@
     <string name="alert_slider_mode_dnd" translatable="false">режим_не беспокоить</string>
 
     <!-- Advanced reboot -->
-    <string name="reboot_to_recovery_title" translatable="false">Рекавери</string>
-    <string name="reboot_to_recovery_message" translatable="false">Перезагрузка в рекавери</string>
-    <string name="reboot_to_bootloader_title" translatable="false">Загрузчик</string>
-    <string name="reboot_to_bootloader_message" translatable="false">Перезагрузка в загрузчик</string>
+    <string name="reboot_to_recovery_title">Рекавери</string>
+    <string name="reboot_to_recovery_message">Перезагрузка в рекавери</string>
+    <string name="reboot_to_bootloader_title">Загрузчик</string>
+    <string name="reboot_to_bootloader_message">Перезагрузка в загрузчик</string>
     <string name="reboot_title">Перезагрузка</string>
     <string name="reboot_message">Перезагрузка системы</string>
 
