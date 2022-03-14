@@ -48,10 +48,10 @@
     <string name="alert_slider_mode_dnd" translatable="false">mode_dnd</string>
 
     <!-- Advanced reboot -->
-    <string name="reboot_to_recovery_title">Recovery</string>
-    <string name="reboot_to_recovery_message">Rebooting to recovery</string>
-    <string name="reboot_to_bootloader_title">Bootloader</string>
-    <string name="reboot_to_bootloader_message">Rebooting to bootloader</string>
+    <string name="reboot_to_recovery_title">恢復模式</string>
+    <string name="reboot_to_recovery_message">重啟至恢復模式中...</string>
+    <string name="reboot_to_bootloader_title">引導模式</string>
+    <string name="reboot_to_bootloader_message">重啟至引導模式中...</string>
     <string name="reboot_title">重新啟動</string>
     <string name="reboot_message">重啟系統中...</string>
 
