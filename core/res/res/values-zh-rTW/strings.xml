@@ -326,6 +326,10 @@
     <string name="permgroupdesc_phone" msgid="270048070781478204">"撥打電話及管理通話"</string>
     <string name="permgrouplab_sensors" msgid="9134046949784064495">"人體感測器"</string>
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"存取與你生命徵象相關的感應器資料"</string>
+    <string name="permgrouplab_otherSensors">"感測器"</string>
+    <string name="permgroupdesc_otherSensors">"訪問方向、運動等感測器的資料"</string>
+    <string name="permgrouplab_network">"網路"</string>
+    <string name="permgroupdesc_network">"訪問網路許可權"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"擷取視窗內容"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"檢查你存取的視窗內容。"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"啟用輕觸探索功能"</string>
