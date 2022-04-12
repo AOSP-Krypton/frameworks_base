@@ -25,7 +25,6 @@ import static android.media.AudioManager.STREAM_ALARM;
 import static android.media.AudioManager.STREAM_MUSIC;
 import static android.media.AudioManager.STREAM_RING;
 import static android.media.AudioManager.STREAM_VOICE_CALL;
-import static android.provider.Settings.System.VOLUME_PANEL_ON_LEFT;
 import static android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE;
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
@@ -53,7 +52,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.PixelFormat;
@@ -70,7 +68,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.provider.Settings;
 import android.provider.Settings.Global;
@@ -261,9 +258,6 @@ public class VolumeDialogImpl implements VolumeDialog,
     private ViewStub mODICaptionsTooltipViewStub;
     private View mODICaptionsTooltipView = null;
 
-    // Volume panel placement left or right
-    private boolean mVolumePanelOnLeft;
-
     private final boolean mUseBackgroundBlur;
     private Consumer<Boolean> mCrossWindowBlurEnabledListener;
     private BackgroundBlurDrawable mDialogRowsViewBackground;
@@ -271,37 +265,8 @@ public class VolumeDialogImpl implements VolumeDialog,
     // Variable to track the default row with which the panel is initially shown
     private VolumeRow mDefaultRow = null;
 
-    private final SettingsObserver mSettingsObserver = new SettingsObserver();
-    private class SettingsObserver extends ContentObserver {
-        SettingsObserver() {
-            super(mHandler);
-        }
-
-        void observe() {
-            mContext.getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(VOLUME_PANEL_ON_LEFT),
-                    false, this, UserHandle.USER_ALL);
-        }
-
-        void stop() {
-            mContext.getContentResolver().unregisterContentObserver(this);
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            update();
-        }
-
-        void update() {
-            final boolean def = mContext.getResources().getBoolean(
-                    R.bool.config_audioPanelOnLeftSide);
-            mVolumePanelOnLeft = Settings.System.getInt(mContext.getContentResolver(),
-                    VOLUME_PANEL_ON_LEFT, def ? 1 : 0) == 1;
-            mHandler.post(() -> {
-                mControllerCallbackH.onConfigurationChanged();
-            });
-        }
-    }
+    // Volume panel placement left or right
+    private boolean mVolumePanelOnLeft;
 
     public VolumeDialogImpl(
             Context context,
@@ -347,11 +312,6 @@ public class VolumeDialogImpl implements VolumeDialog,
             };
         }
 
-        if (!mShowActiveStreamOnly) {
-            mSettingsObserver.observe();
-            mSettingsObserver.update();
-        }
-
         initDimens();
     }
 
@@ -361,6 +321,7 @@ public class VolumeDialogImpl implements VolumeDialog,
     }
 
     public void init(int windowType, Callback callback) {
+        mVolumePanelOnLeft = mController.isVolumePanelOnLeft();
         initDialog();
 
         mAccessibility.init();
@@ -376,7 +337,6 @@ public class VolumeDialogImpl implements VolumeDialog,
         mController.removeCallback(mControllerCallbackH);
         mHandler.removeCallbacksAndMessages(null);
         mConfigurationController.removeCallback(this);
-	if (!mShowActiveStreamOnly) mSettingsObserver.stop();
     }
 
     @Override
@@ -706,13 +666,12 @@ public class VolumeDialogImpl implements VolumeDialog,
 
     // Helper to set layout gravity.
     private void setLayoutGravity(ViewGroup viewGroup, int gravity) {
-        if (viewGroup != null) {
-            Object obj = viewGroup.getLayoutParams();
-            if (obj instanceof FrameLayout.LayoutParams) {
-                ((FrameLayout.LayoutParams) obj).gravity = gravity;
-            } else if (obj instanceof LinearLayout.LayoutParams) {
-                ((LinearLayout.LayoutParams) obj).gravity = gravity;
-            }
+        if (viewGroup == null) return;
+        final ViewGroup.LayoutParams lp = viewGroup.getLayoutParams();
+        if (lp instanceof FrameLayout.LayoutParams) {
+            ((FrameLayout.LayoutParams) lp).gravity = gravity;
+        } else if (lp instanceof LinearLayout.LayoutParams) {
+            ((LinearLayout.LayoutParams) lp).gravity = gravity;
         }
     }
 
@@ -1562,7 +1521,7 @@ public class VolumeDialogImpl implements VolumeDialog,
             trimObsoleteH();
         }
 
-        boolean isOutmostIndexMax = mVolumePanelOnLeft ? isRtl() : !isRtl();
+        final boolean isOutmostIndexMax = mVolumePanelOnLeft ? isRtl() : !isRtl();
 
         // Index of the last row that is actually visible.
         int outmostVisibleRowIndex = isOutmostIndexMax ? -1 : Short.MAX_VALUE;
@@ -2185,7 +2144,7 @@ public class VolumeDialogImpl implements VolumeDialog,
 
         // Set gravity to top and opposite side where additional rows will be added.
         background.setLayerGravity(
-                0, mVolumePanelOnLeft ? Gravity.TOP | Gravity.LEFT : Gravity.TOP | Gravity.RIGHT);
+                0, Gravity.TOP | (mVolumePanelOnLeft ? Gravity.LEFT : Gravity.RIGHT));
 
         // In landscape, the ringer drawer animates out to the left (instead of down). Since the
         // drawer comes from the right (beyond the bounds of the dialog), we should clip it so it
@@ -2273,6 +2232,12 @@ public class VolumeDialogImpl implements VolumeDialog,
         public void onCaptionComponentStateChanged(
                 Boolean isComponentEnabled, Boolean fromTooltip) {
             updateODICaptionsH(isComponentEnabled, fromTooltip);
+        }
+
+        @Override
+        public void onVolumePanelPositionChanged(boolean onLeft) {
+            mVolumePanelOnLeft = onLeft;
+            onConfigurationChanged();
         }
     };
 
