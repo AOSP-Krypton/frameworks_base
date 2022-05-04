@@ -52,6 +52,8 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Display;
+import android.view.DisplayCutout;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -62,6 +64,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.policy.SystemBarUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.R;
 import com.android.systemui.biometrics.UdfpsHbmTypes.HbmType;
@@ -772,12 +775,14 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
         mCoreLayoutParams.height = 2 * location.sensorRadius + 2 * paddingX;
         mCoreLayoutParams.width = 2 * location.sensorRadius + 2 * paddingY;
 
-        Point p = new Point();
+        final Display display = mContext.getDisplay();
         // Gets the size based on the current rotation of the display.
-        mContext.getDisplay().getRealSize(p);
+        final Point p = new Point();
+        display.getRealSize(p);
+        final int rotation = display.getRotation();
 
         // Transform dimensions if the device is in landscape mode
-        switch (mContext.getDisplay().getRotation()) {
+        switch (rotation) {
             case Surface.ROTATION_90:
                 if (!shouldRotate(animation)) {
                     Log.v(TAG, "skip rotating udfps location ROTATION_90");
@@ -810,6 +815,11 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
         }
         // avoid announcing window title
         mCoreLayoutParams.accessibilityTitle = " ";
+        final boolean cutoutMasked = DisplayCutout.getMaskBuiltInDisplayCutout(
+            mContext.getResources(), display.getUniqueId());
+        if (cutoutMasked) {
+            mCoreLayoutParams.y -= SystemBarUtils.getStatusBarHeightForRotation(mContext, rotation);
+        }
         return mCoreLayoutParams;
     }
 
