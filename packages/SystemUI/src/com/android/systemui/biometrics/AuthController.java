@@ -219,7 +219,12 @@ public class AuthController extends SystemUI implements CommandQueue.Callbacks,
             Log.d(TAG, "handleAllAuthenticatorsRegistered | sensors: " + Arrays.toString(
                     sensors.toArray()));
         }
-        mFpProps = sensors;
+        mFpProps = new ArrayList<>(sensors.size());
+        for (FingerprintSensorPropertiesInternal props : sensors) {
+            mFpProps.add(props.isAnyUdfpsType()
+                ? Utils.adjustUdfpsPropsForMaskedCutout(mContext, props)
+                : props);
+        }
         List<FingerprintSensorPropertiesInternal> udfpsProps = new ArrayList<>();
         List<FingerprintSensorPropertiesInternal> sidefpsProps = new ArrayList<>();
         for (FingerprintSensorPropertiesInternal props : mFpProps) {
@@ -230,7 +235,9 @@ public class AuthController extends SystemUI implements CommandQueue.Callbacks,
                 sidefpsProps.add(props);
             }
         }
-        mUdfpsProps = !udfpsProps.isEmpty() ? udfpsProps : null;
+        mUdfpsProps = !udfpsProps.isEmpty()
+            ? Utils.adjustUdfpsPropsForMaskedCutout(mContext, udfpsProps)
+            : null;
         if (mUdfpsProps != null) {
             mUdfpsController = mUdfpsControllerFactory.get();
         }

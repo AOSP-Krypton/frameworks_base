@@ -617,9 +617,10 @@ public class UdfpsController implements DozeReceiver, UdfpsHbmProvider {
         mSystemClock = systemClock;
         mUnlockedScreenOffAnimationController = unlockedScreenOffAnimationController;
 
-        mSensorProps = findFirstUdfps();
+        final FingerprintSensorPropertiesInternal sensorProps = findFirstUdfps();
         // At least one UDFPS sensor exists
-        checkArgument(mSensorProps != null);
+        checkArgument(sensorProps != null);
+        mSensorProps = Utils.adjustUdfpsPropsForMaskedCutout(mContext, sensorProps);
         mOrientationListener = new BiometricDisplayListener(
                 context,
                 displayManager,

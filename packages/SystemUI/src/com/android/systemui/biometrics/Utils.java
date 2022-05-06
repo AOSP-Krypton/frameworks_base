@@ -26,10 +26,15 @@ import android.annotation.Nullable;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.hardware.biometrics.PromptInfo;
+import android.hardware.biometrics.SensorLocationInternal;
 import android.hardware.biometrics.SensorPropertiesInternal;
+import android.hardware.fingerprint.FingerprintSensorPropertiesInternal;
 import android.os.UserManager;
 import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.DisplayCutout;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -39,6 +44,7 @@ import com.android.internal.widget.LockPatternUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Utils {
@@ -126,5 +132,62 @@ public class Utils {
         final boolean hasPermission = context.checkCallingOrSelfPermission(USE_BIOMETRIC_INTERNAL)
                 == PackageManager.PERMISSION_GRANTED;
         return hasPermission && "android".equals(clientPackage);
+    }
+
+    static FingerprintSensorPropertiesInternal adjustUdfpsPropsForMaskedCutout(
+        @NonNull final Context context,
+        @NonNull final FingerprintSensorPropertiesInternal udfpsProps
+    ) {
+        final int cutoutHeight = getCutoutHeight(context);
+        if (cutoutHeight == 0) return udfpsProps;
+        return adjustUdfpsPropsWithCutoutHeight(cutoutHeight, udfpsProps);
+    }
+
+    static List<FingerprintSensorPropertiesInternal> adjustUdfpsPropsForMaskedCutout(
+        @NonNull final Context context,
+        @NonNull final List<FingerprintSensorPropertiesInternal> udfpsProps
+    ) {
+        final int cutoutHeight = getCutoutHeight(context);
+        if (cutoutHeight == 0) return udfpsProps;
+        final List<FingerprintSensorPropertiesInternal> newUdfpsProps = new ArrayList<>(udfpsProps.size());
+        for (FingerprintSensorPropertiesInternal props: udfpsProps) {
+            newUdfpsProps.add(adjustUdfpsPropsWithCutoutHeight(cutoutHeight, props));
+        }
+        return newUdfpsProps;
+    }
+
+    private static int getCutoutHeight(@NonNull final Context context) {
+        final Resources res = context.getResources();
+        final Display display = context.getDisplay();
+        final boolean cutoutMasked = DisplayCutout.getMaskBuiltInDisplayCutout(
+            res, display.getUniqueId());
+        if (!cutoutMasked) {
+            return 0;
+        }
+        return DisplayCutout.fromResourcesRectApproximation(
+            res, display.getUniqueId(), display.getWidth(),
+            display.getHeight()).getSafeInsetTop();
+    }
+
+    private static FingerprintSensorPropertiesInternal adjustUdfpsPropsWithCutoutHeight(
+        final int cutoutHeight,
+        @NonNull final FingerprintSensorPropertiesInternal udfpsProps
+    ) {
+        final SensorLocationInternal udfpsLocation = udfpsProps.getLocation();
+        final SensorLocationInternal newUdfpsLocation = new SensorLocationInternal(
+            udfpsLocation.displayId,
+            udfpsLocation.sensorLocationX,
+            udfpsLocation.sensorLocationY - cutoutHeight,
+            udfpsLocation.sensorRadius
+        );
+        return new FingerprintSensorPropertiesInternal(
+            udfpsProps.sensorId,
+            udfpsProps.sensorStrength,
+            udfpsProps.maxEnrollmentsPerUser,
+            udfpsProps.componentInfo,
+            udfpsProps.sensorType,
+            udfpsProps.resetLockoutRequiresHardwareAuthToken,
+            List.of(newUdfpsLocation)
+        );
     }
 }
