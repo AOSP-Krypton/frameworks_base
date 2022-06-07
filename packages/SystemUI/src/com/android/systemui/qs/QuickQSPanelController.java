@@ -58,6 +58,9 @@ public class QuickQSPanelController extends QSPanelControllerBase<QuickQSPanel> 
                 }
             };
 
+    // brightness is visible only in split shade
+    private final QuickQSBrightnessController mBrightnessController;
+    private final BrightnessMirrorHandler mBrightnessMirrorHandler;
     private final FooterActionsController mFooterActionsController;
 
     private boolean mForceShowSlider = false;
@@ -75,7 +78,7 @@ public class QuickQSPanelController extends QSPanelControllerBase<QuickQSPanel> 
             SystemSettings systemSettings
     ) {
         super(view, qsTileHost, qsCustomizerController, usingMediaPlayer, mediaHost, metricsLogger,
-                uiEventLogger, qsLogger, dumpManager);
+                uiEventLogger, qsLogger, dumpManager, mainHandler, systemSettings);
         mBrightnessController = quickQSBrightnessController;
         mBrightnessMirrorHandler = new BrightnessMirrorHandler(mBrightnessController);
         mFooterActionsController = footerActionsController;
@@ -125,11 +128,13 @@ public class QuickQSPanelController extends QSPanelControllerBase<QuickQSPanel> 
     protected void onViewDetached() {
         super.onViewDetached();
         mView.removeOnConfigurationChangedListener(mOnConfigurationChangedListener);
+        mBrightnessMirrorHandler.onQsPanelDettached();
     }
 
     @Override
     void setListening(boolean listening) {
         super.setListening(listening);
+        mBrightnessController.setListening(listening);
         mFooterActionsController.setListening(listening);
     }
 
@@ -147,6 +152,12 @@ public class QuickQSPanelController extends QSPanelControllerBase<QuickQSPanel> 
     private void setMaxTiles(int parseNumTiles) {
         mView.setMaxTiles(parseNumTiles);
         setTiles();
+    }
+
+    @Override
+    public void refreshAllTiles() {
+        mBrightnessController.checkRestrictionAndSetEnabled();
+        super.refreshAllTiles();
     }
 
     @Override
@@ -175,5 +186,9 @@ public class QuickQSPanelController extends QSPanelControllerBase<QuickQSPanel> 
 
     public int getNumQuickTiles() {
         return mView.getNumQuickTiles();
+    }
+
+    public void setBrightnessMirror(BrightnessMirrorController brightnessMirrorController) {
+        mBrightnessMirrorHandler.setController(brightnessMirrorController);
     }
 }
