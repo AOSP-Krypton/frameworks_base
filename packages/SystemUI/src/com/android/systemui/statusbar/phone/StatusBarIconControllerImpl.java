@@ -139,6 +139,7 @@ public class StatusBarIconControllerImpl extends StatusBarIconList implements Tu
         }
 
         group.setMobileSignalStyle(mIsOldSignalStyle);
+        group.setController(this);
         mIconGroups.add(group);
         List<Slot> allSlots = getSlots();
         for (int i = 0; i < allSlots.size(); i++) {
@@ -152,6 +153,12 @@ public class StatusBarIconControllerImpl extends StatusBarIconList implements Tu
                 group.onIconAdded(viewIndex, slot.getName(), hidden, holder);
             }
         }
+    }
+
+    @Override
+    public void refreshIconGroup(IconManager iconManager) {
+        removeIconGroup(iconManager);
+        addIconGroup(iconManager);
     }
 
     private void refreshIconGroups() {
