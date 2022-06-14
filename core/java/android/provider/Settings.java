@@ -5766,6 +5766,62 @@ public final class Settings {
         public static final String SHOW_BATTERY_PERCENT_INSIDE = "status_bar_show_battery_percent_inside";
 
         /**
+         * Whether GameSpace is enabled.
+         * Default 0.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_ENABLED = "gamespace_enabled";
+
+        /**
+         * A list of user selected package names delimited by ';' for game mode.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_PACKAGE_LIST = "gamespace_package_list";
+
+        /**
+         * Whether game mode should be launched when opened apps are games and are not in
+         * selected packages list.
+         * Default 1.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_DYNAMIC_MODE = "gamespace_dynamic_mode";
+
+        /**
+         * Whether HUNs should be disabled in game mode.
+         * Default 1.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_DISABLE_HEADSUP = "gamespace_disable_headsup";
+
+        /**
+         * Whether fullscreen intents (for ex: call screen) should be suppressed in game mode.
+         * Default 0.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_DISABLE_FULLSCREEN_INTENT = "gamespace_disable_fullscreen_intent";
+
+        /**
+         * Whether call ringing should be disabled in game mode.
+         * Default 1.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_DISABLE_CALL_RINGING = "gamespace_disable_call_ringing";
+
+        /**
+         * Whether privacy indicators should be hidden in game mode.
+         * Default 0.
+         * @hide
+         */
+        @Readable
+        public static final String GAMESPACE_HIDE_PRIVACY_INDICATORS = "gamespace_hide_privacy_indicators";
+
+        /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
          * it to PRIVATE_SETTINGS below. Also add a validator that can validate

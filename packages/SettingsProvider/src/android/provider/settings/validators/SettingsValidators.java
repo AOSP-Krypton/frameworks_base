@@ -252,7 +252,7 @@ public class SettingsValidators {
 
         @Override
         protected boolean isItemValid(String item) {
-            return PACKAGE_NAME_VALIDATOR.validate(item);
+            return item.isEmpty() || PACKAGE_NAME_VALIDATOR.validate(item);
         }
     };
 }

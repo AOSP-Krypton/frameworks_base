@@ -104,5 +104,11 @@ public class SystemSettings {
         Settings.System.QS_SHOW_BATTERY_ESTIMATE,
         Settings.System.STATUS_BAR_BATTERY_STYLE,
         Settings.System.SHOW_BATTERY_PERCENT_INSIDE,
+        Settings.System.GAMESPACE_ENABLED,
+        Settings.System.GAMESPACE_PACKAGE_LIST,
+        Settings.System.GAMESPACE_DYNAMIC_MODE,
+        Settings.System.GAMESPACE_DISABLE_HEADSUP,
+        Settings.System.GAMESPACE_DISABLE_FULLSCREEN_INTENT,
+        Settings.System.GAMESPACE_DISABLE_CALL_RINGING
     };
 }

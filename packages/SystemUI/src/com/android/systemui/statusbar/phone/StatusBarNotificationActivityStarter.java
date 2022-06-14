@@ -72,6 +72,7 @@ import com.android.systemui.statusbar.phone.dagger.CentralSurfacesComponent;
 import com.android.systemui.statusbar.policy.HeadsUpUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.wmshell.BubblesManager;
+import com.kosp.systemui.game.GameSpaceServiceDelegate;
 
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -122,6 +123,8 @@ class StatusBarNotificationActivityStarter implements NotificationActivityStarte
 
     private boolean mIsCollapsingToShowActivityOverLockscreen;
 
+    private final GameSpaceServiceDelegate mGameSpaceServiceDelegate;
+
     @Inject
     StatusBarNotificationActivityStarter(
             Context context,
@@ -153,7 +156,8 @@ class StatusBarNotificationActivityStarter implements NotificationActivityStarte
             ActivityLaunchAnimator activityLaunchAnimator,
             NotificationLaunchAnimatorControllerProvider notificationAnimationProvider,
             LaunchFullScreenIntentProvider launchFullScreenIntentProvider,
-            FeatureFlags featureFlags) {
+            FeatureFlags featureFlags,
+            GameSpaceServiceDelegate gameSpaceServiceDelegate) {
         mContext = context;
         mMainThreadHandler = mainThreadHandler;
         mUiBgExecutor = uiBgExecutor;
@@ -184,6 +188,7 @@ class StatusBarNotificationActivityStarter implements NotificationActivityStarte
         mNotificationPanel = panel;
         mActivityLaunchAnimator = activityLaunchAnimator;
         mNotificationAnimationProvider = notificationAnimationProvider;
+        mGameSpaceServiceDelegate = gameSpaceServiceDelegate;
 
         launchFullScreenIntentProvider.registerListener(entry -> launchFullScreenIntent(entry));
     }
@@ -551,6 +556,9 @@ class StatusBarNotificationActivityStarter implements NotificationActivityStarte
         // Skip if device is in VR mode.
         if (mPresenter.isDeviceInVrMode()) {
             mLogger.logFullScreenIntentSuppressedByVR(entry);
+            return;
+        }
+        if (mGameSpaceServiceDelegate.disallowLaunchingFullScreenIntent()) {
             return;
         }
         if (mFeatureFlags.isEnabled(Flags.FSI_CHROME)) {
