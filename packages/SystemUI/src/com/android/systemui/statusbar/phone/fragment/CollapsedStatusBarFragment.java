@@ -537,7 +537,8 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
      */
     private int clockHiddenMode() {
         if (!mShadeExpansionStateManager.isClosed() && !mKeyguardStateController.isShowing()
-                && !mStatusBarStateController.isDozing()) {
+                && !mStatusBarStateController.isDozing()
+                && ((mDisabled1 & DISABLE_CLOCK) == 0)) {
             return View.INVISIBLE;
         }
         return View.GONE;
