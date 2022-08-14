@@ -19,7 +19,10 @@ filegroup {
 
 filegroup {
     name: "services.core-sources",
-    srcs: ["java/**/*.java"],
+    srcs: [
+        "java/**/*.java",
+        "java/**/*.kt",
+    ],
     exclude_srcs: [
         ":services.core-sources-am-wm",
     ],
