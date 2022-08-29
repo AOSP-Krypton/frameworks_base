@@ -22,6 +22,8 @@ import android.content.Context;
 import android.hardware.display.NightDisplayListener;
 import android.os.Handler;
 
+import com.android.systemui.R;
+import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.media.dagger.MediaModule;
 import com.android.systemui.qs.AutoAddTracker;
@@ -51,6 +53,8 @@ import dagger.Provides;
 @Module(subcomponents = {QSFragmentComponent.class},
         includes = {MediaModule.class, QSExternalModule.class, QSFlagsModule.class})
 public interface QSModule {
+
+    public static final String QS_TILES_STOCK = "qs_tiles_stock";
 
     @Provides
     static AutoTileManager provideAutoTileManager(
@@ -93,4 +97,11 @@ public interface QSModule {
     /** */
     @Binds
     QSHost provideQsHost(QSTileHost controllerImpl);
+
+    @Provides
+    @SysUISingleton
+    @Named(QS_TILES_STOCK)
+    static String provideQSTileStock(Context context) {
+        return context.getString(R.string.quick_settings_tiles_stock);
+    }
 }

@@ -16,6 +16,8 @@
 
 package com.android.systemui.qs.customize;
 
+import static com.android.systemui.qs.dagger.QSModule.QS_TILES_STOCK;
+
 import android.Manifest.permission;
 import android.content.ComponentName;
 import android.content.Context;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /** */
 @QSScope
@@ -64,6 +67,7 @@ public class TileQueryHelper {
     private final Executor mBgExecutor;
     private final Context mContext;
     private final UserTracker mUserTracker;
+    private final String mQsTilesStock;
     private TileStateListener mListener;
 
     private boolean mFinished;
@@ -73,12 +77,14 @@ public class TileQueryHelper {
             Context context,
             UserTracker userTracker,
             @Main Executor mainExecutor,
-            @Background Executor bgExecutor
+            @Background Executor bgExecutor,
+            @Named(QS_TILES_STOCK) String qsTilesStock
     ) {
         mContext = context;
         mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
         mUserTracker = userTracker;
+        mQsTilesStock = qsTilesStock;
     }
 
     public void setListener(@Nullable TileStateListener listener) {
@@ -98,7 +104,6 @@ public class TileQueryHelper {
     }
 
     private void addCurrentAndStockTiles(QSTileHost host) {
-        String stock = mContext.getString(R.string.quick_settings_tiles_stock);
         String current = Settings.Secure.getString(mContext.getContentResolver(),
                 Settings.Secure.QS_TILES);
         final ArrayList<String> possibleTiles = new ArrayList<>();
@@ -108,7 +113,7 @@ public class TileQueryHelper {
         } else {
             current = "";
         }
-        String[] stockSplit =  stock.split(",");
+        String[] stockSplit =  mQsTilesStock.split(",");
         for (String spec : stockSplit) {
             if (!current.contains(spec)) {
                 possibleTiles.add(spec);
@@ -213,14 +218,13 @@ public class TileQueryHelper {
             PackageManager pm = mContext.getPackageManager();
             List<ResolveInfo> services = pm.queryIntentServicesAsUser(
                     new Intent(TileService.ACTION_QS_TILE), 0, mUserTracker.getUserId());
-            String stockTiles = mContext.getString(R.string.quick_settings_tiles_stock);
 
             for (ResolveInfo info : services) {
                 String packageName = info.serviceInfo.packageName;
                 ComponentName componentName = new ComponentName(packageName, info.serviceInfo.name);
 
                 // Don't include apps that are a part of the default tile set.
-                if (stockTiles.contains(componentName.flattenToString())) {
+                if (mQsTilesStock.contains(componentName.flattenToString())) {
                     continue;
                 }
 
