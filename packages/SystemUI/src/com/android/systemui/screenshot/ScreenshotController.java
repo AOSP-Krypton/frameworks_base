@@ -331,6 +331,7 @@ public class ScreenshotController {
     };
 
     private String getForegroundAppLabel() {
+        if (mTaskComponentName == null) return null;
         try {
             final ActivityInfo ai = mPm.getActivityInfo(mTaskComponentName, 0);
             return ai.applicationInfo.loadLabel(mPm).toString();
