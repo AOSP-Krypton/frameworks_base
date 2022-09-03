@@ -319,11 +319,11 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         initOngoingCallChip();
         mAnimationScheduler.addCallback(this);
 
-        mSecureSettings.registerContentObserverForUser(
+        /*mSecureSettings.registerContentObserverForUser(
                 Settings.Secure.getUriFor(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON),
                 false,
                 mVolumeSettingObserver,
-                UserHandle.USER_ALL);
+                UserHandle.USER_ALL);*/
     }
 
     @Override
@@ -333,7 +333,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         mStatusBarStateController.removeCallback(this);
         mOngoingCallController.removeCallback(mOngoingCallListener);
         mAnimationScheduler.removeCallback(this);
-        mSecureSettings.unregisterContentObserver(mVolumeSettingObserver);
+        //mSecureSettings.unregisterContentObserver(mVolumeSettingObserver);
     }
 
     @Override
