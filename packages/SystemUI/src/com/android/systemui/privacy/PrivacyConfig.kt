@@ -16,26 +16,39 @@
 
 package com.android.systemui.privacy
 
+import android.database.ContentObserver
+import android.net.Uri
+import android.os.Handler
+import android.os.UserHandle
 import android.provider.DeviceConfig
+import android.provider.Settings.Secure.MIC_CAMERA_PRIVACY_INDICATORS_ENABLED
+import android.provider.Settings.Secure.LOCATION_PRIVACY_INDICATOR_ENABLED
+
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.util.DeviceConfigProxy
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.concurrency.DelayableExecutor
+import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.withIncreasedIndent
+
 import java.io.PrintWriter
 import java.lang.ref.WeakReference
+
 import javax.inject.Inject
 
 @SysUISingleton
 class PrivacyConfig @Inject constructor(
     @Main private val uiExecutor: DelayableExecutor,
     private val deviceConfigProxy: DeviceConfigProxy,
-    dumpManager: DumpManager
+    private val secureSettings: SecureSettings,
+    dumpManager: DumpManager,
+    @Background bgHandler: Handler,
 ) : Dumpable {
 
     @VisibleForTesting
@@ -63,16 +76,6 @@ class PrivacyConfig @Inject constructor(
             DeviceConfig.OnPropertiesChangedListener { properties ->
                 if (DeviceConfig.NAMESPACE_PRIVACY == properties.namespace) {
                     // Running on the ui executor so can iterate on callbacks
-                    if (properties.keyset.contains(MIC_CAMERA)) {
-                        micCameraAvailable = properties.getBoolean(MIC_CAMERA, DEFAULT_MIC_CAMERA)
-                        callbacks.forEach { it.get()?.onFlagMicCameraChanged(micCameraAvailable) }
-                    }
-
-                    if (properties.keyset.contains(LOCATION)) {
-                        locationAvailable = properties.getBoolean(LOCATION, DEFAULT_LOCATION)
-                        callbacks.forEach { it.get()?.onFlagLocationChanged(locationAvailable) }
-                    }
-
                     if (properties.keyset.contains(MEDIA_PROJECTION)) {
                         mediaProjectionAvailable =
                                 properties.getBoolean(MEDIA_PROJECTION, DEFAULT_MEDIA_PROJECTION)
@@ -83,22 +86,69 @@ class PrivacyConfig @Inject constructor(
                 }
             }
 
+    private val settingsObserver = object : ContentObserver(bgHandler) {
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            when (uri?.lastPathSegment) {
+                MIC_CAMERA_PRIVACY_INDICATORS_ENABLED -> {
+                    val isEnabled = isMicCameraEnabled()
+                    uiExecutor.execute {
+                        micCameraAvailable = isEnabled
+                        callbacks.forEach { it.get()?.onFlagMicCameraChanged(micCameraAvailable) }
+                    }
+                }
+                LOCATION_PRIVACY_INDICATOR_ENABLED -> {
+                    val isEnabled = isLocationEnabled()
+                    uiExecutor.execute {
+                        locationAvailable = isEnabled
+                        callbacks.forEach { it.get()?.onFlagLocationChanged(locationAvailable) }
+                    }
+                }
+            }
+        }
+    }
+
     init {
         dumpManager.registerDumpable(TAG, this)
         deviceConfigProxy.addOnPropertiesChangedListener(
                 DeviceConfig.NAMESPACE_PRIVACY,
                 uiExecutor,
                 devicePropertiesChangedListener)
+        secureSettings.registerContentObserverForUser(
+            MIC_CAMERA_PRIVACY_INDICATORS_ENABLED,
+            settingsObserver,
+            UserHandle.USER_ALL
+        )
+        secureSettings.registerContentObserverForUser(
+            LOCATION_PRIVACY_INDICATOR_ENABLED,
+            settingsObserver,
+            UserHandle.USER_ALL
+        )
     }
 
     private fun isMicCameraEnabled(): Boolean {
-        return deviceConfigProxy.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
-                MIC_CAMERA, DEFAULT_MIC_CAMERA)
+        val defaultValue = deviceConfigProxy.getBoolean(
+            DeviceConfig.NAMESPACE_PRIVACY,
+            MIC_CAMERA,
+            DEFAULT_MIC_CAMERA
+        )
+        return secureSettings.getIntForUser(
+            MIC_CAMERA_PRIVACY_INDICATORS_ENABLED,
+            if (defaultValue) 1 else 0,
+            UserHandle.USER_CURRENT
+        ) == 1
     }
 
     private fun isLocationEnabled(): Boolean {
-        return deviceConfigProxy.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
-                LOCATION, DEFAULT_LOCATION)
+        val defaultValue = deviceConfigProxy.getBoolean(
+            DeviceConfig.NAMESPACE_PRIVACY,
+            LOCATION,
+            DEFAULT_LOCATION
+        )
+        return secureSettings.getIntForUser(
+            LOCATION_PRIVACY_INDICATOR_ENABLED,
+            if (defaultValue) 1 else 0,
+            UserHandle.USER_CURRENT
+        ) == 1
     }
 
     private fun isMediaProjectionEnabled(): Boolean {

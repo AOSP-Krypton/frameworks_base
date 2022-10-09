@@ -11441,6 +11441,22 @@ public final class Settings {
         public static final String TORCH_LONG_PRESS_POWER = "torch_long_press_power";
 
         /**
+         * Whether to show privacy indicators for microphone and camera.
+         * Default value should be from DeviceConfig.
+         *
+         * @hide
+         */
+        public static final String MIC_CAMERA_PRIVACY_INDICATORS_ENABLED = "mic_camera_privacy_indicators_enabled";
+
+        /**
+         * Whether to show privacy indicator for location.
+         * Default value should be from DeviceConfig.
+         *
+         * @hide
+         */
+        public static final String LOCATION_PRIVACY_INDICATOR_ENABLED = "location_privacy_indicator_enabled";
+
+        /**
          * These entries are considered common between the personal and the managed profile,
          * since the managed profile doesn't get to change them.
          */
